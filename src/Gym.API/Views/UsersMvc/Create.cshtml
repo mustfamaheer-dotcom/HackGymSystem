@@ -1,0 +1,64 @@
+@model CreateUserCommand
+@{
+    var error = TempData["Error"] as string;
+    var roles = ViewBag.Roles as IReadOnlyList<RoleDto> ?? new List<RoleDto>();
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-plus-circle"></i> Add User</h4>
+        <span class="receipt-badge">Admin</span>
+    </div>
+
+    <form asp-action="Create" method="post" class="receipt-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" placeholder="Enter username" />
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" type="password" placeholder="Min 6 characters" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="FullName" class="form-label">Full Name</label>
+                <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Phone" class="form-label">Phone</label>
+                <input asp-for="Phone" class="form-control" placeholder="Phone number" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="RoleId" class="form-label">Role</label>
+                <select asp-for="RoleId" class="form-select">
+                    <option value="">Select role</option>
+                    @foreach (var role in roles)
+                    {
+                        <option value="@role.Id">@role.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="RoleId" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="receipt-footer px-0 pb-0 mt-3">
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create</button>
+        </div>
+    </form>
+</div>

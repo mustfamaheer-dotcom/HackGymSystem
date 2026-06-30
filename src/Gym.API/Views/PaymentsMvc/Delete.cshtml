@@ -1,0 +1,35 @@
+@model PaymentDto
+@{
+    var error = TempData["Error"] as string;
+}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="receipt-card text-center">
+            <div class="receipt-header" style="background: linear-gradient(135deg, #FEE2E2, #FECACA);">
+                <h4 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Payment</h4>
+                <span class="receipt-badge">Confirm</span>
+            </div>
+            <div class="receipt-body">
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                <div class="mb-4">
+                    <i class="bi bi-receipt text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="fw-bold">@Model.ReceiptNumber</h5>
+                <p class="text-muted mb-1">@Model.MemberName - @Model.TotalAmount.ToString("N2") EGP</p>
+                <p class="text-muted small">@Model.PaymentDate.ToString("dd/MM/yyyy") - @Model.PaymentMethod</p>
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-info-circle"></i> This action cannot be undone.
+                </div>
+                <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Confirm Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+@model PaginatedResult<UserListItemDto>
+@{
+    var searchTerm = ViewBag.SearchTerm as string;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-shield-lock-fill"></i> Users</h4>
+        <a asp-action="Create" asp-controller="UsersMvc" class="inline-flex items-center justify-center font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-md hover:shadow-lg px-4 py-2 text-sm">Add User</a>
+    </div>
+    <div class="p-3 border-bottom bg-light">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by username, name, or email..." value="@searchTerm" />
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                    @{
+                        var ps1 = Model?.PageSize == 10 ? "selected" : "";
+                        var ps2 = Model?.PageSize == 20 ? "selected" : "";
+                        var ps3 = Model?.PageSize == 50 ? "selected" : "";
+                    }
+                    <option value="10" selected="@ps1">10 per page</option>
+                    <option value="20" selected="@ps2">20 per page</option>
+                    <option value="50" selected="@ps3">50 per page</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+
+    @if (Model is null || Model.Items.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-people" style="font-size: 3rem;"></i>
+            <p class="mt-2">No users found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Items)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@user.Username</span></td>
+                            <td>@user.FullName</td>
+                            <td>@user.Email</td>
+                            <td>@(user.Phone ?? "-")</td>
+                            <td>@user.RoleName</td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge-status badge-active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-expired">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing @Model.Items.Count of @Model.TotalCount users</small>
+            <nav>
+                <ul class="pagination pagination-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">Previous</a>
+                        </li>
+                    }
+                    @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">@i</a>
+                        </li>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">Next</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

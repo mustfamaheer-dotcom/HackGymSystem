@@ -1,0 +1,90 @@
+@model PaginatedResult<NotificationDto>
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-bell-fill"></i> Notifications</h4>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> New Notification</a>
+    </div>
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+    @if (Model is null || Model.Items.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-bell" style="font-size: 3rem;"></i>
+            <p class="mt-2">No notifications found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Member</th>
+                        <th>Type</th>
+                        <th>Channel</th>
+                        <th>Status</th>
+                        <th>Pending</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var n in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@n.Subject</td>
+                            <td>@(n.MemberName ?? "-")</td>
+                            <td><span class="badge-status badge-active">@n.Type</span></td>
+                            <td>@n.Channel</td>
+                            <td>
+                                <span class="badge-status @(n.Status == NotificationStatus.Sent ? "badge-active" : n.Status == NotificationStatus.Failed ? "badge-expired" : "badge-frozen")">@n.Status</span>
+                            </td>
+                            <td>
+                                @if (n.IsPending)
+                                {
+                                    <span class="badge-status badge-frozen"><i class="bi bi-hourglass"></i></span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@n.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@n.Id" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing @Model.Items.Count of @Model.TotalCount notifications</small>
+            <nav>
+                <ul class="pagination pagination-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Previous</a></li>
+                    }
+                    @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize">@i</a></li>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Next</a></li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

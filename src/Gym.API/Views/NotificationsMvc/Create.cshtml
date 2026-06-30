@@ -1,0 +1,59 @@
+@model CreateNotificationCommand
+@{
+    var error = TempData["Error"] as string;
+}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-plus-circle"></i> New Notification</h4>
+                <span class="receipt-badge">Notification</span>
+            </div>
+            <form asp-action="Create" method="post" class="receipt-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label asp-for="Subject" class="form-label"></label>
+                        <input asp-for="Subject" class="form-control" placeholder="Enter subject" />
+                        <span asp-validation-for="Subject" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Message" class="form-label"></label>
+                        <textarea asp-for="Message" class="form-control" rows="4" placeholder="Enter notification message"></textarea>
+                        <span asp-validation-for="Message" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Type" class="form-label"></label>
+                        <select asp-for="Type" asp-items="Html.GetEnumSelectList<NotificationType>()" class="form-select">
+                            <option value="">-- Select Type --</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Channel" class="form-label"></label>
+                        <select asp-for="Channel" asp-items="Html.GetEnumSelectList<NotificationChannel>()" class="form-select">
+                            <option value="">-- Select Channel --</option>
+                        </select>
+                        <span asp-validation-for="Channel" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="MemberId" class="form-label">Member ID</label>
+                        <input asp-for="MemberId" class="form-control" placeholder="Optional" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ScheduledDate" class="form-label">Scheduled Date</label>
+                        <input asp-for="ScheduledDate" type="datetime-local" class="form-control" />
+                    </div>
+                </div>
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

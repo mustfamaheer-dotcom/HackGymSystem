@@ -1,0 +1,41 @@
+@model DeviceDto
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-hdd-stack"></i> @Model.Name</h4>
+        <span class="receipt-badge">@Model.Status</span>
+    </div>
+    <div class="receipt-body">
+        <div class="section-title"><i class="bi bi-info-circle"></i> Device Information</div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Name</td><td class="detail-value">@Model.Name</td></tr>
+            <tr><td class="detail-label">IP Address</td><td class="detail-value">@Model.IPAddress</td></tr>
+            <tr><td class="detail-label">Port</td><td class="detail-value">@Model.Port</td></tr>
+            <tr><td class="detail-label">Model</td><td class="detail-value">@(Model.Model ?? "-")</td></tr>
+            <tr><td class="detail-label">Serial Number</td><td class="detail-value">@(Model.SerialNumber ?? "-")</td></tr>
+            <tr><td class="detail-label">Firmware Version</td><td class="detail-value">@(Model.FirmwareVersion ?? "-")</td></tr>
+            <tr><td class="detail-label">Status</td><td class="detail-value">@Model.Status</td></tr>
+            <tr><td class="detail-label">Is Active</td><td class="detail-value">@(Model.IsActive ? "Yes" : "No")</td></tr>
+            <tr><td class="detail-label">Last Connected</td><td class="detail-value">@(Model.LastConnectedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+        </table>
+        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Created</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Updated</div>
+                    <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="receipt-footer">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+</div>

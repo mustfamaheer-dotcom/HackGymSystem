@@ -1,0 +1,44 @@
+@model PaymentDto
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-receipt"></i> Payment @Model.ReceiptNumber</h4>
+        <span class="receipt-badge">@Model.PaymentMethod</span>
+    </div>
+    <div class="receipt-body">
+        <div class="section-title"><i class="bi bi-person"></i> Member Information</div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Member</td><td class="detail-value">@Model.MemberName</td></tr>
+        </table>
+        <div class="section-divider"><span>Payment Details</span></div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Amount</td><td class="detail-value">@Model.Amount.ToString("N2") EGP</td></tr>
+            <tr><td class="detail-label">Discount</td><td class="detail-value">@Model.DiscountAmount.ToString("N2") EGP</td></tr>
+            <tr><td class="detail-label">Total</td><td class="detail-value fw-bold">@Model.TotalAmount.ToString("N2") EGP</td></tr>
+            <tr><td class="detail-label">Payment Date</td><td class="detail-value">@Model.PaymentDate.ToString("dd/MM/yyyy HH:mm")</td></tr>
+            <tr><td class="detail-label">Payment Method</td><td class="detail-value">@Model.PaymentMethod</td></tr>
+            <tr><td class="detail-label">Receipt Number</td><td class="detail-value">@Model.ReceiptNumber</td></tr>
+            <tr><td class="detail-label">Reference</td><td class="detail-value">@(Model.ReferenceNumber ?? "-")</td></tr>
+            <tr><td class="detail-label">Employee</td><td class="detail-value">@(Model.EmployeeName ?? "-")</td></tr>
+            <tr><td class="detail-label">Notes</td><td class="detail-value">@(Model.Notes ?? "-")</td></tr>
+        </table>
+        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Created</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Updated</div>
+                    <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="receipt-footer">
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+</div>

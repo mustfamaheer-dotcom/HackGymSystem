@@ -1,0 +1,42 @@
+@model UpdateSettingCommand
+@{
+    var error = TempData["Error"] as string;
+    var settingKey = ViewBag.SettingKey as string;
+    var settingGroup = ViewBag.SettingGroup as string;
+}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-pencil-square"></i> Edit Setting</h4>
+                <span class="receipt-badge">@settingKey</span>
+            </div>
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
+                <input type="hidden" asp-for="Id" />
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="detail-label">Key</div>
+                        <div class="fw-semibold">@settingKey</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">Group</div>
+                        <div class="fw-semibold">@(!string.IsNullOrEmpty(settingGroup) ? settingGroup : "General")</div>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Value" class="form-label"></label>
+                        <textarea asp-for="Value" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Value" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

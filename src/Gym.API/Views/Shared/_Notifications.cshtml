@@ -1,0 +1,78 @@
+@{
+    var successMsg = TempData["Success"] as string;
+    var errorMsg = TempData["Error"] as string;
+    var hasModelErrors = !ViewData.ModelState.IsValid;
+}
+
+@if (!string.IsNullOrEmpty(successMsg) || !string.IsNullOrEmpty(errorMsg) || hasModelErrors)
+{
+    <div id="notificationContainer" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;max-width:420px;">
+        @if (!string.IsNullOrEmpty(successMsg))
+        {
+            <div class="notification-toast" style="background:#fff;border-radius:12px;border-left:4px solid #10B981;box-shadow:0 8px 30px rgba(0,0,0,0.12);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;animation:slideIn 0.3s ease;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-check-lg" style="color:#10B981;font-size:1rem;"></i>
+                    </div>
+                    <span style="font-size:0.88rem;font-weight:500;color:#333;">@successMsg</span>
+                </div>
+                <button type="button" onclick="this.closest('.notification-toast').remove()" style="background:none;border:none;color:#9CA3AF;font-size:1.1rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <div class="notification-toast" style="background:#fff;border-radius:12px;border-left:4px solid #EF4444;box-shadow:0 8px 30px rgba(0,0,0,0.12);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;animation:slideIn 0.3s ease;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:#FEE2E2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-exclamation-triangle" style="color:#EF4444;font-size:1rem;"></i>
+                    </div>
+                    <span style="font-size:0.88rem;font-weight:500;color:#333;">@errorMsg</span>
+                </div>
+                <button type="button" onclick="this.closest('.notification-toast').remove()" style="background:none;border:none;color:#9CA3AF;font-size:1.1rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
+            </div>
+        }
+        @if (hasModelErrors)
+        {
+            <div class="notification-toast" style="background:#fff;border-radius:12px;border-left:4px solid #F59E0B;box-shadow:0 8px 30px rgba(0,0,0,0.12);padding:1rem 1.25rem;animation:slideIn 0.3s ease;">
+                <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:#FEF3C7;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.15rem;">
+                        <i class="bi bi-info-circle" style="color:#F59E0B;font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.82rem;font-weight:600;color:#333;margin-bottom:0.35rem;">Please fix the following errors:</div>
+                        <ul style="margin:0;padding-left:1.25rem;font-size:0.8rem;color:#6B7280;">
+                            @foreach (var state in ViewData.ModelState)
+                            {
+                                foreach (var err in state.Value.Errors)
+                                {
+                                    <li>@err.ErrorMessage</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <style>
+        @@keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+
+    <script>
+        (function() {
+            var toasts = document.querySelectorAll('.notification-toast');
+            toasts.forEach(function(t) {
+                setTimeout(function() {
+                    t.style.transition = 'all 0.3s ease';
+                    t.style.transform = 'translateX(100%)';
+                    t.style.opacity = '0';
+                    setTimeout(function() { t.remove(); }, 300);
+                }, 5000);
+            });
+        })();
+    </script>
+}

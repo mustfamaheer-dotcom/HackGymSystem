@@ -1,0 +1,28 @@
+@model UserListItemDto
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-trash"></i> Delete User</h4>
+        <span class="receipt-badge">Danger</span>
+    </div>
+
+    <div class="receipt-body">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> Are you sure you want to delete user <strong>@Model.Username</strong>?
+        </div>
+
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Username</td><td class="detail-value">@Model.Username</td></tr>
+            <tr><td class="detail-label">Full Name</td><td class="detail-value">@Model.FullName</td></tr>
+            <tr><td class="detail-label">Email</td><td class="detail-value">@Model.Email</td></tr>
+            <tr><td class="detail-label">Role</td><td class="detail-value">@Model.RoleName</td></tr>
+        </table>
+
+        <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+            <div class="receipt-footer px-0 pb-0">
+                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </div>
+        </form>
+    </div>
+</div>

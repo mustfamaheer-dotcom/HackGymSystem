@@ -1,0 +1,43 @@
+@model NotificationDto
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-bell-fill"></i> @Model.Subject</h4>
+        <span class="receipt-badge">@Model.Status</span>
+    </div>
+    <div class="receipt-body">
+        <div class="section-title"><i class="bi bi-info-circle"></i> Notification Information</div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Subject</td><td class="detail-value">@Model.Subject</td></tr>
+            <tr><td class="detail-label">Message</td><td class="detail-value">@Model.Message</td></tr>
+            <tr><td class="detail-label">Type</td><td class="detail-value"><span class="badge-status badge-active">@Model.Type</span></td></tr>
+            <tr><td class="detail-label">Channel</td><td class="detail-value">@Model.Channel</td></tr>
+            <tr><td class="detail-label">Status</td><td class="detail-value">
+                <span class="badge-status @(Model.Status == NotificationStatus.Sent ? "badge-active" : Model.Status == NotificationStatus.Failed ? "badge-expired" : "badge-frozen")">@Model.Status</span>
+            </td></tr>
+            <tr><td class="detail-label">Member</td><td class="detail-value">@(Model.MemberName ?? "N/A")</td></tr>
+            <tr><td class="detail-label">Pending</td><td class="detail-value">@(Model.IsPending ? "Yes" : "No")</td></tr>
+            <tr><td class="detail-label">Retry Count</td><td class="detail-value">@Model.RetryCount</td></tr>
+            <tr><td class="detail-label">Last Error</td><td class="detail-value">@(Model.LastError ?? "-")</td></tr>
+            <tr><td class="detail-label">Scheduled Date</td><td class="detail-value">@(Model.ScheduledDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+            <tr><td class="detail-label">Sent Date</td><td class="detail-value">@(Model.SentDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+        </table>
+        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Created</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Updated</div>
+                    <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="receipt-footer">
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+</div>

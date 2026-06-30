@@ -1,0 +1,516 @@
+@model DetailedDashboardDto
+@{
+    var now = DateTime.UtcNow;
+}
+
+<style>
+    .dash-container { max-width: 1600px; margin: 0 auto; }
+    .dash-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;
+    }
+    .dash-header h2 {
+        font-family: 'Poppins', sans-serif; font-weight: 700;
+        color: var(--charcoal); margin: 0; font-size: 1.35rem;
+    }
+    .dash-header h2 i { color: var(--amber); margin-right: 0.5rem; }
+    .dash-refresh {
+        font-size: 0.75rem; color: #9CA3AF;
+        display: flex; align-items: center; gap: 0.35rem;
+    }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    .kpi-card {
+        background: #fff; border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        padding: 1.25rem 1.25rem 1rem;
+        position: relative; overflow: hidden;
+        transition: all 0.25s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    .kpi-card .kpi-accent {
+        position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-card .kpi-top {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    .kpi-card .kpi-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem;
+    }
+    .kpi-card .kpi-value {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.65rem; font-weight: 700; color: var(--charcoal);
+        line-height: 1.2;
+    }
+    .kpi-card .kpi-label {
+        font-size: 0.78rem; font-weight: 500; color: #9CA3AF;
+        text-transform: uppercase; letter-spacing: 0.4px;
+        margin-bottom: 0.35rem;
+    }
+    .kpi-card .kpi-sub {
+        font-size: 0.72rem; color: #6B7280;
+        display: flex; align-items: center; gap: 0.3rem;
+    }
+    .kpi-sub .trend-up { color: #10B981; font-weight: 600; }
+    .kpi-sub .trend-down { color: #EF4444; font-weight: 600; }
+    .kpi-sub .trend-neutral { color: #F59E0B; font-weight: 600; }
+    .kpi-sub i { font-size: 0.65rem; }
+
+    .dash-card {
+        background: #fff; border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        overflow: hidden; height: 100%;
+    }
+    .dash-card-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #F3F4F6;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600; font-size: 0.9rem;
+        color: var(--charcoal);
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dash-card-header i { color: var(--amber); font-size: 1rem; }
+    .dash-card-body { padding: 1.25rem; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 120px; }
+    .bar-chart .bar-item {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; gap: 0.25rem; height: 100%;
+        justify-content: flex-end;
+    }
+    .bar-chart .bar {
+        width: 100%; max-width: 36px; border-radius: 6px 6px 2px 2px;
+        min-height: 4px; transition: height 0.4s ease;
+        position: relative;
+    }
+    .bar-chart .bar-label {
+        font-size: 0.65rem; color: #9CA3AF;
+        font-weight: 500;
+    }
+    .bar-chart .bar-value {
+        font-size: 0.65rem; font-weight: 600; color: #6B7280;
+    }
+
+    .insight-list { list-style: none; padding: 0; margin: 0; }
+    .insight-list li {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.6rem 0; border-bottom: 1px solid #F9FAFB;
+    }
+    .insight-list li:last-child { border-bottom: none; }
+    .insight-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .insight-text { font-size: 0.82rem; color: #4B5563; flex: 1; }
+    .insight-value { font-size: 0.82rem; font-weight: 600; color: var(--charcoal); }
+
+    .gender-bar {
+        display: flex; height: 10px; border-radius: 6px; overflow: hidden;
+        margin: 0.75rem 0;
+    }
+    .gender-bar .male { background: linear-gradient(135deg, #6366F1, #818CF8); }
+    .gender-bar .female { background: linear-gradient(135deg, #EC4899, #F472B6); }
+
+    .progress-thin { height: 8px; border-radius: 6px; background: #F3F4F6; overflow: hidden; }
+    .progress-thin .progress-fill {
+        height: 100%; border-radius: 6px; transition: width 0.6s ease;
+    }
+
+    .activity-feed { list-style: none; padding: 0; margin: 0; }
+    .activity-feed li {
+        display: flex; gap: 0.75rem; padding: 0.6rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    .activity-feed li:last-child { border-bottom: none; }
+    .activity-icon {
+        width: 32px; height: 32px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; flex-shrink: 0;
+        background: #EEF2FF; color: #6366F1;
+    }
+    .activity-icon.checkout { background: #FEF3C7; color: #D97706; }
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-content .act-desc {
+        font-size: 0.82rem; color: #4B5563;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .activity-content .act-time {
+        font-size: 0.7rem; color: #9CA3AF;
+    }
+</style>
+
+<div class="dash-container">
+    <div class="dash-header">
+        <h2><i class="bi bi-bar-chart-fill"></i> Dashboard Analysis</h2>
+        <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> Updated @now.ToString("dd MMM yyyy, HH:mm")</span>
+    </div>
+
+    @* ── KPI Cards ── *@
+    <div class="kpi-grid mb-4">
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#6366F1,#818CF8)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Members.TotalMembers</div>
+                <div class="kpi-icon" style="background:#EEF2FF;color:#6366F1"><i class="bi bi-people-fill"></i></div>
+            </div>
+            <div class="kpi-label">Total Members</div>
+            <div class="kpi-sub">
+                <span class="trend-up">+@Model.Members.NewThisMonth</span> new this month
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#10B981,#34D399)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Memberships.Active</div>
+                <div class="kpi-icon" style="background:#D1FAE5;color:#10B981"><i class="bi bi-ticket-perforated-fill"></i></div>
+            </div>
+            <div class="kpi-label">Active Memberships</div>
+            <div class="kpi-sub">
+                <span>@Model.Memberships.ActivePercent%</span> of total
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#F59E0B,#FBBF24)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Attendance.TodayTotal</div>
+                <div class="kpi-icon" style="background:#FEF3C7;color:#F59E0B"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+            <div class="kpi-label">Today's Attendance</div>
+            <div class="kpi-sub">
+                <span class="@(Model.Attendance.TodayTotal > 0 ? "trend-up" : "trend-neutral")">@Model.Attendance.CurrentlyCheckedIn</span> currently in gym
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#3B82F6,#60A5FA)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Payments.MonthlyRevenue.ToString("N0")</div>
+                <div class="kpi-icon" style="background:#DBEAFE;color:#3B82F6"><i class="bi bi-cash-stack"></i></div>
+            </div>
+            <div class="kpi-label">Monthly Revenue</div>
+            <div class="kpi-sub">
+                <span class="trend-up">@Model.Payments.ThisMonthCount</span> transactions
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Payments.TotalRevenue.ToString("N0")</div>
+                <div class="kpi-icon" style="background:#EDE9FE;color:#8B5CF6"><i class="bi bi-piggy-bank-fill"></i></div>
+            </div>
+            <div class="kpi-label">All-Time Revenue</div>
+            <div class="kpi-sub">
+                <span class="trend-up">@Model.Payments.YearlyRevenue.ToString("N0")</span> this year
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-accent" style="background:linear-gradient(135deg,#EF4444,#F87171)"></div>
+            <div class="kpi-top">
+                <div class="kpi-value">@Model.Members.ExpiringThisWeek</div>
+                <div class="kpi-icon" style="background:#FEE2E2;color:#EF4444"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            </div>
+            <div class="kpi-label">Expiring This Week</div>
+            <div class="kpi-sub">
+                <span class="trend-down">@Model.Payments.OverdueCount overdue</span>
+            </div>
+        </div>
+    </div>
+
+    @* ── Trends Row ── *@
+    <div class="row g-3 mb-4">
+        <div class="col-md-7">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-graph-up-arrow"></i> Monthly Revenue Trend</div>
+                <div class="dash-card-body">
+                    @{
+                        var maxRevenue = Model.MonthlyRevenueTrend.Max(m => m.Value);
+                        var revMax = maxRevenue > 0 ? (double)maxRevenue : 1;
+                    }
+                    <div class="bar-chart">
+                        @foreach (var item in Model.MonthlyRevenueTrend)
+                        {
+                            var heightPct = (double)(item.Value * 100m / (decimal)revMax);
+                            <div class="bar-item">
+                                <span class="bar-value">@item.Value.ToString("N0")</span>
+                                <div class="bar" style="height:@(heightPct)%;background:linear-gradient(180deg,#6366F1,#818CF8);"></div>
+                                <span class="bar-label">@item.Label</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-calendar-check"></i> Daily Attendance (7 Days)</div>
+                <div class="dash-card-body">
+                    @{
+                        var maxAtt = Model.DailyAttendanceTrend.Max(d => d.Count);
+                        var attMax = maxAtt > 0 ? maxAtt : 1;
+                    }
+                    <div class="bar-chart">
+                        @foreach (var item in Model.DailyAttendanceTrend)
+                        {
+                            var heightPct = item.Count * 100.0 / attMax;
+                            var color = item.Count == attMax ? "#10B981" : "#3B82F6";
+                            <div class="bar-item">
+                                <span class="bar-value">@item.Count</span>
+                                <div class="bar" style="height:@(heightPct)%;background:linear-gradient(180deg,@color,#60A5FA);"></div>
+                                <span class="bar-label">@item.Label</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Analytics Row ── *@
+    <div class="row g-3 mb-4">
+        @* Members Breakdown *@
+        <div class="col-md-4">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-people-fill"></i> Members Breakdown</div>
+                <div class="dash-card-body">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                        <span style="font-size:0.78rem;color:#6B7280;font-weight:500;">Male</span>
+                        <span style="font-size:0.82rem;font-weight:600;color:#6366F1;">@Model.Members.MaleCount (@Model.Members.MalePercent%)</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                        <span style="font-size:0.78rem;color:#6B7280;font-weight:500;">Female</span>
+                        <span style="font-size:0.82rem;font-weight:600;color:#EC4899;">@Model.Members.FemaleCount (@Model.Members.FemalePercent%)</span>
+                    </div>
+                    <div class="gender-bar">
+                        <div class="male" style="flex:@(Model.Members.MalePercent)"></div>
+                        <div class="female" style="flex:@(Model.Members.FemalePercent)"></div>
+                    </div>
+                    <ul class="insight-list mt-2">
+                        <li>
+                            <span class="insight-dot" style="background:#10B981"></span>
+                            <span class="insight-text">Active Members</span>
+                            <span class="insight-value">@Model.Members.ActiveMembers</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#3B82F6"></span>
+                            <span class="insight-text">New This Month</span>
+                            <span class="insight-value trend-up">+@Model.Members.NewThisMonth</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#F59E0B"></span>
+                            <span class="insight-text">Expired Subscriptions</span>
+                            <span class="insight-value" style="color:#EF4444;">@Model.Members.ExpiredSubscriptions</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#EF4444"></span>
+                            <span class="insight-text">Expiring This Week</span>
+                            <span class="insight-value" style="color:#EF4444;">@Model.Members.ExpiringThisWeek</span>
+                        </li>
+                    </ul>
+                    @* Monthly new members mini chart *@
+                    @if (Model.MonthlyNewMembersTrend.Any())
+                    {
+                        var maxNewMembers = Model.MonthlyNewMembersTrend.Max(m => (int)m.Value);
+                        var newMemMax = maxNewMembers > 0 ? maxNewMembers : 1;
+                        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #F3F4F6;">
+                            <div style="font-size:0.75rem;font-weight:600;color:#6B7280;margin-bottom:0.5rem;">New Members (6 Months)</div>
+                            <div style="display:flex;align-items:flex-end;gap:0.35rem;height:40px;">
+                                @foreach (var item in Model.MonthlyNewMembersTrend)
+                                {
+                                    var h = (int)item.Value * 40 / newMemMax;
+                                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.15rem;">
+                                        <div style="width:100%;height:@(Math.Max(h,2))px;background:linear-gradient(180deg,#FBBF24,#F59E0B);border-radius:3px 3px 1px 1px;min-height:2px;"></div>
+                                        <span style="font-size:0.6rem;color:#9CA3AF;">@item.Label</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Payment Methods *@
+        <div class="col-md-4">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-credit-card"></i> Payment Methods</div>
+                <div class="dash-card-body">
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                            <span style="color:#10B981;font-weight:500;">Cash</span>
+                            <span style="font-weight:600;">@Model.Payments.CashCount <span style="font-weight:400;color:#9CA3AF;">(@Model.Payments.CashPercent%)</span></span>
+                        </div>
+                        <div class="progress-thin"><div class="progress-fill" style="width:@(Model.Payments.CashPercent)%;background:linear-gradient(135deg,#10B981,#34D399);"></div></div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                            <span style="color:#3B82F6;font-weight:500;">Visa</span>
+                            <span style="font-weight:600;">@Model.Payments.VisaCount <span style="font-weight:400;color:#9CA3AF;">(@Model.Payments.VisaPercent%)</span></span>
+                        </div>
+                        <div class="progress-thin"><div class="progress-fill" style="width:@(Model.Payments.VisaPercent)%;background:linear-gradient(135deg,#3B82F6,#60A5FA);"></div></div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                            <span style="color:#8B5CF6;font-weight:500;">Instapay</span>
+                            <span style="font-weight:600;">@Model.Payments.InstapayCount <span style="font-weight:400;color:#9CA3AF;">(@Model.Payments.InstapayPercent%)</span></span>
+                        </div>
+                        <div class="progress-thin"><div class="progress-fill" style="width:@(Model.Payments.InstapayPercent)%;background:linear-gradient(135deg,#8B5CF6,#A78BFA);"></div></div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                            <span style="color:#F59E0B;font-weight:500;">Wallet</span>
+                            <span style="font-weight:600;">@Model.Payments.WalletCount <span style="font-weight:400;color:#9CA3AF;">(@Model.Payments.WalletPercent%)</span></span>
+                        </div>
+                        <div class="progress-thin"><div class="progress-fill" style="width:@(Model.Payments.WalletPercent)%;background:linear-gradient(135deg,#F59E0B,#FBBF24);"></div></div>
+                    </div>
+                    <ul class="insight-list" style="border-top:1px solid #F3F4F6;padding-top:0.5rem;">
+                        <li>
+                            <span class="insight-dot" style="background:#10B981"></span>
+                            <span class="insight-text">Avg Transaction Value</span>
+                            <span class="insight-value">@Model.Payments.AvgTransactionValue.ToString("N2")</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#EF4444"></span>
+                            <span class="insight-text">Overdue Payments</span>
+                            <span class="insight-value" style="color:#EF4444;">@Model.Payments.OverdueCount</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* Memberships by Plan *@
+        <div class="col-md-4">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-pie-chart-fill"></i> Memberships by Plan</div>
+                <div class="dash-card-body">
+                    @if (Model.MembershipByPlan.Count == 0)
+                    {
+                        <p style="color:#9CA3AF;font-size:0.85rem;text-align:center;padding:1rem 0;">No active memberships.</p>
+                    }
+                    else
+                    {
+                        var colors = new[] { "#6366F1", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#EC4899", "#14B8A6" };
+                        var ci = 0;
+                        @foreach (var plan in Model.MembershipByPlan)
+                        {
+                            var c = colors[ci % colors.Length];
+                            <div style="margin-bottom:0.85rem;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.2rem;">
+                                    <span style="font-weight:500;color:#4B5563;">@plan.PlanName</span>
+                                    <span style="font-weight:600;color:var(--charcoal);">@plan.Count <span style="font-weight:400;color:#9CA3AF;">(@plan.Percent%)</span></span>
+                                </div>
+                                <div class="progress-thin"><div class="progress-fill" style="width:@(plan.Percent)%;background:linear-gradient(135deg,@c,transparent);"></div></div>
+                            </div>
+                            ci++;
+                        }
+                    }
+                    @* Memberships status mini summary *@
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #F3F4F6;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                            <div style="text-align:center;padding:0.4rem;background:#F0FDF4;border-radius:8px;">
+                                <div style="font-size:1.1rem;font-weight:700;color:#10B981;">@Model.Memberships.Active</div>
+                                <div style="font-size:0.65rem;color:#6B7280;text-transform:uppercase;letter-spacing:0.3px;">Active</div>
+                            </div>
+                            <div style="text-align:center;padding:0.4rem;background:#EFF6FF;border-radius:8px;">
+                                <div style="font-size:1.1rem;font-weight:700;color:#3B82F6;">@Model.Memberships.Frozen</div>
+                                <div style="font-size:0.65rem;color:#6B7280;text-transform:uppercase;letter-spacing:0.3px;">Frozen</div>
+                            </div>
+                            <div style="text-align:center;padding:0.4rem;background:#FEF3C7;border-radius:8px;">
+                                <div style="font-size:1.1rem;font-weight:700;color:#F59E0B;">@Model.Memberships.Expired</div>
+                                <div style="font-size:0.65rem;color:#6B7280;text-transform:uppercase;letter-spacing:0.3px;">Expired</div>
+                            </div>
+                            <div style="text-align:center;padding:0.4rem;background:#F3F4F6;border-radius:8px;">
+                                <div style="font-size:1.1rem;font-weight:700;color:#6B7280;">@Model.Memberships.Cancelled</div>
+                                <div style="font-size:0.65rem;color:#6B7280;text-transform:uppercase;letter-spacing:0.3px;">Cancelled</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Recent Activity + Attendance Summary ── *@
+    <div class="row g-3">
+        <div class="col-md-7">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-clock-history"></i> Recent Activity</div>
+                <div class="dash-card-body" style="padding:0.75rem 1.25rem;">
+                    @if (Model.RecentActivities.Count == 0)
+                    {
+                        <p style="color:#9CA3AF;font-size:0.85rem;text-align:center;padding:1rem 0;">No recent activity.</p>
+                    }
+                    else
+                    {
+                        <ul class="activity-feed" style="max-height:260px;overflow-y:auto;">
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                var isCheckIn = activity.Description.Contains("Checked in");
+                                <li>
+                                    <div class="activity-icon @(isCheckIn ? "" : "checkout")">
+                                        <i class="bi @(isCheckIn ? "bi-box-arrow-in-right" : "bi-box-arrow-right")"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="act-desc">@activity.Description</div>
+                                        <div class="act-time">@activity.Timestamp.ToString("dd MMM yyyy")</div>
+                                    </div>
+                                    <span style="font-size:0.7rem;color:#9CA3AF;white-space:nowrap;">
+                                        @activity.Timestamp.ToString("HH:mm")
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="dash-card">
+                <div class="dash-card-header"><i class="bi bi-bar-chart-fill"></i> Attendance Summary</div>
+                <div class="dash-card-body">
+                    <ul class="insight-list">
+                        <li>
+                            <span class="insight-dot" style="background:#3B82F6"></span>
+                            <span class="insight-text">Today</span>
+                            <span class="insight-value">@Model.Attendance.TodayTotal</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#6366F1"></span>
+                            <span class="insight-text">This Week</span>
+                            <span class="insight-value">@Model.Attendance.ThisWeekTotal</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#10B981"></span>
+                            <span class="insight-text">This Month</span>
+                            <span class="insight-value">@Model.Attendance.ThisMonthTotal</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#F59E0B"></span>
+                            <span class="insight-text">Avg Daily This Month</span>
+                            <span class="insight-value">@Model.Attendance.AvgDailyThisMonth</span>
+                        </li>
+                        <li>
+                            <span class="insight-dot" style="background:#8B5CF6"></span>
+                            <span class="insight-text">Currently in Gym</span>
+                            <span class="insight-value" style="color:#10B981;">@Model.Attendance.CurrentlyCheckedIn</span>
+                        </li>
+                    </ul>
+                    @if (Model.Memberships.Active > 0)
+                    {
+                        var occupancyRate = Math.Round(Model.Attendance.CurrentlyCheckedIn * 100.0 / Model.Memberships.Active, 1);
+                        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid #F3F4F6;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                                <span style="color:#6B7280;font-weight:500;">Current Occupancy</span>
+                                <span style="font-weight:600;color:#10B981;">@occupancyRate%</span>
+                            </div>
+                            <div class="progress-thin">
+                                <div class="progress-fill" style="width:@(Math.Min(occupancyRate,100))%;background:linear-gradient(135deg,#10B981,#34D399);"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
