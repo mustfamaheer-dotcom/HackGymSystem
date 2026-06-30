@@ -26,6 +26,7 @@ public class GetRolesQueryHandler : IRequestHandler<GetRolesQuery, Result<List<R
     public async Task<Result<List<RoleDto>>> Handle(GetRolesQuery request, CancellationToken cancellationToken)
     {
         var roles = await _unitOfWork.Repository<Role>().Query()
+            .Where(r => r.Name != "Trainer")
             .Select(r => new RoleDto { Id = r.Id, Name = r.Name })
             .ToListAsync(cancellationToken);
 

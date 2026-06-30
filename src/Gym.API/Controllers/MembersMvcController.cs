@@ -53,9 +53,13 @@ public class MembersMvcController : Controller
     }
 
     [HttpGet("create")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Member";
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
         return View(new CreateMemberDto());
     }
 
@@ -63,6 +67,13 @@ public class MembersMvcController : Controller
     public async Task<IActionResult> Create(CreateMemberDto dto, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Member";
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+
+        if (!ModelState.IsValid)
+            return View(dto);
 
         var result = await _memberService.CreateAsync(dto, cancellationToken);
 
@@ -141,6 +152,9 @@ public class MembersMvcController : Controller
             TempData["Error"] = "Route ID and form ID do not match";
             return View(dto);
         }
+
+        if (!ModelState.IsValid)
+            return View(dto);
 
         var result = await _memberService.UpdateAsync(dto, cancellationToken);
 

@@ -48,6 +48,9 @@ public class PackagesMvcController : Controller
     {
         ViewData["Title"] = "New Package";
 
+        if (!ModelState.IsValid)
+            return View();
+
         var result = await _packageService.CreateAsync(
             packageName, durationMonths, price, freePeriodMonths, maxFreezeDays, cancellationToken);
 
@@ -82,6 +85,12 @@ public class PackagesMvcController : Controller
         int? freePeriodMonths, int? maxFreezeDays, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Edit Package";
+
+        if (!ModelState.IsValid)
+        {
+            var dto = await _packageService.GetByIdAsync(id, cancellationToken);
+            return View(dto.Data);
+        }
 
         var result = await _packageService.UpdateAsync(
             id, packageName, durationMonths, price, freePeriodMonths, maxFreezeDays, cancellationToken);

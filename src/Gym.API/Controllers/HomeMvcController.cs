@@ -16,7 +16,6 @@ public class HomeMvcController : Controller
         _mediator = mediator;
     }
 
-    [Route("")]
     [Route("Home")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {

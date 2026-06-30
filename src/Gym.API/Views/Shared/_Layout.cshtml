@@ -293,12 +293,17 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a class="nav-link" href="/">
-                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "HomeMvc" ? "active" : "")" href="/">
+                    <i class="bi bi-grid-1x2-fill"></i> Home
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link active" asp-controller="MembersMvc" asp-action="Index">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DashboardMvc" ? "active" : "")" asp-controller="DashboardMvc" asp-action="Index">
+                    <i class="bi bi-bar-chart-fill"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembersMvc" ? "active" : "")" asp-controller="MembersMvc" asp-action="Index">
                     <i class="bi bi-people-fill"></i> Members
                 </a>
             </div>
@@ -308,50 +313,56 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PlansMvc" ? "active" : "")" asp-controller="PlansMvc" asp-action="Index">
                     <i class="bi bi-card-list"></i> Plans
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembershipsMvc" ? "active" : "")" asp-controller="MembershipsMvc" asp-action="Index">
                     <i class="bi bi-ticket-perforated-fill"></i> Memberships
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AttendancesMvc" ? "active" : "")" asp-controller="AttendancesMvc" asp-action="Index">
                     <i class="bi bi-check-circle-fill"></i> Attendance
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PaymentsMvc" ? "active" : "")" asp-controller="PaymentsMvc" asp-action="Index">
                     <i class="bi bi-cash-stack"></i> Payments
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "OffersMvc" ? "active" : "")" asp-controller="OffersMvc" asp-action="Index">
                     <i class="bi bi-tags-fill"></i> Offers
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DevicesMvc" ? "active" : "")" asp-controller="DevicesMvc" asp-action="Index">
                     <i class="bi bi-display"></i> Devices
                 </a>
             </div>
             <div class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "NotificationsMvc" ? "active" : "")" asp-controller="NotificationsMvc" asp-action="Index">
                     <i class="bi bi-bell-fill"></i> Notifications
                 </a>
             </div>
-            <div class="nav-item">
-                <a class="nav-link" href="/Users">
-                    <i class="bi bi-shield-lock-fill"></i> Users
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="bi bi-gear-fill"></i> Settings
-                </a>
-            </div>
+            @if (User.IsInRole("Owner"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link" asp-controller="UsersMvc" asp-action="Index">
+                        <i class="bi bi-shield-lock-fill"></i> Users
+                    </a>
+                </div>
+            }
+            @if (User.IsInRole("Owner"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SettingsMvc" ? "active" : "")" asp-controller="SettingsMvc" asp-action="Index">
+                        <i class="bi bi-gear-fill"></i> Settings
+                    </a>
+                </div>
+            }
         </nav>
         <div class="sidebar-footer">
             <small class="text-muted">Hack Gym &copy; 2026</small>
@@ -367,13 +378,16 @@
                 <span class="page-title">@ViewData["Title"]</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a href="/api/auth/logout" class="btn btn-sm btn-outline-danger rounded-pill">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
+                <form method="post" action="/logout" class="m-0">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
             </div>
         </header>
 
         <main class="content-area">
+            <partial name="_Notifications" />
             @RenderBody()
         </main>
     </div>

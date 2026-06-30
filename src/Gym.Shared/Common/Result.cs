@@ -23,7 +23,7 @@ public class Result<T>
         new(false, default, message, errors);
 
     public static Result<T> Failure(string[] errors) =>
-        new(false, default, null, errors);
+        new(false, default, errors.Length > 0 ? string.Join("; ", errors) : "An error occurred", errors);
 }
 
 public class Result

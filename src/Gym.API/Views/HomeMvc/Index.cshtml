@@ -1,108 +1,125 @@
-@model DashboardDto
+@{
+    var isOwner = User.IsInRole("Owner");
+}
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-grid-1x2-fill"></i> Hack Gym Dashboard</h4>
-        <span class="receipt-badge">Overview</span>
+        <h4><i class="bi bi-grid-1x2-fill"></i> Hack Gym</h4>
+        <span class="receipt-badge">Modules</span>
     </div>
-
     <div class="receipt-body">
         <div class="row g-4">
-            <div class="col-md-3">
-                <div class="border rounded-3 p-3 text-center bg-primary bg-opacity-10">
-                    <i class="bi bi-people-fill fs-2 text-primary"></i>
-                    <div class="fs-3 fw-bold mt-2">@Model.TotalMembers</div>
-                    <div class="text-muted small">Total Members</div>
-                </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="DashboardMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(99,102,241,0.1);">
+                        <i class="bi bi-bar-chart-fill fs-1" style="color:#6366F1;"></i>
+                        <div class="fw-bold mt-2 text-dark">Dashboard</div>
+                        <div class="text-muted small">Analysis &amp; reports</div>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="border rounded-3 p-3 text-center bg-success bg-opacity-10">
-                    <i class="bi bi-person-check-fill fs-2 text-success"></i>
-                    <div class="fs-3 fw-bold mt-2">@Model.ActiveMembers</div>
-                    <div class="text-muted small">Active Members</div>
-                </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="MembersMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-primary bg-opacity-10 h-100">
+                        <i class="bi bi-people-fill fs-1 text-primary"></i>
+                        <div class="fw-bold mt-2 text-dark">Members</div>
+                        <div class="text-muted small">Manage members</div>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="border rounded-3 p-3 text-center bg-info bg-opacity-10">
-                    <i class="bi bi-box-arrow-in-right fs-2 text-info"></i>
-                    <div class="fs-3 fw-bold mt-2">@Model.TodayCheckIns</div>
-                    <div class="text-muted small">Today's Check-ins</div>
-                </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="PackagesMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-success bg-opacity-10 h-100">
+                        <i class="bi bi-box-seam-fill fs-1 text-success"></i>
+                        <div class="fw-bold mt-2 text-dark">Packages</div>
+                        <div class="text-muted small">Manage packages</div>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="border rounded-3 p-3 text-center bg-warning bg-opacity-10">
-                    <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
-                    <div class="fs-3 fw-bold mt-2">@Model.ExpiringMemberships</div>
-                    <div class="text-muted small">Expiring Soon</div>
-                </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="PlansMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-info bg-opacity-10 h-100">
+                        <i class="bi bi-card-list fs-1 text-info"></i>
+                        <div class="fw-bold mt-2 text-dark">Plans</div>
+                        <div class="text-muted small">Membership plans</div>
+                    </div>
+                </a>
             </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="MembershipsMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-warning bg-opacity-10 h-100">
+                        <i class="bi bi-ticket-perforated-fill fs-1 text-warning"></i>
+                        <div class="fw-bold mt-2 text-dark">Memberships</div>
+                        <div class="text-muted small">Subscriptions</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="AttendancesMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-danger bg-opacity-10 h-100">
+                        <i class="bi bi-check-circle-fill fs-1 text-danger"></i>
+                        <div class="fw-bold mt-2 text-dark">Attendance</div>
+                        <div class="text-muted small">Check-ins</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="PaymentsMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center bg-secondary bg-opacity-10 h-100">
+                        <i class="bi bi-cash-stack fs-1 text-secondary"></i>
+                        <div class="fw-bold mt-2 text-dark">Payments</div>
+                        <div class="text-muted small">Transactions</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="OffersMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(244,180,0,0.1);">
+                        <i class="bi bi-tags-fill fs-1" style="color:#F4B400;"></i>
+                        <div class="fw-bold mt-2 text-dark">Offers</div>
+                        <div class="text-muted small">Discounts</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="DevicesMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(99,102,241,0.1);">
+                        <i class="bi bi-display fs-1" style="color:#6366F1;"></i>
+                        <div class="fw-bold mt-2 text-dark">Devices</div>
+                        <div class="text-muted small">Fingerprint scanners</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a asp-controller="NotificationsMvc" asp-action="Index" class="text-decoration-none">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(239,68,68,0.1);">
+                        <i class="bi bi-bell-fill fs-1" style="color:#EF4444;"></i>
+                        <div class="fw-bold mt-2 text-dark">Notifications</div>
+                        <div class="text-muted small">Messages</div>
+                    </div>
+                </a>
+            </div>
+            @if (isOwner)
+            {
+                <div class="col-md-3 col-6">
+                    <a asp-controller="UsersMvc" asp-action="Index" class="text-decoration-none">
+                        <div class="border rounded-3 p-3 text-center" style="background:rgba(51,51,51,0.08);">
+                            <i class="bi bi-shield-lock-fill fs-1" style="color:#333;"></i>
+                            <div class="fw-bold mt-2 text-dark">Users</div>
+                            <div class="text-muted small">Staff accounts</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a asp-controller="SettingsMvc" asp-action="Index" class="text-decoration-none">
+                        <div class="border rounded-3 p-3 text-center" style="background:rgba(107,114,128,0.1);">
+                            <i class="bi bi-gear-fill fs-1" style="color:#6B7280;"></i>
+                            <div class="fw-bold mt-2 text-dark">Settings</div>
+                            <div class="text-muted small">Configuration</div>
+                        </div>
+                    </a>
+                </div>
+            }
         </div>
-
-        <div class="row g-4 mt-2">
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <i class="bi bi-cash-stack fs-2 text-success"></i>
-                    <div class="fs-4 fw-bold mt-2">@Model.TodayRevenue.ToString("N2") EGP</div>
-                    <div class="text-muted small">Today's Revenue</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <i class="bi bi-graph-up fs-2 text-primary"></i>
-                    <div class="fs-4 fw-bold mt-2">@Model.MonthlyRevenue.ToString("N2") EGP</div>
-                    <div class="text-muted small">Monthly Revenue</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <i class="bi bi-credit-card-2-front fs-2 text-danger"></i>
-                    <div class="fs-4 fw-bold mt-2">@Model.OverduePayments</div>
-                    <div class="text-muted small">Overdue Payments</div>
-                </div>
-            </div>
-        </div>
-
-        @if (Model.RecentActivities.Count > 0)
-        {
-            <div class="section-divider mt-4"><span>Recent Activity</span></div>
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr><th>Type</th><th>Description</th><th>Time</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var activity in Model.RecentActivities)
-                        {
-                            <tr>
-                                <td><span class="badge bg-secondary">@activity.Type</span></td>
-                                <td>@activity.Description</td>
-                                <td class="text-muted small">@activity.Timestamp.ToString("HH:mm")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-
-        @if (Model.MembershipByPlan.Count > 0)
-        {
-            <div class="section-divider"><span>Membership Distribution</span></div>
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr><th>Plan</th><th>Members</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var stat in Model.MembershipByPlan)
-                        {
-                            <tr>
-                                <td>@stat.PlanName</td>
-                                <td>@stat.Count</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
     </div>
 </div>

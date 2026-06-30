@@ -10,7 +10,6 @@ stderr_api.txt
 stdout_api.txt
 
 # Backups
-backups/
 
 # OS files
 Thumbs.db
