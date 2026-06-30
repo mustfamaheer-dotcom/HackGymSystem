@@ -1,0 +1,87 @@
+@model List<PackageDto>
+@{
+    var searchTerm = ViewBag.SearchTerm as string;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-box-seam-fill"></i> Packages</h4>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill">
+            <i class="bi bi-plus-lg"></i> New Package
+        </a>
+    </div>
+    <div class="p-3 border-bottom bg-light">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by package name..." value="@searchTerm" />
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill @(string.IsNullOrEmpty(searchTerm) ? "d-none" : "")">
+                    <i class="bi bi-x-lg"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+
+    @if (Model is null || Model.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-box-seam" style="font-size: 3rem;"></i>
+            <p class="mt-2">No packages found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Duration</th>
+                        <th>Price</th>
+                        <th>Free Period</th>
+                        <th>Max Freeze Days</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var package in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@package.PackageName</td>
+                            <td>@package.DurationMonths month(s)</td>
+                            <td>@package.Price.ToString("N2") EGP</td>
+                            <td>@(package.FreePeriodMonths?.ToString() ?? "-")</td>
+                            <td>@(package.MaxFreezeDays?.ToString() ?? "-")</td>
+                            <td>
+                                <span class="badge-status @(package.IsActive ? "badge-active" : "badge-expired")">
+                                    @(package.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@package.Id" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@package.Id" class="btn btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@package.Id" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

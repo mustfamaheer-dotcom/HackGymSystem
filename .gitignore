@@ -1,0 +1,30 @@
+# Logs and output files
+logs/
+*.log
+api-output.txt
+api_out.txt
+api_output.txt
+api_test.txt
+api_err.txt
+stderr_api.txt
+stdout_api.txt
+
+# Backups
+backups/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.idea/
+.vscode/
+
+# OpenCode
+.opencode/

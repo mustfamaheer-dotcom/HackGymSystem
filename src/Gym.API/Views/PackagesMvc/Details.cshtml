@@ -1,0 +1,51 @@
+@model PackageDto
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-box-seam-fill"></i> @Model.PackageName</h4>
+        <span class="receipt-badge">@(Model.IsActive ? "Active" : "Inactive")</span>
+    </div>
+
+    <div class="receipt-body">
+        <div class="section-title"><i class="bi bi-info-circle"></i> Package Information</div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">Package Name</td><td class="detail-value">@Model.PackageName</td></tr>
+            <tr><td class="detail-label">Duration</td><td class="detail-value">@Model.DurationMonths month(s)</td></tr>
+            <tr><td class="detail-label">Price</td><td class="detail-value">@Model.Price.ToString("N2") EGP</td></tr>
+            <tr><td class="detail-label">Free Period</td><td class="detail-value">@(Model.FreePeriodMonths.HasValue ? $"{Model.FreePeriodMonths} month(s)" : "-")</td></tr>
+            <tr><td class="detail-label">Max Freeze Days</td><td class="detail-value">@(Model.MaxFreezeDays.HasValue ? $"{Model.MaxFreezeDays} day(s)" : "-")</td></tr>
+        </table>
+
+        <div class="section-divider"><span>Status</span></div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Status</div>
+                    <div class="mt-1">
+                        <span class="badge-status @(Model.IsActive ? "badge-active" : "badge-expired")" style="font-size: 0.9rem;">
+                            @(Model.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Created At</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">Last Updated</div>
+                    <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="receipt-footer">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+</div>

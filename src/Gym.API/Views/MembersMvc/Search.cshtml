@@ -1,0 +1,215 @@
+@model MemberSearchViewModel
+@{
+    var error = TempData["Error"] as string;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-search"></i> Advanced Search</h4>
+        <span class="receipt-badge">@(Model.HasSearched ? Model.Results!.TotalCount + " results" : "Filters")</span>
+    </div>
+
+    <form asp-action="Search" method="get" class="receipt-body">
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <div class="section-title"><i class="bi bi-funnel"></i> Filters</div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" placeholder="Full name" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">National ID</label>
+                <input asp-for="NationalId" class="form-control" placeholder="14 digits" maxlength="14" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Phone Number</label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="11 digits" maxlength="11" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Receipt Number</label>
+                <input asp-for="ReceiptNumber" class="form-control" placeholder="e.g. RCP-2026" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Package</label>
+                <select asp-for="PackageId" class="form-select">
+                    <option value="">-- All Packages --</option>
+                    @foreach (var plan in Model.Plans)
+                    {
+                        <option value="@plan.Id">@plan.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Subscription Status</label>
+                <select asp-for="SubscriptionStatus" class="form-select">
+                    <option value="">-- All --</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                    <option value="deleted">Deleted</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Payment Status</label>
+                <select asp-for="PaymentStatus" class="form-select">
+                    <option value="">-- All --</option>
+                    <option value="paid">Paid (No Balance)</option>
+                    <option value="outstanding">Outstanding Balance</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Expiring Soon</label>
+                <div class="d-flex align-items-center gap-2">
+                    <input asp-for="ExpiringSoon" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
+                    <span class="text-muted small">Within</span>
+                    <input asp-for="ExpiringWithinDays" class="form-control" type="number" min="1" style="width:80px;" />
+                    <span class="text-muted small">days</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Outstanding Balance</label>
+                <div class="d-flex align-items-center gap-2 pt-1">
+                    <input asp-for="OutstandingBalance" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
+                    <span class="text-muted small">Show only members with unpaid balance</span>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" asp-for="Page" value="1" />
+        <input type="hidden" asp-for="PageSize" value="20" />
+
+        <div class="receipt-footer px-0 pb-0">
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+            <a asp-action="Search" class="btn btn-outline-secondary">Clear Filters</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+        </div>
+    </form>
+
+    @if (Model.HasSearched)
+    {
+        <div class="border-top"></div>
+        <div class="receipt-body">
+            <div class="section-title"><i class="bi bi-table"></i> Results (@Model.Results!.TotalCount members found)</div>
+
+            @if (Model.Results.Items.Count == 0)
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-search" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No members match the selected filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Receipt</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>National ID</th>
+                                <th>Plan</th>
+                                <th>End Date</th>
+                                <th>Remaining</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in Model.Results.Items)
+                            {
+                                var isExpired = member.SubscriptionEndDate <= DateTime.UtcNow;
+                                var status = isExpired ? "Expired" : (member.IsDeleted ? "Deleted" : "Active");
+                                var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
+                                <tr>
+                                    <td><span class="fw-semibold">@member.ReceiptNumber</span></td>
+                                    <td>@member.FullName</td>
+                                    <td>@member.PhoneNumber</td>
+                                    <td>@(member.NationalId ?? "-")</td>
+                                    <td>@(member.PackageName ?? "-")</td>
+                                    <td>@member.SubscriptionEndDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="@(member.RemainingAmount > 0 ? "text-danger fw-semibold" : "")">
+                                        @member.RemainingAmount.ToString("N2")
+                                    </td>
+                                    <td><span class="badge-status @badgeClass">@status</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                            <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                            <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted">Page @Model.Results.Page of @Model.Results.TotalPages</small>
+                    <nav>
+                        <ul class="pagination pagination-sm">
+                            @if (Model.Results.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Search"
+                                       asp-route-Name="@Model.Name"
+                                       asp-route-NationalId="@Model.NationalId"
+                                       asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-ReceiptNumber="@Model.ReceiptNumber"
+                                       asp-route-PackageId="@Model.PackageId"
+                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
+                                       asp-route-PaymentStatus="@Model.PaymentStatus"
+                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
+                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
+                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
+                                       asp-route-Page="@(Model.Results.Page - 1)"
+                                       asp-route-PageSize="@Model.Results.PageSize">Previous</a>
+                                </li>
+                            }
+                            @for (int i = Math.Max(1, Model.Results.Page - 2); i <= Math.Min(Model.Results.TotalPages, Model.Results.Page + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.Results.Page ? "active" : "")">
+                                    <a class="page-link" asp-action="Search"
+                                       asp-route-Name="@Model.Name"
+                                       asp-route-NationalId="@Model.NationalId"
+                                       asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-ReceiptNumber="@Model.ReceiptNumber"
+                                       asp-route-PackageId="@Model.PackageId"
+                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
+                                       asp-route-PaymentStatus="@Model.PaymentStatus"
+                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
+                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
+                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
+                                       asp-route-Page="@i"
+                                       asp-route-PageSize="@Model.Results.PageSize">@i</a>
+                                </li>
+                            }
+                            @if (Model.Results.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Search"
+                                       asp-route-Name="@Model.Name"
+                                       asp-route-NationalId="@Model.NationalId"
+                                       asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-ReceiptNumber="@Model.ReceiptNumber"
+                                       asp-route-PackageId="@Model.PackageId"
+                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
+                                       asp-route-PaymentStatus="@Model.PaymentStatus"
+                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
+                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
+                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
+                                       asp-route-Page="@(Model.Results.Page + 1)"
+                                       asp-route-PageSize="@Model.Results.PageSize">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,104 @@
+@model CreateMemberDto
+@{
+    var error = TempData["Error"] as string;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-plus-circle"></i> Add Member</h4>
+        <span class="receipt-badge">Receipt</span>
+    </div>
+
+    <form asp-action="Create" method="post" class="receipt-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="PhoneNumber" class="form-label">Phone</label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="11 digits" maxlength="11" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Nationality" class="form-label"></label>
+                <select asp-for="Nationality" class="form-select">
+                    <option value="">Select nationality</option>
+                    <option value="Egyptian">Egyptian</option>
+                    <option value="Saudi">Saudi</option>
+                    <option value="Emirati">Emirati</option>
+                    <option value="Kuwaiti">Kuwaiti</option>
+                    <option value="Qatari">Qatari</option>
+                    <option value="Bahraini">Bahraini</option>
+                    <option value="Omani">Omani</option>
+                    <option value="Jordanian">Jordanian</option>
+                    <option value="Lebanese">Lebanese</option>
+                    <option value="Syrian">Syrian</option>
+                    <option value="Palestinian">Palestinian</option>
+                    <option value="Iraqi">Iraqi</option>
+                    <option value="Yemeni">Yemeni</option>
+                    <option value="Libyan">Libyan</option>
+                    <option value="Tunisian">Tunisian</option>
+                    <option value="Algerian">Algerian</option>
+                    <option value="Moroccan">Moroccan</option>
+                    <option value="Sudanese">Sudanese</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="Nationality" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="NationalId" class="form-label">National ID</label>
+                <input asp-for="NationalId" class="form-control" placeholder="14-digit ID" maxlength="14" />
+                <span asp-validation-for="NationalId" class="text-danger small"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ReferralSource" class="form-label">Referral Source</label>
+                <select asp-for="ReferralSource" class="form-select">
+                    <option value="">Select referral source</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Friend">Friend</option>
+                    <option value="Walk-in">Walk-in</option>
+                    <option value="Advertisement">Advertisement</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                <input asp-for="DateOfBirth" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Gender" class="form-label"></label>
+                <select asp-for="Gender" class="form-select">
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label asp-for="Address" class="form-label"></label>
+                <input asp-for="Address" class="form-control" placeholder="Address" />
+            </div>
+            <div class="col-md-12">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes"></textarea>
+            </div>
+        </div>
+
+        <div class="receipt-footer px-0 pb-0 mt-3">
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create</button>
+        </div>
+    </form>
+</div>
