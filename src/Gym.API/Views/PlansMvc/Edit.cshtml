@@ -16,6 +16,13 @@
                     <div class="alert alert-danger">@error</div>
                 }
                 <div class="row g-3">
+                    <div class="col-md-12 d-flex align-items-center gap-3 mb-2">
+                        <label class="form-label mb-0">Status</label>
+                        <div class="form-check form-switch mb-0">
+                            <input asp-for="IsActive" class="form-check-input" role="switch" id="planStatus" />
+                            <label class="form-check-label" for="planStatus" id="statusLabel">@(Model.IsActive ? "Active" : "Inactive")</label>
+                        </div>
+                    </div>
                     <div class="col-md-12">
                         <label asp-for="Name" class="form-label"></label>
                         <input asp-for="Name" class="form-control" />
@@ -44,6 +51,11 @@
                         <textarea asp-for="Description" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
+                <script>
+                    document.getElementById('planStatus').addEventListener('change', function() {
+                        document.getElementById('statusLabel').textContent = this.checked ? 'Active' : 'Inactive';
+                    });
+                </script>
                 <div class="receipt-footer px-0 pb-0 mt-3">
                     <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
                     <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>

@@ -9,6 +9,7 @@ public class MemberSearchViewModel
     public string? Name { get; set; }
     public string? NationalId { get; set; }
     public string? PhoneNumber { get; set; }
+    public int? Code { get; set; }
     public string? ReceiptNumber { get; set; }
     public Guid? PackageId { get; set; }
     public string? SubscriptionStatus { get; set; }

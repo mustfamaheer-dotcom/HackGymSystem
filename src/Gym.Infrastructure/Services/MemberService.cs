@@ -102,7 +102,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<Result<PaginatedResult<MemberDto>>> AdvancedSearchAsync(
-        string? name, string? nationalId, string? phoneNumber, string? receiptNumber,
+        string? name, string? nationalId, string? phoneNumber, int? code, string? receiptNumber,
         Guid? packageId, string? subscriptionStatus, string? paymentStatus,
         bool expiringSoon, int expiringWithinDays, bool outstandingBalance,
         int page, int pageSize, CancellationToken cancellationToken = default)
@@ -121,6 +121,9 @@ public class MemberService : IMemberService
 
         if (!string.IsNullOrWhiteSpace(phoneNumber))
             query = query.Where(m => m.PhoneNumber.Contains(phoneNumber));
+
+        if (code.HasValue)
+            query = query.Where(m => m.Code == code.Value);
 
         if (!string.IsNullOrWhiteSpace(receiptNumber))
         {
@@ -240,6 +243,7 @@ public class MemberService : IMemberService
             : Enum.Parse<PaymentMethod>(dto.PaymentMethod, true);
         var startDate = dto.SubscriptionStartDate == default ? DateTime.UtcNow : dto.SubscriptionStartDate;
         var duration = dto.SubscriptionDurationMonths > 0 ? dto.SubscriptionDurationMonths : 1;
+        var lastCode = await _memberRepository.Query().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
         var receiptNumber = GenerateReceiptNumber();
 
         var member = new Member(
@@ -254,6 +258,7 @@ public class MemberService : IMemberService
             DateTime.UtcNow
         )
         {
+            Code = lastCode + 1,
             Nationality = dto.Nationality,
             NationalId = dto.NationalId,
             Email = dto.Email,
@@ -392,6 +397,6 @@ public class MemberService : IMemberService
 
     private static string GenerateReceiptNumber()
     {
-        return "RCP-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff");
+        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
     }
 }

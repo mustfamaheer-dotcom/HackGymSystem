@@ -245,6 +245,7 @@ public class MembersMvcController : Controller
         var hasFilters = !string.IsNullOrWhiteSpace(model.Name)
             || !string.IsNullOrWhiteSpace(model.NationalId)
             || !string.IsNullOrWhiteSpace(model.PhoneNumber)
+            || model.Code.HasValue
             || !string.IsNullOrWhiteSpace(model.ReceiptNumber)
             || model.PackageId.HasValue
             || !string.IsNullOrWhiteSpace(model.SubscriptionStatus)
@@ -256,7 +257,7 @@ public class MembersMvcController : Controller
             return View(model);
 
         var result = await _memberService.AdvancedSearchAsync(
-            model.Name, model.NationalId, model.PhoneNumber, model.ReceiptNumber,
+            model.Name, model.NationalId, model.PhoneNumber, model.Code, model.ReceiptNumber,
             model.PackageId, model.SubscriptionStatus, model.PaymentStatus,
             model.ExpiringSoon, model.ExpiringWithinDays, model.OutstandingBalance,
             model.Page, model.PageSize, cancellationToken);

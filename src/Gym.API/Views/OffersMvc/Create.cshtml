@@ -1,4 +1,5 @@
-@model CreateOfferCommand
+@using Gym.Shared.Enums
+@model CreateOfferDto
 @{
     var error = TempData["Error"] as string;
 }
@@ -17,22 +18,56 @@
                 }
                 <div class="row g-3">
                     <div class="col-md-12">
-                        <label asp-for="Title" class="form-label"></label>
-                        <input asp-for="Title" class="form-control" placeholder="Enter offer title" />
-                        <span asp-validation-for="Title" class="text-danger small"></span>
+                        <label asp-for="OfferTitle" class="form-label">Offer Title</label>
+                        <input asp-for="OfferTitle" class="form-control" placeholder="e.g. 2+1 Free" />
+                        <span asp-validation-for="OfferTitle" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="DiscountType" class="form-label">Discount Type</label>
-                        <select asp-for="DiscountType" asp-items="Html.GetEnumSelectList<DiscountType>()" class="form-select">
+                        <label asp-for="LinkedPackageId" class="form-label">Linked Package</label>
+                        <select asp-for="LinkedPackageId" class="form-select">
+                            <option value="">-- All Packages --</option>
+                            @foreach (var plan in ViewBag.Plans as List<MembershipPlan> ?? new())
+                            {
+                                <option value="@plan.Id">@plan.Name (@plan.Price.ToString("N2") EGP)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="OfferType" class="form-label">Offer Type</label>
+                        <select asp-for="OfferType" class="form-select" id="offerTypeSelect" asp-items="Html.GetEnumSelectList<OfferType>()">
                             <option value="">-- Select --</option>
                         </select>
-                        <span asp-validation-for="DiscountType" class="text-danger small"></span>
+                        <span asp-validation-for="OfferType" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="DiscountValue" class="form-label">Discount Value</label>
-                        <input asp-for="DiscountValue" type="number" step="0.01" class="form-control" placeholder="e.g. 10 or 100" />
-                        <span asp-validation-for="DiscountValue" class="text-danger small"></span>
+
+                    <div class="col-12" id="bonusFields" style="display:none;">
+                        <div class="section-title mt-2"><i class="bi bi-clock-history"></i> Bonus Duration</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="BonusMonths" class="form-label">Bonus Months</label>
+                                <input asp-for="BonusMonths" type="number" min="1" class="form-control" placeholder="e.g. 1" />
+                                <span asp-validation-for="BonusMonths" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="BonusDays" class="form-label">Bonus Days</label>
+                                <input asp-for="BonusDays" type="number" min="1" class="form-control" placeholder="e.g. 15" />
+                                <span asp-validation-for="BonusDays" class="text-danger small"></span>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="col-md-6" id="priceField" style="display:none;">
+                        <label asp-for="OfferPrice" class="form-label">Offer Price (EGP)</label>
+                        <input asp-for="OfferPrice" type="number" step="0.01" min="0" class="form-control" placeholder="e.g. 5000" />
+                        <span asp-validation-for="OfferPrice" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6" id="freezeField" style="display:none;">
+                        <label asp-for="ExtraFreezeDays" class="form-label">Extra Freeze Days</label>
+                        <input asp-for="ExtraFreezeDays" type="number" min="1" class="form-control" placeholder="e.g. 30" />
+                        <span asp-validation-for="ExtraFreezeDays" class="text-danger small"></span>
+                    </div>
+
                     <div class="col-md-6">
                         <label asp-for="StartDate" class="form-label">Start Date</label>
                         <input asp-for="StartDate" type="date" class="form-control" />
@@ -44,7 +79,7 @@
                         <span asp-validation-for="EndDate" class="text-danger small"></span>
                     </div>
                     <div class="col-md-12">
-                        <label asp-for="Description" class="form-label"></label>
+                        <label asp-for="Description" class="form-label">Description</label>
                         <textarea asp-for="Description" class="form-control" rows="2" placeholder="Optional description"></textarea>
                     </div>
                 </div>
@@ -56,3 +91,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleOfferFields() {
+        var type = document.getElementById('offerTypeSelect').value;
+        document.getElementById('bonusFields').style.display = (type === 'BonusDuration') ? 'block' : 'none';
+        document.getElementById('priceField').style.display = (type === 'FixedPrice' || type === 'FreeRegistration') ? 'block' : 'none';
+        document.getElementById('freezeField').style.display = (type === 'ExtraFreeze') ? 'block' : 'none';
+    }
+    document.getElementById('offerTypeSelect').addEventListener('change', toggleOfferFields);
+    toggleOfferFields();
+</script>

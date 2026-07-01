@@ -13,6 +13,12 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Code)
+            .HasDefaultValue(0);
+
+        builder.HasIndex(x => x.Code)
+            .IsUnique();
+
         builder.Property(x => x.ReceiptNumber)
             .IsRequired()
             .HasMaxLength(50);

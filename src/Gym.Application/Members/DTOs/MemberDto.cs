@@ -8,6 +8,7 @@ namespace Gym.Application.Members.DTOs;
 public class MemberDto : IMapFrom<Member>
 {
     public Guid Id { get; set; }
+    public int Code { get; set; }
     public string ReceiptNumber { get; set; }
     public string FullName { get; set; }
     public string Nationality { get; set; } = string.Empty;

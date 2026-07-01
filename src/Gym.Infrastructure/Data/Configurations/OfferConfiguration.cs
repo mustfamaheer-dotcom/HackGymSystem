@@ -12,18 +12,29 @@ public class OfferConfiguration : IEntityTypeConfiguration<Offer>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Title)
+        builder.Property(x => x.OfferTitle)
             .IsRequired()
             .HasMaxLength(200);
+
+        builder.Property(x => x.OfferType)
+            .HasConversion<string>()
+            .HasMaxLength(30);
+
+        builder.Property(x => x.BonusMonths);
+        builder.Property(x => x.BonusDays);
+        builder.Property(x => x.ExtraFreezeDays);
+
+        builder.Property(x => x.OfferPrice)
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.Description)
             .HasMaxLength(2000);
 
-        builder.Property(x => x.DiscountType)
-            .HasConversion<string>()
-            .HasMaxLength(20);
+        builder.HasOne(x => x.LinkedPackage)
+            .WithMany()
+            .HasForeignKey(x => x.LinkedPackageId)
+            .OnDelete(DeleteBehavior.SetNull);
 
-        builder.Property(x => x.DiscountValue)
-            .HasPrecision(18, 2);
+        builder.HasIndex(x => x.IsActive);
     }
 }

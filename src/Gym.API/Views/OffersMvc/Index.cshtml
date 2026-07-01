@@ -1,10 +1,11 @@
+@using Gym.Shared.Enums
 @model PaginatedResult<OfferDto>
 @{
     var searchTerm = ViewBag.SearchTerm as string;
 }
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-percent"></i> Offers</h4>
+        <h4><i class="bi bi-megaphone"></i> Offers</h4>
         <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> New Offer</a>
     </div>
     <div class="p-3 border-bottom bg-light">
@@ -24,18 +25,10 @@
             </div>
         </form>
     </div>
-    @if (TempData["Success"] is not null)
-    {
-        <div class="alert alert-success m-3">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] is not null)
-    {
-        <div class="alert alert-danger m-3">@TempData["Error"]</div>
-    }
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">
-            <i class="bi bi-percent" style="font-size: 3rem;"></i>
+            <i class="bi bi-megaphone" style="font-size: 3rem;"></i>
             <p class="mt-2">No offers found.</p>
         </div>
     }
@@ -45,9 +38,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Discount Type</th>
-                        <th>Discount Value</th>
+                        <th>Offer Name</th>
+                        <th>Package</th>
+                        <th>Offer Type</th>
+                        <th>Bonus</th>
+                        <th>Offer Price</th>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
@@ -57,10 +52,20 @@
                 <tbody>
                     @foreach (var offer in Model.Items)
                     {
+                        var bonusText = offer.OfferType switch
+                        {
+                            OfferType.BonusDuration => $"+{(offer.BonusMonths > 0 ? $"{offer.BonusMonths}m " : "")}{(offer.BonusDays > 0 ? $"{offer.BonusDays}d" : "")}",
+                            OfferType.ExtraFreeze => $"+{offer.ExtraFreezeDays}d freeze",
+                            OfferType.FreeRegistration => "Free",
+                            OfferType.Custom => "-",
+                            _ => "-"
+                        };
                         <tr>
-                            <td class="fw-semibold">@offer.Title</td>
-                            <td>@offer.DiscountType</td>
-                            <td>@(offer.DiscountType == Gym.Shared.Enums.DiscountType.Percentage ? $"{offer.DiscountValue}%" : $"{offer.DiscountValue:N2} EGP")</td>
+                            <td class="fw-semibold">@offer.OfferTitle</td>
+                            <td>@(offer.LinkedPackageName ?? "All Packages")</td>
+                            <td><span class="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded-pill" style="font-size:0.75rem;">@offer.OfferType</span></td>
+                            <td>@bonusText</td>
+                            <td>@(offer.OfferPrice.HasValue ? offer.OfferPrice.Value.ToString("N2") + " EGP" : "-")</td>
                             <td>@offer.StartDate.ToString("dd/MM/yyyy")</td>
                             <td>@offer.EndDate.ToString("dd/MM/yyyy")</td>
                             <td>

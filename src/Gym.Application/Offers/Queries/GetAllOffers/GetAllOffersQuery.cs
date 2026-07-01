@@ -25,19 +25,22 @@ public class GetAllOffersQueryHandler : IRequestHandler<GetAllOffersQuery, Resul
 
     public async Task<Result<PaginatedResult<OfferDto>>> Handle(GetAllOffersQuery request, CancellationToken cancellationToken)
     {
-        var query = _repository.Query();
+        IQueryable<Offer> query = _repository.Query()
+            .Include(o => o.LinkedPackage);
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-            query = query.Where(o => o.Title.Contains(request.SearchTerm));
+        {
+            var s = request.SearchTerm.ToLower();
+            query = query.Where(o => o.OfferTitle.ToLower().Contains(s));
+        }
 
         query = (request.SortBy?.ToLower()) switch
         {
-            "title" => request.SortDescending ? query.OrderByDescending(o => o.Title) : query.OrderBy(o => o.Title),
+            "offertitle" => request.SortDescending ? query.OrderByDescending(o => o.OfferTitle) : query.OrderBy(o => o.OfferTitle),
             "startdate" => request.SortDescending ? query.OrderByDescending(o => o.StartDate) : query.OrderBy(o => o.StartDate),
             "enddate" => request.SortDescending ? query.OrderByDescending(o => o.EndDate) : query.OrderBy(o => o.EndDate),
-            "discountvalue" => request.SortDescending ? query.OrderByDescending(o => o.DiscountValue) : query.OrderBy(o => o.DiscountValue),
             "createdat" => request.SortDescending ? query.OrderByDescending(o => o.CreatedAt) : query.OrderBy(o => o.CreatedAt),
-            _ => query.OrderBy(o => o.Title)
+            _ => query.OrderByDescending(o => o.CreatedAt)
         };
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -48,14 +51,12 @@ public class GetAllOffersQueryHandler : IRequestHandler<GetAllOffersQuery, Resul
             .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
-        var result = new PaginatedResult<OfferDto>
+        return Result<PaginatedResult<OfferDto>>.Success(new PaginatedResult<OfferDto>
         {
             Items = items,
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize
-        };
-
-        return Result<PaginatedResult<OfferDto>>.Success(result);
+        });
     }
 }

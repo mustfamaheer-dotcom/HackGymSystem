@@ -1,12 +1,10 @@
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Offers.DTOs;
-using Gym.Application.Offers.Commands.CreateOffer;
-using Gym.Application.Offers.Commands.UpdateOffer;
-using Gym.Application.Offers.Commands.DeleteOffer;
-using Gym.Application.Offers.Queries.GetAllOffers;
-using Gym.Application.Offers.Queries.GetOfferById;
-using MediatR;
+using Gym.Domain.Entities;
+using Gym.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.API.Controllers;
 
@@ -14,47 +12,61 @@ namespace Gym.API.Controllers;
 [Route("Offers")]
 public class OffersMvcController : Controller
 {
-    private readonly IMediator _mediator;
+    private readonly IOfferService _offerService;
+    private readonly IRepository<MembershipPlan> _planRepository;
 
-    public OffersMvcController(IMediator mediator)
+    public OffersMvcController(IOfferService offerService, IRepository<MembershipPlan> planRepository)
     {
-        _mediator = mediator;
+        _offerService = offerService;
+        _planRepository = planRepository;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = "Offers";
-        var query = new GetAllOffersQuery { Page = page, PageSize = pageSize, SearchTerm = searchTerm };
-        var result = await _mediator.Send(query, cancellationToken);
+        ViewBag.SearchTerm = searchTerm;
+
+        var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
             return View("Index", null);
         }
-        ViewBag.SearchTerm = searchTerm;
+
         return View(result.Data);
     }
 
     [HttpGet("create")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Offer";
-        return View();
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+        return View(new CreateOfferDto());
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(CreateOfferCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateOfferDto dto, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Offer";
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+
         if (!ModelState.IsValid)
-            return View(command);
-        var result = await _mediator.Send(command, cancellationToken);
+            return View(dto);
+
+        var result = await _offerService.CreateAsync(dto, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
-            return View(command);
+            return View(dto);
         }
+
         TempData["Success"] = "Offer created successfully";
         return RedirectToAction(nameof(Index));
     }
@@ -63,34 +75,62 @@ public class OffersMvcController : Controller
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Edit Offer";
-        var result = await _mediator.Send(new GetOfferByIdQuery(id), cancellationToken);
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+
+        var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
+
         var dto = result.Data!;
-        var command = new UpdateOfferCommand(dto.Id, dto.Title, dto.Description, dto.DiscountType, dto.DiscountValue, dto.StartDate, dto.EndDate);
-        return View(command);
+        var model = new UpdateOfferDto
+        {
+            Id = dto.Id,
+            OfferTitle = dto.OfferTitle,
+            LinkedPackageId = dto.LinkedPackageId,
+            OfferType = dto.OfferType,
+            BonusMonths = dto.BonusMonths,
+            BonusDays = dto.BonusDays,
+            OfferPrice = dto.OfferPrice,
+            ExtraFreezeDays = dto.ExtraFreezeDays,
+            Description = dto.Description,
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate
+        };
+
+        return View(model);
     }
 
     [HttpPost("edit/{id}")]
-    public async Task<IActionResult> Edit(Guid id, UpdateOfferCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit(Guid id, UpdateOfferDto dto, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Edit Offer";
-        if (id != command.Id)
+        ViewBag.Plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+
+        if (id != dto.Id)
         {
             TempData["Error"] = "Route ID and form ID do not match";
-            return View(command);
+            return View(dto);
         }
+
         if (!ModelState.IsValid)
-            return View(command);
-        var result = await _mediator.Send(command, cancellationToken);
+            return View(dto);
+
+        var result = await _offerService.UpdateAsync(dto, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
-            return View(command);
+            return View(dto);
         }
+
         TempData["Success"] = "Offer updated successfully";
         return RedirectToAction(nameof(Index));
     }
@@ -99,7 +139,7 @@ public class OffersMvcController : Controller
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Offer Details";
-        var result = await _mediator.Send(new GetOfferByIdQuery(id), cancellationToken);
+        var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
@@ -112,7 +152,7 @@ public class OffersMvcController : Controller
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Delete Offer";
-        var result = await _mediator.Send(new GetOfferByIdQuery(id), cancellationToken);
+        var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
@@ -124,7 +164,7 @@ public class OffersMvcController : Controller
     [HttpPost("delete/{id}")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new DeleteOfferCommand(id), cancellationToken);
+        var result = await _offerService.DeleteAsync(id, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;

@@ -94,7 +94,7 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 
     private static string GenerateReceiptNumber()
     {
-        return "RCP-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff");
+        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
     }
 }
 

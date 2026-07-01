@@ -1,11 +1,14 @@
+using Gym.Application.Members.DTOs;
 using Gym.Application.Payments.DTOs;
 using Gym.Application.Payments.Commands.CreatePayment;
 using Gym.Application.Payments.Commands.DeletePayment;
 using Gym.Application.Payments.Queries.GetAllPayments;
 using Gym.Application.Payments.Queries.GetPaymentById;
+using Gym.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.API.Controllers;
 
@@ -14,10 +17,12 @@ namespace Gym.API.Controllers;
 public class PaymentsMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IRepository<Gym.Domain.Entities.Member> _memberRepository;
 
-    public PaymentsMvcController(IMediator mediator)
+    public PaymentsMvcController(IMediator mediator, IRepository<Gym.Domain.Entities.Member> memberRepository)
     {
         _mediator = mediator;
+        _memberRepository = memberRepository;
     }
 
     [HttpGet]
@@ -38,9 +43,14 @@ public class PaymentsMvcController : Controller
     }
 
     [HttpGet("create")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Payment";
+        ViewBag.Members = await _memberRepository.Query()
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Code)
+            .Select(m => new { m.Id, m.Code, m.FullName, m.PhoneNumber })
+            .ToListAsync(cancellationToken);
         return View();
     }
 
@@ -48,6 +58,11 @@ public class PaymentsMvcController : Controller
     public async Task<IActionResult> Create(CreatePaymentCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Payment";
+        ViewBag.Members = await _memberRepository.Query()
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Code)
+            .Select(m => new { m.Id, m.Code, m.FullName, m.PhoneNumber })
+            .ToListAsync(cancellationToken);
 
         if (!ModelState.IsValid)
             return View(command);

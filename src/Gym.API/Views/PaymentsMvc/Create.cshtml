@@ -1,61 +1,220 @@
+@using Gym.Shared.Enums
 @model CreatePaymentCommand
 @{
     var error = TempData["Error"] as string;
+    var members = ViewBag.Members as List<dynamic> ?? new List<dynamic>();
 }
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-plus-circle"></i> New Payment</h4>
-                <span class="receipt-badge">Payment</span>
+                <h4><i class="bi bi-cash-coin"></i> Record Payment</h4>
+                <span class="receipt-badge">Reception</span>
             </div>
             <form asp-action="Create" method="post" class="receipt-body">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
                 @if (!string.IsNullOrEmpty(error))
                 {
                     <div class="alert alert-danger">@error</div>
                 }
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="MemberId" class="form-label">Member</label>
-                        <input asp-for="MemberId" class="form-control" placeholder="Enter member ID" />
+
+                <div class="section-title"><i class="bi bi-person-search"></i> Member</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label asp-for="MemberId" class="form-label">Select Member</label>
+                        <select asp-for="MemberId" class="form-select" id="memberSelect" required>
+                            <option value="">-- Search or select a member --</option>
+                            @foreach (var m in members)
+                            {
+                                <option value="@m.Id">#@m.Code — @m.FullName (@m.PhoneNumber)</option>
+                            }
+                        </select>
                         <span asp-validation-for="MemberId" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-3">
-                        <label asp-for="Amount" class="form-label">Amount</label>
-                        <input asp-for="Amount" type="number" step="0.01" class="form-control" placeholder="e.g. 500" />
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <small class="text-muted d-block">Quick Search by Code</small>
+                            <input type="number" id="quickMemberSearch" class="form-control mt-1" min="1" placeholder="Type member code and press Enter" />
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div id="selectedMemberInfo" class="d-none border rounded-3 p-3 w-100" style="background:#F0FDF4;">
+                            <small class="text-muted">Selected:</small>
+                            <strong id="selectedMemberName" class="d-block"></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="bi bi-currency-dollar"></i> Amount</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label asp-for="Amount" class="form-label">Amount (EGP)</label>
+                        <input asp-for="Amount" type="number" step="0.01" class="form-control form-control-lg" id="amountInput" placeholder="0.00" />
                         <span asp-validation-for="Amount" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-3">
-                        <label asp-for="DiscountAmount" class="form-label">Discount</label>
-                        <input asp-for="DiscountAmount" type="number" step="0.01" class="form-control" placeholder="0" />
+                    <div class="col-md-4">
+                        <label asp-for="DiscountAmount" class="form-label">Discount (EGP)</label>
+                        <input asp-for="DiscountAmount" type="number" step="0.01" class="form-control" id="discountInput" placeholder="0" value="0" />
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="PaymentMethod" class="form-label">Payment Method</label>
-                        <select asp-for="PaymentMethod" class="form-select" asp-items="Html.GetEnumSelectList<PaymentMethod>()"></select>
+                        <label class="form-label">Net Amount</label>
+                        <div class="form-control form-control-lg fw-bold text-success bg-light" id="netAmountDisplay" style="font-size:1.25rem;">0.00 EGP</div>
                     </div>
+                    <div class="col-12">
+                        <label class="form-label small text-muted">Quick Amounts</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="100">100</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="200">200</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="350">350</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="500">500</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="750">750</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="1000">1,000</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="1500">1,500</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="2000">2,000</button>
+                            <button type="button" class="btn btn-outline-secondary quick-amount" data-amount="3000">3,000</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="bi bi-credit-card"></i> Payment Method</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="d-flex gap-2 flex-wrap" id="paymentMethodGroup">
+                            @foreach (var method in Enum.GetValues<PaymentMethod>())
+                            {
+                                var icon = method switch
+                                {
+                                    PaymentMethod.Cash => "bi-cash",
+                                    PaymentMethod.Visa => "bi-credit-card",
+                                    PaymentMethod.Instapay => "bi-phone",
+                                    PaymentMethod.Wallet => "bi-wallet2",
+                                    _ => "bi-circle"
+                                };
+                                <label class="payment-method-btn @(method == PaymentMethod.Cash ? "active" : "")" data-method="@method">
+                                    <input type="radio" name="PaymentMethod" value="@method" class="d-none" @(method == PaymentMethod.Cash ? "checked" : "") />
+                                    <i class="bi @icon fs-5"></i>
+                                    <span>@method</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="bi bi-receipt"></i> Receipt & Reference</div>
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <label asp-for="ReceiptNumber" class="form-label">Receipt Number</label>
-                        <input asp-for="ReceiptNumber" class="form-control" placeholder="Optional" />
+                        <div class="input-group">
+                            <input asp-for="ReceiptNumber" class="form-control" id="receiptInput" placeholder="Auto-generated" />
+                            <button type="button" class="btn btn-outline-secondary" id="generateReceipt" title="Generate"><i class="bi bi-arrow-clockwise"></i></button>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="ReferenceNumber" class="form-label">Reference</label>
                         <input asp-for="ReferenceNumber" class="form-control" placeholder="Optional" />
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="EmployeeId" class="form-label">Employee ID</label>
-                        <input asp-for="EmployeeId" class="form-control" placeholder="Optional" />
+                    <div class="col-md-4">
+                        <label asp-for="EmployeeId" class="form-label">Employee</label>
+                        <input asp-for="EmployeeId" class="form-control" placeholder="Employee ID" />
                     </div>
                     <div class="col-md-12">
                         <label asp-for="Notes" class="form-label">Notes</label>
                         <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
                     </div>
                 </div>
+
                 <div class="receipt-footer px-0 pb-0 mt-3">
                     <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create</button>
+                    <button type="submit" class="btn btn-primary btn-lg px-5"><i class="bi bi-check-lg"></i> Record Payment</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .payment-method-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+        padding: 0.75rem 1.25rem; border: 2px solid #E5E7EB; border-radius: 12px;
+        cursor: pointer; transition: all 0.2s ease; min-width: 90px;
+        background: #fff; color: #6B7280;
+    }
+    .payment-method-btn:hover { border-color: #6366F1; background: #EEF2FF; color: #6366F1; }
+    .payment-method-btn.active { border-color: #6366F1; background: #EEF2FF; color: #6366F1; font-weight: 600; }
+    .payment-method-btn input { display: none; }
+    .quick-amount { min-width: 70px; font-weight: 500; }
+    .quick-amount.active { background: #6366F1; color: #fff; border-color: #6366F1; }
+</style>
+<script>
+    // Quick amount buttons
+    document.querySelectorAll('.quick-amount').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('amountInput').value = this.dataset.amount;
+            this.classList.add('active');
+            document.querySelectorAll('.quick-amount').forEach(b => { if (b !== this) b.classList.remove('active'); });
+            updateNetAmount();
+        });
+    });
+
+    // Real-time net amount
+    function updateNetAmount() {
+        var amount = parseFloat(document.getElementById('amountInput').value) || 0;
+        var discount = parseFloat(document.getElementById('discountInput').value) || 0;
+        var net = Math.max(0, amount - discount);
+        document.getElementById('netAmountDisplay').textContent = net.toFixed(2) + ' EGP';
+    }
+    document.getElementById('amountInput').addEventListener('input', updateNetAmount);
+    document.getElementById('discountInput').addEventListener('input', updateNetAmount);
+
+    // Payment method selection
+    document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            this.querySelector('input[type="radio"]').checked = true;
+        });
+    });
+
+    // Receipt auto-generate
+    document.getElementById('generateReceipt').addEventListener('click', function() {
+        var now = new Date();
+        var ts = now.getFullYear().toString()
+            + String(now.getMonth()+1).padStart(2,'0')
+            + String(now.getDate()).padStart(2,'0')
+            + String(now.getHours()).padStart(2,'0')
+            + String(now.getMinutes()).padStart(2,'0')
+            + String(now.getSeconds()).padStart(2,'0');
+        document.getElementById('receiptInput').value = 'RCT-' + ts;
+    });
+    // Auto-generate on page load
+    document.getElementById('generateReceipt').click();
+
+    // Member search by code
+    document.getElementById('quickMemberSearch').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var code = this.value.trim();
+            if (!code) return;
+            var select = document.getElementById('memberSelect');
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].text.startsWith('#' + code)) {
+                    select.value = select.options[i].value;
+                    select.dispatchEvent(new Event('change'));
+                    break;
+                }
+            }
+        }
+    });
+
+    // Show selected member info
+    document.getElementById('memberSelect').addEventListener('change', function() {
+        var info = document.getElementById('selectedMemberInfo');
+        var name = document.getElementById('selectedMemberName');
+        if (this.value) {
+            info.classList.remove('d-none');
+            name.textContent = this.options[this.selectedIndex].text;
+        } else {
+            info.classList.add('d-none');
+        }
+    });
+</script>

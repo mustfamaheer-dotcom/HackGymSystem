@@ -4,6 +4,7 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Offers.Queries.GetOfferById;
 
@@ -22,12 +23,13 @@ public class GetOfferByIdQueryHandler : IRequestHandler<GetOfferByIdQuery, Resul
 
     public async Task<Result<OfferDto>> Handle(GetOfferByIdQuery request, CancellationToken cancellationToken)
     {
-        var offer = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var offer = await _repository.Query()
+            .Include(o => o.LinkedPackage)
+            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         if (offer is null)
             return Result<OfferDto>.Failure("Offer not found");
 
-        var dto = _mapper.Map<OfferDto>(offer);
-        return Result<OfferDto>.Success(dto);
+        return Result<OfferDto>.Success(_mapper.Map<OfferDto>(offer));
     }
 }

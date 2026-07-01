@@ -1,15 +1,20 @@
+@using Gym.Shared.Enums
 @model OfferDto
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-percent"></i> @Model.Title</h4>
+        <h4><i class="bi bi-megaphone"></i> @Model.OfferTitle</h4>
         <span class="receipt-badge">@(Model.IsActive ? "Active" : "Inactive")</span>
     </div>
     <div class="receipt-body">
         <div class="section-title"><i class="bi bi-info-circle"></i> Offer Information</div>
         <table class="table table-borderless table-sm">
-            <tr><td class="detail-label">Title</td><td class="detail-value">@Model.Title</td></tr>
-            <tr><td class="detail-label">Discount Type</td><td class="detail-value">@Model.DiscountType</td></tr>
-            <tr><td class="detail-label">Discount Value</td><td class="detail-value">@(Model.DiscountType == Gym.Shared.Enums.DiscountType.Percentage ? $"{Model.DiscountValue}%" : $"{Model.DiscountValue:N2} EGP")</td></tr>
+            <tr><td class="detail-label">Offer Title</td><td class="detail-value">@Model.OfferTitle</td></tr>
+            <tr><td class="detail-label">Linked Package</td><td class="detail-value">@(Model.LinkedPackageName ?? "All Packages")</td></tr>
+            <tr><td class="detail-label">Offer Type</td><td class="detail-value">@Model.OfferType</td></tr>
+            <tr><td class="detail-label">Bonus Months</td><td class="detail-value">@(Model.BonusMonths?.ToString() ?? "-")</td></tr>
+            <tr><td class="detail-label">Bonus Days</td><td class="detail-value">@(Model.BonusDays?.ToString() ?? "-")</td></tr>
+            <tr><td class="detail-label">Offer Price</td><td class="detail-value">@(Model.OfferPrice?.ToString("N2") + " EGP" ?? "-")</td></tr>
+            <tr><td class="detail-label">Extra Freeze Days</td><td class="detail-value">@(Model.ExtraFreezeDays?.ToString() ?? "-")</td></tr>
             <tr><td class="detail-label">Start Date</td><td class="detail-value">@Model.StartDate.ToString("dd/MM/yyyy")</td></tr>
             <tr><td class="detail-label">End Date</td><td class="detail-value">@Model.EndDate.ToString("dd/MM/yyyy")</td></tr>
             <tr><td class="detail-label">Description</td><td class="detail-value">@(Model.Description ?? "-")</td></tr>

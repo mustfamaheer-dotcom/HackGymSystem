@@ -5,6 +5,7 @@ namespace Gym.Domain.Entities;
 
 public class Member : BaseEntity
 {
+    public int Code { get; set; }
     public string ReceiptNumber { get; set; }
     public string FullName { get; set; }
     public string Nationality { get; set; } = string.Empty;

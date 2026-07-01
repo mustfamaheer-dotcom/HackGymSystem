@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
@@ -13,19 +12,16 @@ public class ToggleOfferStatusCommandHandler : IRequestHandler<ToggleOfferStatus
 {
     private readonly IRepository<Offer> _repository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public ToggleOfferStatusCommandHandler(IRepository<Offer> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public ToggleOfferStatusCommandHandler(IRepository<Offer> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<Result> Handle(ToggleOfferStatusCommand request, CancellationToken cancellationToken)
     {
         var offer = await _repository.GetByIdAsync(request.Id, cancellationToken);
-
         if (offer is null)
             return Result.Failure("Offer not found");
 
@@ -33,7 +29,7 @@ public class ToggleOfferStatusCommandHandler : IRequestHandler<ToggleOfferStatus
         _repository.Update(offer);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Result.Success(offer.IsActive ? "Offer activated" : "Offer deactivated");
     }
 }
 

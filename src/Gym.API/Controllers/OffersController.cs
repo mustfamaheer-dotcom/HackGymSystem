@@ -1,33 +1,27 @@
 using Gym.Application.Common.DTOs;
-using Gym.Application.Offers.Commands.CreateOffer;
-using Gym.Shared.Enums;
-using Gym.Application.Offers.Commands.DeleteOffer;
-using Gym.Application.Offers.Commands.ToggleOfferStatus;
-using Gym.Application.Offers.Commands.UpdateOffer;
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Offers.DTOs;
-using Gym.Application.Offers.Queries.GetActiveOffers;
-using Gym.Application.Offers.Queries.GetAllOffers;
-using Gym.Application.Offers.Queries.GetOfferById;
-using MediatR;
+using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
 [Authorize(Roles = "Owner")]
+[Route("api/offers")]
 public class OffersController : BaseController
 {
-    private readonly IMediator _mediator;
+    private readonly IOfferService _offerService;
 
-    public OffersController(IMediator mediator)
+    public OffersController(IOfferService offerService)
     {
-        _mediator = mediator;
+        _offerService = offerService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] GetAllOffersQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(query, cancellationToken);
+        var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve offers"));
 
@@ -37,7 +31,7 @@ public class OffersController : BaseController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new GetOfferByIdQuery(id), cancellationToken);
+        var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Offer not found"));
 
@@ -47,17 +41,37 @@ public class OffersController : BaseController
     [HttpGet("active")]
     public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new GetActiveOffersQuery(), cancellationToken);
+        var result = await _offerService.GetActiveOffersAsync(cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve active offers"));
 
         return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateOfferCommand command, CancellationToken cancellationToken)
+    [HttpGet("expired")]
+    public async Task<IActionResult> GetExpired(CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command, cancellationToken);
+        var result = await _offerService.GetExpiredOffersAsync(cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve expired offers"));
+
+        return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
+    }
+
+    [HttpGet("package/{packageId}")]
+    public async Task<IActionResult> GetByPackage(Guid packageId, CancellationToken cancellationToken)
+    {
+        var result = await _offerService.GetOffersByPackageAsync(packageId, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve offers for package"));
+
+        return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateOfferDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _offerService.CreateAsync(dto, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to create offer"));
 
@@ -65,13 +79,10 @@ public class OffersController : BaseController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOfferRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOfferDto dto, CancellationToken cancellationToken)
     {
-        var command = new UpdateOfferCommand(
-            id, request.Title, request.Description, request.DiscountType,
-            request.DiscountValue, request.StartDate, request.EndDate);
-
-        var result = await _mediator.Send(command, cancellationToken);
+        dto.Id = id;
+        var result = await _offerService.UpdateAsync(dto, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to update offer"));
 
@@ -81,35 +92,28 @@ public class OffersController : BaseController
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new DeleteOfferCommand(id), cancellationToken);
+        var result = await _offerService.DeleteAsync(id, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to delete offer"));
 
         return Ok(ApiResponse.Ok());
     }
 
-    [HttpPatch("{id}/status")]
-    public async Task<IActionResult> ToggleStatus(Guid id, [FromBody] ToggleOfferStatusRequest request, CancellationToken cancellationToken)
+    [HttpPost("apply")]
+    public async Task<IActionResult> Apply([FromBody] ApplyOfferDto dto, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new ToggleOfferStatusCommand(id, request.IsActive), cancellationToken);
+        var result = await _offerService.ApplyOfferAsync(dto.OfferId, dto.PackageId, dto.PackagePrice, dto.PackageDurationMonths, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to toggle offer status"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to apply offer"));
 
-        return Ok(ApiResponse.Ok());
+        return Ok(ApiResponse<AppliedOfferDto>.Ok(result.Data!));
     }
 }
 
-public class UpdateOfferRequest
+public class ApplyOfferDto
 {
-    public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public DiscountType DiscountType { get; set; }
-    public decimal DiscountValue { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-}
-
-public class ToggleOfferStatusRequest
-{
-    public bool IsActive { get; set; }
+    public Guid OfferId { get; set; }
+    public Guid? PackageId { get; set; }
+    public decimal? PackagePrice { get; set; }
+    public int? PackageDurationMonths { get; set; }
 }

@@ -4,7 +4,7 @@
 <div class="receipt-card">
     <div class="receipt-header">
         <h4><i class="bi bi-receipt"></i> Membership Receipt</h4>
-        <span class="receipt-badge">#@Model.ReceiptNumber</span>
+        <span class="receipt-badge"><i class="bi bi-receipt-cutoff"></i> #@Model.Code</span>
     </div>
 
     <div class="receipt-body">
@@ -12,6 +12,8 @@
             <div class="col-md-6">
                 <div class="section-title"><i class="bi bi-person-badge"></i> Basic Information</div>
                 <table class="table table-borderless table-sm">
+                    <tr><td class="detail-label">Member ID</td><td class="detail-value"><strong>@Model.Code</strong></td></tr>
+                    <tr><td class="detail-label">Receipt ID</td><td class="detail-value"><code>@Model.ReceiptNumber</code></td></tr>
                     <tr><td class="detail-label">Full Name</td><td class="detail-value">@Model.FullName</td></tr>
                     <tr><td class="detail-label">Phone Number</td><td class="detail-value">@Model.PhoneNumber</td></tr>
                     <tr><td class="detail-label">Email</td><td class="detail-value">@(Model.Email ?? "-")</td></tr>

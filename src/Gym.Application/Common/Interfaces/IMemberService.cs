@@ -7,7 +7,7 @@ namespace Gym.Application.Common.Interfaces;
 public interface IMemberService
 {
     Task<Result<PaginatedResult<MemberDto>>> GetAllAsync(int page, int pageSize, string? searchTerm, string? sortBy, bool sortDescending, CancellationToken cancellationToken = default);
-    Task<Result<PaginatedResult<MemberDto>>> AdvancedSearchAsync(string? name, string? nationalId, string? phoneNumber, string? receiptNumber, Guid? packageId, string? subscriptionStatus, string? paymentStatus, bool expiringSoon, int expiringWithinDays, bool outstandingBalance, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<Result<PaginatedResult<MemberDto>>> AdvancedSearchAsync(string? name, string? nationalId, string? phoneNumber, int? code, string? receiptNumber, Guid? packageId, string? subscriptionStatus, string? paymentStatus, bool expiringSoon, int expiringWithinDays, bool outstandingBalance, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<MemberDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<List<MemberDto>>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default);
     Task<Result<List<MemberDto>>> GetExpiringMembersAsync(int withinDays, CancellationToken cancellationToken = default);

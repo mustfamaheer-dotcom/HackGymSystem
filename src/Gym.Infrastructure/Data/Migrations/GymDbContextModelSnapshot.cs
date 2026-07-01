@@ -271,6 +271,11 @@ namespace Gym.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -383,6 +388,9 @@ namespace Gym.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("NationalId")
+                        .IsUnique();
+
+                    b.HasIndex("Code")
                         .IsUnique();
 
                     b.HasIndex("PackageId");

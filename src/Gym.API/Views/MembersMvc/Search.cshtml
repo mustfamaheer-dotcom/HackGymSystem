@@ -30,8 +30,12 @@
                 <input asp-for="PhoneNumber" class="form-control" placeholder="11 digits" maxlength="11" />
             </div>
             <div class="col-md-4">
+                <label class="form-label">Member ID</label>
+                <input asp-for="Code" class="form-control" type="number" min="1" placeholder="e.g. 1" />
+            </div>
+            <div class="col-md-4">
                 <label class="form-label">Receipt Number</label>
-                <input asp-for="ReceiptNumber" class="form-control" placeholder="e.g. RCP-2026" />
+                <input asp-for="ReceiptNumber" class="form-control" placeholder="Receipt number" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Package</label>
@@ -107,6 +111,7 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th>Member ID</th>
                                 <th>Receipt</th>
                                 <th>Name</th>
                                 <th>Phone</th>
@@ -125,7 +130,8 @@
                                 var status = isExpired ? "Expired" : (member.IsDeleted ? "Deleted" : "Active");
                                 var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
                                 <tr>
-                                    <td><span class="fw-semibold">@member.ReceiptNumber</span></td>
+                                    <td><span class="fw-semibold">@member.Code</span></td>
+                                    <td><code style="font-size:0.8rem;color:#6B7280;background:#F3F4F6;padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
                                     <td>@member.FullName</td>
                                     <td>@member.PhoneNumber</td>
                                     <td>@(member.NationalId ?? "-")</td>
@@ -159,6 +165,7 @@
                                        asp-route-Name="@Model.Name"
                                        asp-route-NationalId="@Model.NationalId"
                                        asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
                                        asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
@@ -177,6 +184,7 @@
                                        asp-route-Name="@Model.Name"
                                        asp-route-NationalId="@Model.NationalId"
                                        asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
                                        asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
@@ -195,6 +203,7 @@
                                        asp-route-Name="@Model.Name"
                                        asp-route-NationalId="@Model.NationalId"
                                        asp-route-PhoneNumber="@Model.PhoneNumber"
+                                       asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
                                        asp-route-SubscriptionStatus="@Model.SubscriptionStatus"

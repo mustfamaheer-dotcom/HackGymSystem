@@ -77,3 +77,12 @@ public enum AttendanceSyncStatus
     Synced,
     Failed
 }
+
+public enum OfferType
+{
+    BonusDuration,
+    FixedPrice,
+    ExtraFreeze,
+    FreeRegistration,
+    Custom
+}

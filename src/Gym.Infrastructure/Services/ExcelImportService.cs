@@ -162,6 +162,7 @@ public class ExcelImportService : IExcelImportService
                     continue;
                 }
 
+                var lastCode = await _memberRepository.Query().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
                 var receiptNumber = GenerateReceiptNumber();
 
                 var member = new Member(
@@ -176,6 +177,7 @@ public class ExcelImportService : IExcelImportService
                     DateTime.UtcNow
                 )
                 {
+                    Code = lastCode + 1,
                     Nationality = nationality,
                     NationalId = nationalId,
                     Company = company,
@@ -222,6 +224,6 @@ public class ExcelImportService : IExcelImportService
 
     private static string GenerateReceiptNumber()
     {
-        return "RCP-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff");
+        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
     }
 }

@@ -70,7 +70,7 @@ public class PlansMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
         var dto = result.Data!;
-        var command = new UpdatePlanCommand(dto.Id, dto.Name, dto.Price, dto.DurationDays, dto.MaxVisits, dto.FreezeDays, dto.Description);
+        var command = new UpdatePlanCommand(dto.Id, dto.Name, dto.Price, dto.DurationDays, dto.MaxVisits, dto.FreezeDays, dto.Description, dto.IsActive);
         return View(command);
     }
 

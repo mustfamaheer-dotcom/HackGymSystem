@@ -14,7 +14,8 @@ public record UpdatePlanCommand(
     int DurationDays,
     int? MaxVisits,
     int? FreezeDays,
-    string? Description) : IRequest<Result>;
+    string? Description,
+    bool IsActive = true) : IRequest<Result>;
 
 public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, Result>
 {
@@ -43,6 +44,8 @@ public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, Resul
             request.MaxVisits,
             request.FreezeDays,
             request.Description);
+
+        plan.ToggleActive(request.IsActive);
 
         _repository.Update(plan);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
