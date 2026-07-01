@@ -3,147 +3,147 @@
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-receipt"></i> Membership Receipt</h4>
+        <h4><i class="bi bi-receipt"></i> @SharedLocalizer["Membership Receipt"]</h4>
         <span class="receipt-badge"><i class="bi bi-receipt-cutoff"></i> #@Model.Code</span>
     </div>
 
     <div class="receipt-body">
         <div class="row g-4">
             <div class="col-md-6">
-                <div class="section-title"><i class="bi bi-person-badge"></i> Basic Information</div>
+                <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
                 <table class="table table-borderless table-sm">
-                    <tr><td class="detail-label">Member ID</td><td class="detail-value"><strong>@Model.Code</strong></td></tr>
-                    <tr><td class="detail-label">Receipt ID</td><td class="detail-value"><code>@Model.ReceiptNumber</code></td></tr>
-                    <tr><td class="detail-label">Full Name</td><td class="detail-value">@Model.FullName</td></tr>
-                    <tr><td class="detail-label">Phone Number</td><td class="detail-value">@Model.PhoneNumber</td></tr>
-                    <tr><td class="detail-label">Email</td><td class="detail-value">@(Model.Email ?? "-")</td></tr>
-                    <tr><td class="detail-label">Date of Birth</td><td class="detail-value">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</td></tr>
-                    <tr><td class="detail-label">Gender</td><td class="detail-value">@(Model.Gender?.ToString() ?? "-")</td></tr>
-                    <tr><td class="detail-label">Nationality</td><td class="detail-value">@Model.Nationality</td></tr>
-                    <tr><td class="detail-label">National ID</td><td class="detail-value">@Model.NationalId</td></tr>
-                    <tr><td class="detail-label">Company</td><td class="detail-value">@(Model.Company ?? "-")</td></tr>
-                    <tr><td class="detail-label">Address</td><td class="detail-value">@(Model.Address ?? "-")</td></tr>
-                    <tr><td class="detail-label">Referral Source</td><td class="detail-value">@(Model.ReferralSource ?? "-")</td></tr>
-                    <tr><td class="detail-label">Notes</td><td class="detail-value">@(Model.Notes ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Member ID"]</td><td class="detail-value"><strong>@Model.Code</strong></td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Receipt ID"]</td><td class="detail-value"><code>@Model.ReceiptNumber</code></td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Full Name"]</td><td class="detail-value">@Model.FullName</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Phone Number"]</td><td class="detail-value">@Model.PhoneNumber</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Email"]</td><td class="detail-value">@(Model.Email ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Date of Birth"]</td><td class="detail-value">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Gender"]</td><td class="detail-value">@(Model.Gender?.ToString() ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Nationality"]</td><td class="detail-value">@Model.Nationality</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["National ID"]</td><td class="detail-value">@Model.NationalId</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Company"]</td><td class="detail-value">@(Model.Company ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Address"]</td><td class="detail-value">@(Model.Address ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Referral Source"]</td><td class="detail-value">@(Model.ReferralSource ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Notes"]</td><td class="detail-value">@(Model.Notes ?? "-")</td></tr>
                 </table>
             </div>
             <div class="col-md-6">
-                <div class="section-title"><i class="bi bi-calendar-check"></i> Subscription</div>
+                <div class="section-title"><i class="bi bi-calendar-check"></i> @SharedLocalizer["Subscription"]</div>
                 <table class="table table-borderless table-sm">
-                    <tr><td class="detail-label">Membership Plan</td><td class="detail-value">@(Model.PackageName ?? "-")</td></tr>
-                    <tr><td class="detail-label">Start Date</td><td class="detail-value">@Model.SubscriptionStartDate.ToString("dd/MM/yyyy")</td></tr>
-                    <tr><td class="detail-label">End Date</td><td class="detail-value">@Model.SubscriptionEndDate.ToString("dd/MM/yyyy")</td></tr>
-                    <tr><td class="detail-label">Duration</td><td class="detail-value">@Model.SubscriptionDurationMonths months</td></tr>
-                    <tr><td class="detail-label">Free Months</td><td class="detail-value">@Model.FreeMonths</td></tr>
-                    <tr><td class="detail-label">Freeze Days</td><td class="detail-value">@Model.FreezeDays</td></tr>
-                    <tr><td class="detail-label">Registration Date</td><td class="detail-value">@Model.RegistrationDate.ToString("dd/MM/yyyy")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Membership Plan"]</td><td class="detail-value">@(Model.PackageName ?? "-")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Start Date"]</td><td class="detail-value">@Model.SubscriptionStartDate.ToString("dd/MM/yyyy")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["End Date"]</td><td class="detail-value">@Model.SubscriptionEndDate.ToString("dd/MM/yyyy")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Duration"]</td><td class="detail-value">@SharedLocalizer["{0} months", Model.SubscriptionDurationMonths]</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Free Months"]</td><td class="detail-value">@Model.FreeMonths</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Freeze Days"]</td><td class="detail-value">@Model.FreezeDays</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Registration Date"]</td><td class="detail-value">@Model.RegistrationDate.ToString("dd/MM/yyyy")</td></tr>
                 </table>
             </div>
         </div>
 
-        <div class="section-divider"><span>Payment</span></div>
-        <div class="section-title"><i class="bi bi-credit-card"></i> Payment Summary</div>
+        <div class="section-divider"><span>@SharedLocalizer["Payment"]</span></div>
+        <div class="section-title"><i class="bi bi-credit-card"></i> @SharedLocalizer["Payment Summary"]</div>
         <div class="row g-3">
             <div class="col-md-4">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Subscription Price</div>
-                    <div class="fs-4 fw-bold text-dark">@Model.SubscriptionPrice.ToString("N2") EGP</div>
+                    <div class="detail-label">@SharedLocalizer["Subscription Price"]</div>
+                    <div class="fs-4 fw-bold text-dark">@SharedLocalizer["{0} EGP", Model.SubscriptionPrice.ToString("N2")]</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Paid Amount</div>
-                    <div class="fs-4 fw-bold text-success">@Model.PaidAmount.ToString("N2") EGP</div>
+                    <div class="detail-label">@SharedLocalizer["Paid Amount"]</div>
+                    <div class="fs-4 fw-bold text-success">@SharedLocalizer["{0} EGP", Model.PaidAmount.ToString("N2")]</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Remaining</div>
-                    <div class="fs-4 fw-bold @(Model.RemainingAmount > 0 ? "text-danger" : "text-success")">@Model.RemainingAmount.ToString("N2") EGP</div>
+                    <div class="detail-label">@SharedLocalizer["Remaining"]</div>
+                    <div class="fs-4 fw-bold @(Model.RemainingAmount > 0 ? "text-danger" : "text-success")">@SharedLocalizer["{0} EGP", Model.RemainingAmount.ToString("N2")]</div>
                 </div>
             </div>
         </div>
         <div class="mt-2">
-            <span class="detail-label">Payment Method:</span>
+            <span class="detail-label">@SharedLocalizer["Payment Method:"]</span>
             <span class="badge bg-info ms-2">@Model.PaymentMethod</span>
         </div>
 
-        <div class="section-divider"><span>Medical</span></div>
-        <div class="section-title"><i class="bi bi-heart-pulse"></i> Medical Information</div>
+        <div class="section-divider"><span>@SharedLocalizer["Medical"]</span></div>
+        <div class="section-title"><i class="bi bi-heart-pulse"></i> @SharedLocalizer["Medical Information"]</div>
         <div class="row g-3">
             <div class="col-md-4">
-                <div class="detail-label">Has Disease</div>
-                <div class="detail-value">@(Model.HasDisease ? "Yes" : "No")</div>
+                <div class="detail-label">@SharedLocalizer["Has Disease"]</div>
+                <div class="detail-value">@(Model.HasDisease ? SharedLocalizer["Yes"] : SharedLocalizer["No"])</div>
             </div>
             <div class="col-md-4">
-                <div class="detail-label">Disease Type</div>
+                <div class="detail-label">@SharedLocalizer["Disease Type"]</div>
                 <div class="detail-value">@(Model.DiseaseType ?? "-")</div>
             </div>
             <div class="col-md-4">
-                <div class="detail-label">Weight</div>
-                <div class="detail-value">@(Model.Weight?.ToString("N1") + " kg" ?? "-")</div>
+                <div class="detail-label">@SharedLocalizer["Weight"]</div>
+                <div class="detail-value">@(Model.Weight.HasValue ? Model.Weight.Value.ToString("N1") + " " + SharedLocalizer["kg"] : "-")</div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Fingerprint</span></div>
-        <div class="section-title"><i class="bi bi-fingerprint"></i> Fingerprint</div>
+        <div class="section-divider"><span>@SharedLocalizer["Fingerprint"]</span></div>
+        <div class="section-title"><i class="bi bi-fingerprint"></i> @SharedLocalizer["Fingerprint"]</div>
         <div class="row g-3">
             <div class="col-md-6">
-                <div class="detail-label">Device ID</div>
+                <div class="detail-label">@SharedLocalizer["Device ID"]</div>
                 <div class="detail-value">@(Model.FingerprintDeviceId?.ToString() ?? "-")</div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Signatures</span></div>
-        <div class="section-title"><i class="bi bi-pen"></i> Signatures</div>
+        <div class="section-divider"><span>@SharedLocalizer["Signatures"]</span></div>
+        <div class="section-title"><i class="bi bi-pen"></i> @SharedLocalizer["Signatures"]</div>
         <div class="row g-3">
             <div class="col-md-6">
-                <div class="detail-label">Member Signature</div>
+                <div class="detail-label">@SharedLocalizer["Member Signature"]</div>
                 <div class="detail-value">@(Model.MemberSignature ?? "-")</div>
             </div>
             <div class="col-md-6">
-                <div class="detail-label">Admin Signature</div>
+                <div class="detail-label">@SharedLocalizer["Admin Signature"]</div>
                 <div class="detail-value">@(Model.AdminSignature ?? "-")</div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
         <div class="row g-3">
             <div class="col-md-4">
-                <div class="detail-label">Created At</div>
+                <div class="detail-label">@SharedLocalizer["Created At"]</div>
                 <div class="detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
             </div>
             <div class="col-md-4">
-                <div class="detail-label">Last Updated</div>
+                <div class="detail-label">@SharedLocalizer["Last Updated"]</div>
                 <div class="detail-value">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
             </div>
             <div class="col-md-4">
-                <div class="detail-label">Status</div>
+                <div class="detail-label">@SharedLocalizer["Status"]</div>
                 <div class="detail-value">
                     @if (Model.IsDeleted)
                     {
-                        <span class="badge-status badge-expired">Deleted</span>
+                        <span class="badge-status badge-expired">@SharedLocalizer["Deleted"]</span>
                     }
                     else if (Model.SubscriptionEndDate <= DateTime.UtcNow)
                     {
-                        <span class="badge-status badge-expired">Expired</span>
+                        <span class="badge-status badge-expired">@SharedLocalizer["Expired"]</span>
                     }
                     else
                     {
-                        <span class="badge-status badge-active">Active</span>
+                        <span class="badge-status badge-active">@SharedLocalizer["Active"]</span>
                     }
                 </div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Subscription History</span></div>
-        <div class="section-title"><i class="bi bi-clock-history"></i> Subscription History</div>
+        <div class="section-divider"><span>@SharedLocalizer["Subscription History"]</span></div>
+        <div class="section-title"><i class="bi bi-clock-history"></i> @SharedLocalizer["Subscription History"]</div>
         @{
             var memberships = ViewBag.Memberships as IReadOnlyList<Membership>;
         }
         @if (memberships is null || memberships.Count == 0)
         {
-            <p class="text-muted small">No subscription history.</p>
+            <p class="text-muted small">@SharedLocalizer["No subscription history."]</p>
         }
         else
         {
@@ -151,12 +151,12 @@
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Plan</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Status</th>
-                            <th>Price</th>
+                            <th>@SharedLocalizer["#"]</th>
+                            <th>@SharedLocalizer["Plan"]</th>
+                            <th>@SharedLocalizer["Start"]</th>
+                            <th>@SharedLocalizer["End"]</th>
+                            <th>@SharedLocalizer["Status"]</th>
+                            <th>@SharedLocalizer["Price"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -169,7 +169,7 @@
                                 <td>@m.StartDate.ToString("dd/MM/yyyy")</td>
                                 <td>@m.EndDate.ToString("dd/MM/yyyy")</td>
                                 <td>
-                                    <span class="badge-status @(m.Status == MembershipStatus.Active ? "badge-active" : m.Status == MembershipStatus.Frozen ? "badge-warning" : "badge-expired")">@m.Status</span>
+                                    <span class="badge-status @(m.Status == MembershipStatus.Active ? "badge-active" : m.Status == MembershipStatus.Frozen ? "badge-warning" : "badge-expired")">@SharedLocalizer[m.Status.ToString()]</span>
                                 </td>
                                 <td>@(m.Plan?.Price.ToString("N2") ?? "-")</td>
                             </tr>
@@ -179,14 +179,14 @@
             </div>
         }
 
-        <div class="section-divider"><span>Attendance Log</span></div>
-        <div class="section-title"><i class="bi bi-door-open"></i> Attendance Log</div>
+        <div class="section-divider"><span>@SharedLocalizer["Attendance Log"]</span></div>
+        <div class="section-title"><i class="bi bi-door-open"></i> @SharedLocalizer["Attendance Log"]</div>
         @{
             var attendances = ViewBag.Attendances as IReadOnlyList<Attendance>;
         }
         @if (attendances is null || attendances.Count == 0)
         {
-            <p class="text-muted small">No attendance records.</p>
+            <p class="text-muted small">@SharedLocalizer["No attendance records."]</p>
         }
         else
         {
@@ -194,12 +194,12 @@
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Check In</th>
-                            <th>Check Out</th>
-                            <th>Device</th>
+                            <th>@SharedLocalizer["#"]</th>
+                            <th>@SharedLocalizer["Date"]</th>
+                            <th>@SharedLocalizer["Time"]</th>
+                            <th>@SharedLocalizer["Check In"]</th>
+                            <th>@SharedLocalizer["Check Out"]</th>
+                            <th>@SharedLocalizer["Device"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -222,7 +222,7 @@
     </div>
 
     <div class="receipt-footer">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
     </div>
 </div>

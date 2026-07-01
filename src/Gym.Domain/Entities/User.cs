@@ -17,7 +17,6 @@ public class User : BaseEntity
     public DateTime? LastLoginAt { get; set; }
 
     public Role Role { get; set; } = null!;
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 
     private User() { }

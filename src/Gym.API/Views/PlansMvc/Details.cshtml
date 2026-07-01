@@ -3,37 +3,37 @@
 <div class="receipt-card">
     <div class="receipt-header">
         <h4><i class="bi bi-card-list"></i> @Model.Name</h4>
-        <span class="receipt-badge">@(Model.IsActive ? "Active" : "Inactive")</span>
+        <span class="receipt-badge">@(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</span>
     </div>
     <div class="receipt-body">
-        <div class="section-title"><i class="bi bi-info-circle"></i> Plan Information</div>
+        <div class="section-title"><i class="bi bi-info-circle"></i> @SharedLocalizer["Plan Information"]</div>
         <table class="table table-borderless table-sm">
-            <tr><td class="detail-label">Name</td><td class="detail-value">@Model.Name</td></tr>
-            <tr><td class="detail-label">Price</td><td class="detail-value">@Model.Price.ToString("N2") EGP</td></tr>
-            <tr><td class="detail-label">Duration</td><td class="detail-value">@Model.DurationDays day(s)</td></tr>
-            <tr><td class="detail-label">Max Visits</td><td class="detail-value">@(Model.MaxVisits?.ToString() ?? "Unlimited")</td></tr>
-            <tr><td class="detail-label">Freeze Days</td><td class="detail-value">@(Model.FreezeDays?.ToString() ?? "None")</td></tr>
-            <tr><td class="detail-label">Description</td><td class="detail-value">@(Model.Description ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Name"]</td><td class="detail-value">@Model.Name</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Price"]</td><td class="detail-value">@Model.Price.ToString("N2") @SharedLocalizer["EGP"]</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Duration"]</td><td class="detail-value">@Model.DurationDays @SharedLocalizer["day(s)"]</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Max Visits"]</td><td class="detail-value">@(Model.MaxVisits?.ToString() ?? SharedLocalizer["Unlimited"])</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Freeze Days"]</td><td class="detail-value">@(Model.FreezeDays?.ToString() ?? SharedLocalizer["None"])</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Description"]</td><td class="detail-value">@(Model.Description ?? "-")</td></tr>
         </table>
-        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
         <div class="row g-3">
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Created</div>
+                    <div class="detail-label">@SharedLocalizer["Created"]</div>
                     <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Updated</div>
+                    <div class="detail-label">@SharedLocalizer["Updated"]</div>
                     <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="receipt-footer">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
-        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> @SharedLocalizer["Delete"]</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
     </div>
 </div>

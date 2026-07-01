@@ -1,18 +1,22 @@
+using Gym.API.Resources;
 using Gym.Application.Common.Interfaces;
 using Gym.API.Controllers;
 using Gym.Application.Common.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
 public class AuthController : BaseController
 {
     private readonly IAuthService _authService;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IStringLocalizer<SharedResources> localizer)
     {
         _authService = authService;
+        _localizer = localizer;
     }
 
     [HttpPost("login")]
@@ -21,7 +25,7 @@ public class AuthController : BaseController
     {
         var result = await _authService.LoginAsync(request.Username, request.Password, cancellationToken);
         if (result.IsFailure)
-            return Unauthorized(ApiResponse.Fail(result.Message ?? "Login failed"));
+            return Unauthorized(ApiResponse.Fail(result.Message ?? _localizer["Login failed"]));
 
         var response = result.Data!;
 
@@ -42,7 +46,7 @@ public class AuthController : BaseController
     {
         var result = await _authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
         if (result.IsFailure)
-            return Unauthorized(ApiResponse.Fail(result.Message ?? "Token refresh failed"));
+            return Unauthorized(ApiResponse.Fail(result.Message ?? _localizer["Token refresh failed"]));
 
         return Ok(ApiResponse<AuthResponse>.Ok(result.Data!));
     }
@@ -69,7 +73,7 @@ public class AuthController : BaseController
 
         var result = await _authService.GetCurrentUserAsync(CurrentUserId.Value, cancellationToken);
         if (result.IsFailure)
-            return Unauthorized(ApiResponse.Fail(result.Message ?? "User not found"));
+            return Unauthorized(ApiResponse.Fail(result.Message ?? _localizer["User not found"]));
 
         return Ok(ApiResponse<UserDto>.Ok(result.Data!));
     }

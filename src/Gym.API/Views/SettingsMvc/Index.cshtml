@@ -18,14 +18,14 @@
 }
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-gear-fill"></i> Settings</h4>
-        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> New Setting</a>
+        <h4><i class="bi bi-gear-fill"></i> @SharedLocalizer["Settings"]</h4>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Setting"]</a>
     </div>
     @if (Model.Count == 0)
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-gear" style="font-size: 3rem;"></i>
-            <p class="mt-2">No settings found.</p>
+            <p class="mt-2">@SharedLocalizer["No settings found."]</p>
         </div>
     }
     else
@@ -41,17 +41,17 @@
                     <div class="card-header d-flex align-items-center gap-2 border-0 px-4 py-3" style="background:@color;color:#fff;">
                         <i class="bi @icon fs-5"></i>
                         <h5 class="mb-0 fs-6 fw-semibold">@groupKey</h5>
-                        <span class="ms-auto badge bg-white text-dark rounded-pill px-3 py-1" style="font-size:0.75rem;font-weight:400;">@items.Count setting(s)</span>
+                        <span class="ms-auto badge bg-white text-dark rounded-pill px-3 py-1" style="font-size:0.75rem;font-weight:400;">@items.Count @SharedLocalizer["setting(s)"]</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width:200px;">Key</th>
-                                        <th>Value</th>
-                                        <th style="width:280px;">Description</th>
-                                        <th style="width:95px;">Encrypted</th>
+                                        <th style="width:200px;">@SharedLocalizer["Key"]</th>
+                                        <th>@SharedLocalizer["Value"]</th>
+                                        <th style="width:280px;">@SharedLocalizer["Description"]</th>
+                                        <th style="width:95px;">@SharedLocalizer["Encrypted"]</th>
                                         <th style="width:70px;"></th>
                                     </tr>
                                 </thead>
@@ -61,7 +61,7 @@
                                         <tr>
                                             <td class="fw-semibold">@s.Key</td>
                                             <td>
-                                                <code class="px-2 py-1 rounded" style="font-size:0.8rem;background:#F3F4F6;color:#374151;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
+                                                <code class="px-2 py-1 rounded" style="font-size:0.8rem;background:var(--light-gray);color:var(--charcoal);display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
                                                     @(s.IsEncrypted ? "********" : s.Value)
                                                 </code>
                                             </td>
@@ -69,15 +69,15 @@
                                             <td>
                                                 @if (s.IsEncrypted)
                                                 {
-                                                    <span class="badge-status badge-expired"><i class="bi bi-lock-fill"></i> Yes</span>
+                                                    <span class="badge-status badge-expired"><i class="bi bi-lock-fill"></i> @SharedLocalizer["Yes"]</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge-status badge-active"><i class="bi bi-unlock-fill"></i> No</span>
+                                                    <span class="badge-status badge-active"><i class="bi bi-unlock-fill"></i> @SharedLocalizer["No"]</span>
                                                 }
                                             </td>
                                             <td>
-                                                <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm" title="Edit" style="border-radius:8px;background:#F3F4F6;color:#6B7280;border:none;padding:0.3rem 0.6rem;">
+                                                <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm" title="@SharedLocalizer["Edit"]" style="border-radius:8px;background:var(--light-gray);color:var(--text-secondary);border:none;padding:0.3rem 0.6rem;">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             </td>

@@ -8,6 +8,8 @@ using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -20,22 +22,25 @@ public class MembersMvcController : Controller
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Membership> _membershipRepository;
     private readonly IRepository<Attendance> _attendanceRepository;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
         IRepository<MembershipPlan> planRepository, IRepository<Membership> membershipRepository,
-        IRepository<Attendance> attendanceRepository)
+        IRepository<Attendance> attendanceRepository,
+        IStringLocalizer<SharedResources> localizer)
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
         _planRepository = planRepository;
         _membershipRepository = membershipRepository;
         _attendanceRepository = attendanceRepository;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, string? sortBy = null, bool sortDescending = false, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Members";
+        ViewData["Title"] = _localizer["Members"];
 
         var result = await _memberService.GetAllAsync(page, pageSize, searchTerm, sortBy, sortDescending, cancellationToken);
 
@@ -55,7 +60,7 @@ public class MembersMvcController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Member";
+        ViewData["Title"] = _localizer["New Member"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -66,7 +71,7 @@ public class MembersMvcController : Controller
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateMemberDto dto, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Member";
+        ViewData["Title"] = _localizer["New Member"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -83,14 +88,14 @@ public class MembersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = "Member created successfully";
+        TempData["Success"] = _localizer["Member created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Member";
+        ViewData["Title"] = _localizer["Edit Member"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -141,7 +146,7 @@ public class MembersMvcController : Controller
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateMemberDto dto, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Member";
+        ViewData["Title"] = _localizer["Edit Member"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -149,7 +154,7 @@ public class MembersMvcController : Controller
 
         if (id != dto.Id)
         {
-            TempData["Error"] = "Route ID and form ID do not match";
+            TempData["Error"] = _localizer["Route ID and form ID do not match"];
             return View(dto);
         }
 
@@ -164,14 +169,14 @@ public class MembersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = "Member updated successfully";
+        TempData["Success"] = _localizer["Member updated successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Member Details";
+        ViewData["Title"] = _localizer["Member Details"];
 
         var result = await _memberService.GetByIdAsync(id, cancellationToken);
 
@@ -204,7 +209,7 @@ public class MembersMvcController : Controller
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Delete Member";
+        ViewData["Title"] = _localizer["Delete Member"];
 
         var result = await _memberService.GetByIdAsync(id, cancellationToken);
 
@@ -228,14 +233,14 @@ public class MembersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = "Member deleted successfully";
+        TempData["Success"] = _localizer["Member deleted successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(MemberSearchViewModel model, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Search Members";
+        ViewData["Title"] = _localizer["Search Members"];
 
         model.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
@@ -275,24 +280,24 @@ public class MembersMvcController : Controller
     [HttpGet("import")]
     public IActionResult Import()
     {
-        ViewData["Title"] = "Import Members";
+        ViewData["Title"] = _localizer["Import Members"];
         return View();
     }
 
     [HttpPost("import")]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Import Members";
+        ViewData["Title"] = _localizer["Import Members"];
 
         if (file is null || file.Length == 0)
         {
-            TempData["Error"] = "Please select a file to upload";
+            TempData["Error"] = _localizer["Please select a file to upload"];
             return View();
         }
 
         if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
         {
-            TempData["Error"] = "File must be an .xlsx file";
+            TempData["Error"] = _localizer["File must be an .xlsx file"];
             return View();
         }
 

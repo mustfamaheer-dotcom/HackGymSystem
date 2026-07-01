@@ -6,8 +6,8 @@
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-file-earmark-arrow-up"></i> Import Members</h4>
-                <span class="receipt-badge">Excel</span>
+                <h4><i class="bi bi-file-earmark-arrow-up"></i> @SharedLocalizer["Import Members"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["Excel"]</span>
             </div>
 
             <div class="receipt-body">
@@ -18,50 +18,50 @@
 
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle"></i>
-                    Upload an <strong>.xlsx</strong> file with the following columns:
+                    @SharedLocalizer["Upload an <strong>.xlsx</strong> file with the following columns:"]
                 </div>
 
                 <div class="table-responsive mb-4">
                     <table class="table table-sm table-bordered">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
-                                <th>Column</th>
-                                <th>Required</th>
-                                <th>Notes</th>
+                                <th>@SharedLocalizer["#"]</th>
+                                <th>@SharedLocalizer["Column"]</th>
+                                <th>@SharedLocalizer["Required"]</th>
+                                <th>@SharedLocalizer["Notes"]</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>1</td><td>Full Name</td><td><span class="badge-status badge-active">Yes</span></td><td></td></tr>
-                            <tr><td>2</td><td>Phone Number</td><td><span class="badge-status badge-active">Yes</span></td><td>11 digits</td></tr>
-                            <tr><td>3</td><td>National ID</td><td><span class="badge-status badge-expired">No</span></td><td>14 digits, skipped if duplicate</td></tr>
-                            <tr><td>4</td><td>Nationality</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>5</td><td>Company</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>6</td><td>Address</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>7</td><td>Weight (kg)</td><td><span class="badge-status badge-expired">No</span></td><td>Numeric</td></tr>
-                            <tr><td>8</td><td>Has Disease</td><td><span class="badge-status badge-expired">No</span></td><td>Yes/No or True/False</td></tr>
-                            <tr><td>9</td><td>Disease Type</td><td><span class="badge-status badge-expired">No</span></td><td>Required if Has Disease is Yes</td></tr>
-                            <tr><td>10</td><td>Referral Source</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>11</td><td>Plan Name</td><td><span class="badge-status badge-expired">No</span></td><td>Must match an active plan name</td></tr>
-                            <tr><td>12</td><td>Subscription Price</td><td><span class="badge-status badge-expired">No</span></td><td>Numeric</td></tr>
-                            <tr><td>13</td><td>Paid Amount</td><td><span class="badge-status badge-expired">No</span></td><td>Must not exceed price</td></tr>
-                            <tr><td>14</td><td>Duration (Months)</td><td><span class="badge-status badge-expired">No</span></td><td>Defaults to 1</td></tr>
-                            <tr><td>15</td><td>Free Months</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>16</td><td>Freeze Days</td><td><span class="badge-status badge-expired">No</span></td><td></td></tr>
-                            <tr><td>17</td><td>Start Date</td><td><span class="badge-status badge-expired">No</span></td><td>Defaults to today</td></tr>
-                            <tr><td>18</td><td>Payment Method</td><td><span class="badge-status badge-expired">No</span></td><td>Cash, Visa, Instapay, Wallet</td></tr>
+                            <tr><td>1</td><td>@SharedLocalizer["Full Name"]</td><td><span class="badge-status badge-active">@SharedLocalizer["Yes"]</span></td><td></td></tr>
+                            <tr><td>2</td><td>@SharedLocalizer["Phone Number"]</td><td><span class="badge-status badge-active">@SharedLocalizer["Yes"]</span></td><td>@SharedLocalizer["11 digits"]</td></tr>
+                            <tr><td>3</td><td>@SharedLocalizer["National ID"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["14 digits, skipped if duplicate"]</td></tr>
+                            <tr><td>4</td><td>@SharedLocalizer["Nationality"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>5</td><td>@SharedLocalizer["Company"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>6</td><td>@SharedLocalizer["Address"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>7</td><td>@SharedLocalizer["Weight (kg)"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Numeric"]</td></tr>
+                            <tr><td>8</td><td>@SharedLocalizer["Has Disease"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Yes/No or True/False"]</td></tr>
+                            <tr><td>9</td><td>@SharedLocalizer["Disease Type"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Required if Has Disease is Yes"]</td></tr>
+                            <tr><td>10</td><td>@SharedLocalizer["Referral Source"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>11</td><td>@SharedLocalizer["Plan Name"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Must match an active plan name"]</td></tr>
+                            <tr><td>12</td><td>@SharedLocalizer["Subscription Price"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Numeric"]</td></tr>
+                            <tr><td>13</td><td>@SharedLocalizer["Paid Amount"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Must not exceed price"]</td></tr>
+                            <tr><td>14</td><td>@SharedLocalizer["Duration (Months)"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Defaults to 1"]</td></tr>
+                            <tr><td>15</td><td>@SharedLocalizer["Free Months"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>16</td><td>@SharedLocalizer["Freeze Days"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>17</td><td>@SharedLocalizer["Start Date"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Defaults to today"]</td></tr>
+                            <tr><td>18</td><td>@SharedLocalizer["Payment Method"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Cash, Visa, Instapay, Wallet"]</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <form asp-action="Import" method="post" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label class="form-label">Select Excel File</label>
+                        <label class="form-label">@SharedLocalizer["Select Excel File"]</label>
                         <input type="file" name="file" class="form-control" accept=".xlsx" required />
                     </div>
                     <div class="receipt-footer px-0 pb-0">
-                        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Upload & Import</button>
+                        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> @SharedLocalizer["Upload & Import"]</button>
                     </div>
                 </form>
             </div>

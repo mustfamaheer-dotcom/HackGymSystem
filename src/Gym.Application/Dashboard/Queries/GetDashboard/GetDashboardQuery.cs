@@ -15,20 +15,17 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
     private readonly IRepository<Member> _memberRepo;
     private readonly IRepository<Membership> _membershipRepo;
     private readonly IRepository<Attendance> _attendanceRepo;
-    private readonly IRepository<Payment> _paymentRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
 
     public GetDashboardQueryHandler(
         IRepository<Member> memberRepo,
         IRepository<Membership> membershipRepo,
         IRepository<Attendance> attendanceRepo,
-        IRepository<Payment> paymentRepo,
         IRepository<MembershipPlan> planRepo)
     {
         _memberRepo = memberRepo;
         _membershipRepo = membershipRepo;
         _attendanceRepo = attendanceRepo;
-        _paymentRepo = paymentRepo;
         _planRepo = planRepo;
     }
 
@@ -48,28 +45,8 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         var todayCheckIns = await _attendanceRepo.Query()
             .CountAsync(a => a.Date == today, cancellationToken);
 
-        var todayRevenue = await _paymentRepo.Query()
-            .Where(p => p.PaymentDate.Date == today)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-
-        var monthlyRevenue = await _paymentRepo.Query()
-            .Where(p => p.PaymentDate.Month == now.Month && p.PaymentDate.Year == now.Year)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-
         var expiringMemberships = await _membershipRepo.Query()
             .CountAsync(m => m.EndDate <= now.AddDays(7) && m.EndDate > now && m.Status == MembershipStatus.Active, cancellationToken);
-
-        var recentActivities = await _attendanceRepo.Query()
-            .Include(a => a.Member)
-            .OrderByDescending(a => a.Date)
-            .Take(10)
-            .Select(a => new RecentActivityDto
-            {
-                Type = "checkin",
-                Description = a.Member.FullName,
-                Timestamp = a.Date
-            })
-            .ToListAsync(cancellationToken);
 
         var membershipByPlan = await _membershipRepo.Query()
             .Include(m => m.Plan)
@@ -87,11 +64,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             ActiveMembers = activeMembers,
             ActiveMemberships = activeMemberships,
             TodayCheckIns = todayCheckIns,
-            TodayRevenue = todayRevenue,
-            MonthlyRevenue = monthlyRevenue,
             ExpiringMemberships = expiringMemberships,
-            OverduePayments = 0,
-            RecentActivities = recentActivities,
             MembershipByPlan = membershipByPlan
         };
 

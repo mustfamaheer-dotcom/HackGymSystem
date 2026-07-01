@@ -1,50 +1,50 @@
 @model AttendanceDto
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-clock-history"></i> Attendance Details</h4>
+        <h4><i class="bi bi-clock-history"></i> @SharedLocalizer["Attendance Details"]</h4>
         @{
             var syncLabel = Model.SyncStatus switch
             {
-                AttendanceSyncStatus.Synced => "Synced",
-                AttendanceSyncStatus.Pending => "Pending",
-                AttendanceSyncStatus.Failed => "Failed",
-                _ => "Unknown"
+                AttendanceSyncStatus.Synced => SharedLocalizer["Synced"],
+                AttendanceSyncStatus.Pending => SharedLocalizer["Pending"],
+                AttendanceSyncStatus.Failed => SharedLocalizer["Failed"],
+                _ => SharedLocalizer["Unknown"]
             };
         }
         <span class="receipt-badge">@syncLabel</span>
     </div>
     <div class="receipt-body">
-        <div class="section-title"><i class="bi bi-person"></i> Member Information</div>
+        <div class="section-title"><i class="bi bi-person"></i> @SharedLocalizer["Member Information"]</div>
         <table class="table table-borderless table-sm">
-            <tr><td class="detail-label">Member</td><td class="detail-value">@Model.MemberName</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Member"]</td><td class="detail-value">@Model.MemberName</td></tr>
         </table>
-        <div class="section-divider"><span>Attendance Details</span></div>
+        <div class="section-divider"><span>@SharedLocalizer["Attendance Details"]</span></div>
         <table class="table table-borderless table-sm">
-            <tr><td class="detail-label">Date</td><td class="detail-value">@Model.Date.ToString("dd/MM/yyyy")</td></tr>
-            <tr><td class="detail-label">Time</td><td class="detail-value">@Model.Time.ToString(@"hh\:mm")</td></tr>
-            <tr><td class="detail-label">Check In</td><td class="detail-value">@(Model.CheckIn?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
-            <tr><td class="detail-label">Check Out</td><td class="detail-value">@(Model.CheckOut?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
-            <tr><td class="detail-label">Is Manual</td><td class="detail-value">@(Model.IsManual ? "Yes" : "No")</td></tr>
-            <tr><td class="detail-label">Device</td><td class="detail-value">@(Model.DeviceName ?? "-")</td></tr>
-            <tr><td class="detail-label">Sync Status</td><td class="detail-value">@syncLabel</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Date"]</td><td class="detail-value">@Model.Date.ToString("dd/MM/yyyy")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Time"]</td><td class="detail-value">@Model.Time.ToString(@"hh\:mm")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Check In"]</td><td class="detail-value">@(Model.CheckIn?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Check Out"]</td><td class="detail-value">@(Model.CheckOut?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Is Manual"]</td><td class="detail-value">@(Model.IsManual ? SharedLocalizer["Yes"] : SharedLocalizer["No"])</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Device"]</td><td class="detail-value">@(Model.DeviceName ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Sync Status"]</td><td class="detail-value">@syncLabel</td></tr>
         </table>
-        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
         <div class="row g-3">
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Created</div>
+                    <div class="detail-label">@SharedLocalizer["Created"]</div>
                     <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Updated</div>
+                    <div class="detail-label">@SharedLocalizer["Updated"]</div>
                     <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="receipt-footer">
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
     </div>
 </div>

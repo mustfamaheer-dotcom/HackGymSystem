@@ -5,8 +5,8 @@
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-pencil-square"></i> Edit Member</h4>
-        <span class="receipt-badge">Receipt</span>
+        <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit Member"]</h4>
+        <span class="receipt-badge">@SharedLocalizer["Receipt"]</span>
     </div>
 
     <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
@@ -17,7 +17,7 @@
             <div class="alert alert-danger">@error</div>
         }
 
-        <div class="section-title"><i class="bi bi-person-badge"></i> Basic Information</div>
+        <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
         <div class="row g-3">
             <div class="col-md-6">
                 <label asp-for="FullName" class="form-label"></label>
@@ -25,7 +25,7 @@
                 <span asp-validation-for="FullName" class="text-danger small"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="PhoneNumber" class="form-label">Phone</label>
+                <label asp-for="PhoneNumber" class="form-label">@SharedLocalizer["Phone"]</label>
                 <input asp-for="PhoneNumber" class="form-control" maxlength="11" />
                 <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
             </div>
@@ -34,15 +34,15 @@
                 <input asp-for="Email" class="form-control" type="email" />
             </div>
             <div class="col-md-3">
-                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                <label asp-for="DateOfBirth" class="form-label">@SharedLocalizer["Date of Birth"]</label>
                 <input asp-for="DateOfBirth" class="form-control" type="date" />
             </div>
             <div class="col-md-3">
                 <label asp-for="Gender" class="form-label"></label>
                 <select asp-for="Gender" class="form-select">
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
+                    <option value="">@SharedLocalizer["Select gender"]</option>
+                    <option value="Male">@SharedLocalizer["Male"]</option>
+                    <option value="Female">@SharedLocalizer["Female"]</option>
                 </select>
             </div>
             <div class="col-md-12">
@@ -56,43 +56,43 @@
             <div class="col-md-4">
                 <label asp-for="Nationality" class="form-label"></label>
                 <select asp-for="Nationality" class="form-select">
-                    <option value="">Select nationality</option>
-                    <option value="Egyptian">Egyptian</option>
-                    <option value="Saudi">Saudi</option>
-                    <option value="Emirati">Emirati</option>
-                    <option value="Kuwaiti">Kuwaiti</option>
-                    <option value="Qatari">Qatari</option>
-                    <option value="Bahraini">Bahraini</option>
-                    <option value="Omani">Omani</option>
-                    <option value="Jordanian">Jordanian</option>
-                    <option value="Lebanese">Lebanese</option>
-                    <option value="Syrian">Syrian</option>
-                    <option value="Palestinian">Palestinian</option>
-                    <option value="Iraqi">Iraqi</option>
-                    <option value="Yemeni">Yemeni</option>
-                    <option value="Libyan">Libyan</option>
-                    <option value="Tunisian">Tunisian</option>
-                    <option value="Algerian">Algerian</option>
-                    <option value="Moroccan">Moroccan</option>
-                    <option value="Sudanese">Sudanese</option>
-                    <option value="Other">Other</option>
+                    <option value="">@SharedLocalizer["Select nationality"]</option>
+                    <option value="Egyptian">@SharedLocalizer["Egyptian"]</option>
+                    <option value="Saudi">@SharedLocalizer["Saudi"]</option>
+                    <option value="Emirati">@SharedLocalizer["Emirati"]</option>
+                    <option value="Kuwaiti">@SharedLocalizer["Kuwaiti"]</option>
+                    <option value="Qatari">@SharedLocalizer["Qatari"]</option>
+                    <option value="Bahraini">@SharedLocalizer["Bahraini"]</option>
+                    <option value="Omani">@SharedLocalizer["Omani"]</option>
+                    <option value="Jordanian">@SharedLocalizer["Jordanian"]</option>
+                    <option value="Lebanese">@SharedLocalizer["Lebanese"]</option>
+                    <option value="Syrian">@SharedLocalizer["Syrian"]</option>
+                    <option value="Palestinian">@SharedLocalizer["Palestinian"]</option>
+                    <option value="Iraqi">@SharedLocalizer["Iraqi"]</option>
+                    <option value="Yemeni">@SharedLocalizer["Yemeni"]</option>
+                    <option value="Libyan">@SharedLocalizer["Libyan"]</option>
+                    <option value="Tunisian">@SharedLocalizer["Tunisian"]</option>
+                    <option value="Algerian">@SharedLocalizer["Algerian"]</option>
+                    <option value="Moroccan">@SharedLocalizer["Moroccan"]</option>
+                    <option value="Sudanese">@SharedLocalizer["Sudanese"]</option>
+                    <option value="Other">@SharedLocalizer["Other"]</option>
                 </select>
                 <span asp-validation-for="Nationality" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="NationalId" class="form-label">National ID</label>
+                <label asp-for="NationalId" class="form-label">@SharedLocalizer["National ID"]</label>
                 <input asp-for="NationalId" class="form-control" maxlength="14" />
                 <span asp-validation-for="NationalId" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="ReferralSource" class="form-label">Referral Source</label>
+                <label asp-for="ReferralSource" class="form-label">@SharedLocalizer["Referral Source"]</label>
                 <select asp-for="ReferralSource" class="form-select">
-                    <option value="">Select referral source</option>
-                    <option value="Social Media">Social Media</option>
-                    <option value="Friend">Friend</option>
-                    <option value="Walk-in">Walk-in</option>
-                    <option value="Advertisement">Advertisement</option>
-                    <option value="Other">Other</option>
+                    <option value="">@SharedLocalizer["Select referral source"]</option>
+                    <option value="Social Media">@SharedLocalizer["Social Media"]</option>
+                    <option value="Friend">@SharedLocalizer["Friend"]</option>
+                    <option value="Walk-in">@SharedLocalizer["Walk-in"]</option>
+                    <option value="Advertisement">@SharedLocalizer["Advertisement"]</option>
+                    <option value="Other">@SharedLocalizer["Other"]</option>
                 </select>
             </div>
             <div class="col-md-6">
@@ -101,13 +101,13 @@
             </div>
         </div>
 
-        <div class="section-divider"><span>Subscription</span></div>
-        <div class="section-title"><i class="bi bi-calendar-check"></i> Subscription Information</div>
+        <div class="section-divider"><span>@SharedLocalizer["Subscription"]</span></div>
+        <div class="section-title"><i class="bi bi-calendar-check"></i> @SharedLocalizer["Subscription Information"]</div>
         <div class="row g-3">
             <div class="col-md-4">
-                <label asp-for="PackageId" class="form-label">Membership Plan</label>
+                <label asp-for="PackageId" class="form-label">@SharedLocalizer["Membership Plan"]</label>
                 <select asp-for="PackageId" class="form-select">
-                    <option value="">-- Select Plan --</option>
+                    <option value="">@SharedLocalizer["-- Select Plan --"]</option>
                     @if (ViewBag.Plans is not null)
                     {
                         var plans = ViewBag.Plans as IEnumerable<Gym.Domain.Entities.MembershipPlan>;
@@ -115,7 +115,7 @@
                         {
                             foreach (var plan in plans)
                             {
-                                <option value="@plan.Id">@plan.Name (@plan.Price.ToString("N2") EGP)</option>
+                                <option value="@plan.Id">@SharedLocalizer["{0} ({1} EGP)", plan.Name, plan.Price.ToString("N2")]</option>
                             }
                         }
                     }
@@ -125,103 +125,103 @@
                 <label asp-for="SubscriptionPrice" class="form-label"></label>
                 <div class="input-group">
                     <input asp-for="SubscriptionPrice" class="form-control" type="number" step="0.01" min="0" />
-                    <span class="input-group-text">EGP</span>
+                    <span class="input-group-text">@SharedLocalizer["EGP"]</span>
                 </div>
             </div>
             <div class="col-md-4">
-                <label asp-for="SubscriptionDurationMonths" class="form-label">Duration (months)</label>
+                <label asp-for="SubscriptionDurationMonths" class="form-label">@SharedLocalizer["Duration (months)"]</label>
                 <input asp-for="SubscriptionDurationMonths" class="form-control" type="number" min="1" />
             </div>
             <div class="col-md-4">
-                <label asp-for="SubscriptionStartDate" class="form-label">Start Date</label>
+                <label asp-for="SubscriptionStartDate" class="form-label">@SharedLocalizer["Start Date"]</label>
                 <input asp-for="SubscriptionStartDate" class="form-control" type="date" />
             </div>
             <div class="col-md-4">
-                <label asp-for="FreeMonths" class="form-label">Free Months</label>
+                <label asp-for="FreeMonths" class="form-label">@SharedLocalizer["Free Months"]</label>
                 <input asp-for="FreeMonths" class="form-control" type="number" min="0" />
             </div>
             <div class="col-md-4">
-                <label asp-for="FreezeDays" class="form-label">Freeze Days</label>
+                <label asp-for="FreezeDays" class="form-label">@SharedLocalizer["Freeze Days"]</label>
                 <input asp-for="FreezeDays" class="form-control" type="number" min="0" />
             </div>
         </div>
 
-        <div class="section-divider"><span>Payment</span></div>
-        <div class="section-title"><i class="bi bi-credit-card"></i> Payment</div>
+        <div class="section-divider"><span>@SharedLocalizer["Payment"]</span></div>
+        <div class="section-title"><i class="bi bi-credit-card"></i> @SharedLocalizer["Payment"]</div>
         <div class="row g-3">
             <div class="col-md-4">
-                <label asp-for="PaidAmount" class="form-label">Amount Paid</label>
+                <label asp-for="PaidAmount" class="form-label">@SharedLocalizer["Amount Paid"]</label>
                 <div class="input-group">
                     <input asp-for="PaidAmount" class="form-control" type="number" step="0.01" min="0" />
-                    <span class="input-group-text">EGP</span>
+                    <span class="input-group-text">@SharedLocalizer["EGP"]</span>
                 </div>
             </div>
             <div class="col-md-4">
                 <label asp-for="PaymentMethod" class="form-label"></label>
                 <select asp-for="PaymentMethod" class="form-select">
-                    <option value="Cash">Cash</option>
-                    <option value="Visa">Visa</option>
-                    <option value="Instapay">Instapay</option>
-                    <option value="Wallet">Wallet</option>
+                    <option value="Cash">@SharedLocalizer["Cash"]</option>
+                    <option value="Visa">@SharedLocalizer["Visa"]</option>
+                    <option value="Instapay">@SharedLocalizer["Instapay"]</option>
+                    <option value="Wallet">@SharedLocalizer["Wallet"]</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Remaining</label>
+                <label class="form-label">@SharedLocalizer["Remaining"]</label>
                 <div class="input-group">
                     <input class="form-control" id="remainingAmount" readonly value="0" />
-                    <span class="input-group-text">EGP</span>
+                    <span class="input-group-text">@SharedLocalizer["EGP"]</span>
                 </div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Medical</span></div>
-        <div class="section-title"><i class="bi bi-heart-pulse"></i> Medical Information</div>
+        <div class="section-divider"><span>@SharedLocalizer["Medical"]</span></div>
+        <div class="section-title"><i class="bi bi-heart-pulse"></i> @SharedLocalizer["Medical Information"]</div>
         <div class="row g-3">
             <div class="col-md-4">
                 <div class="form-check mt-2">
                     <input asp-for="HasDisease" class="form-check-input" id="HasDisease" />
-                    <label asp-for="HasDisease" class="form-check-label">Has Disease / Condition</label>
+                    <label asp-for="HasDisease" class="form-check-label">@SharedLocalizer["Has Disease / Condition"]</label>
                 </div>
             </div>
             <div class="col-md-4">
-                <label asp-for="DiseaseType" class="form-label">Disease Type</label>
+                <label asp-for="DiseaseType" class="form-label">@SharedLocalizer["Disease Type"]</label>
                 <input asp-for="DiseaseType" class="form-control" id="DiseaseType" />
                 <span asp-validation-for="DiseaseType" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="Weight" class="form-label">Weight (kg)</label>
+                <label asp-for="Weight" class="form-label">@SharedLocalizer["Weight (kg)"]</label>
                 <div class="input-group">
                     <input asp-for="Weight" class="form-control" type="number" step="0.1" min="0" />
-                    <span class="input-group-text">kg</span>
+                    <span class="input-group-text">@SharedLocalizer["kg"]</span>
                 </div>
             </div>
         </div>
 
-        <div class="section-divider"><span>Fingerprint</span></div>
-        <div class="section-title"><i class="bi bi-fingerprint"></i> Fingerprint</div>
+        <div class="section-divider"><span>@SharedLocalizer["Fingerprint"]</span></div>
+        <div class="section-title"><i class="bi bi-fingerprint"></i> @SharedLocalizer["Fingerprint"]</div>
         <div class="row g-3">
             <div class="col-md-6">
-                <label asp-for="FingerprintDeviceId" class="form-label">Device ID</label>
+                <label asp-for="FingerprintDeviceId" class="form-label">@SharedLocalizer["Device ID"]</label>
                 <input asp-for="FingerprintDeviceId" class="form-control" type="number" />
             </div>
         </div>
 
-        <div class="section-divider"><span>Signatures</span></div>
-        <div class="section-title"><i class="bi bi-pen"></i> Signatures</div>
+        <div class="section-divider"><span>@SharedLocalizer["Signatures"]</span></div>
+        <div class="section-title"><i class="bi bi-pen"></i> @SharedLocalizer["Signatures"]</div>
         <div class="row g-3">
             <div class="col-md-6">
-                <label asp-for="MemberSignature" class="form-label">Member Signature</label>
+                <label asp-for="MemberSignature" class="form-label">@SharedLocalizer["Member Signature"]</label>
                 <textarea asp-for="MemberSignature" class="form-control" rows="3"></textarea>
             </div>
             <div class="col-md-6">
-                <label asp-for="AdminSignature" class="form-label">Admin Signature</label>
+                <label asp-for="AdminSignature" class="form-label">@SharedLocalizer["Admin Signature"]</label>
                 <textarea asp-for="AdminSignature" class="form-control" rows="3"></textarea>
             </div>
         </div>
 
         <div class="receipt-footer">
-            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update Member</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update Member"]</button>
         </div>
     </form>
 </div>

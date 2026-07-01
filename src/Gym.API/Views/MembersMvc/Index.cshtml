@@ -8,14 +8,14 @@
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-people-fill"></i> Members</h4>
-        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> Add Member</a>
+        <h4><i class="bi bi-people-fill"></i> @SharedLocalizer["Members"]</h4>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add Member"]</a>
     </div>
     <div class="p-3 border-bottom bg-light">
         <form asp-action="Index" method="get" class="row g-2 align-items-center">
             <div class="col-md-4">
                 <div class="input-group">
-                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by name, receipt, phone, or National ID..." value="@searchTerm" />
+                    <input type="text" name="searchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name, receipt, phone, or National ID..."]" value="@searchTerm" />
                     <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
                 </div>
             </div>
@@ -26,14 +26,14 @@
                         var ps2 = Model?.PageSize == 20 ? "selected" : "";
                         var ps3 = Model?.PageSize == 50 ? "selected" : "";
                     }
-                    <option value="10" selected="@ps1">10 per page</option>
-                    <option value="20" selected="@ps2">20 per page</option>
-                    <option value="50" selected="@ps3">50 per page</option>
+                    <option value="10" selected="@ps1">@SharedLocalizer["10 per page"]</option>
+                    <option value="20" selected="@ps2">@SharedLocalizer["20 per page"]</option>
+                    <option value="50" selected="@ps3">@SharedLocalizer["50 per page"]</option>
                 </select>
             </div>
             <div class="col-md-6 text-end">
-                <a asp-action="Import" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-upload"></i> Import Excel</a>
-                <a asp-action="Search" class="btn btn-outline-gold btn-sm rounded-pill"><i class="bi bi-search"></i> Advanced Search</a>
+                <a asp-action="Import" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-upload"></i> @SharedLocalizer["Import Excel"]</a>
+                <a asp-action="Search" class="btn btn-outline-gold btn-sm rounded-pill"><i class="bi bi-search"></i> @SharedLocalizer["Advanced Search"]</a>
             </div>
         </form>
     </div>
@@ -51,7 +51,7 @@
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-people" style="font-size: 3rem;"></i>
-            <p class="mt-2">No members found.</p>
+            <p class="mt-2">@SharedLocalizer["No members found."]</p>
         </div>
     }
     else
@@ -60,37 +60,37 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Member ID</th>
-                        <th>Receipt ID</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Plan</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Paid</th>
-                        <th>Actions</th>
+                        <th>@SharedLocalizer["Member ID"]</th>
+                        <th>@SharedLocalizer["Receipt ID"]</th>
+                        <th>@SharedLocalizer["Name"]</th>
+                        <th>@SharedLocalizer["Phone"]</th>
+                        <th>@SharedLocalizer["Plan"]</th>
+                        <th>@SharedLocalizer["End Date"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@SharedLocalizer["Paid"]</th>
+                        <th>@SharedLocalizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var member in Model.Items)
                     {
                         var isExpired = member.SubscriptionEndDate <= DateTime.UtcNow;
-                        var status = isExpired ? "Expired" : (member.IsDeleted ? "Deleted" : "Active");
+                        var status = isExpired ? SharedLocalizer["Expired"] : (member.IsDeleted ? SharedLocalizer["Deleted"] : SharedLocalizer["Active"]);
                         var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
                         <tr>
                             <td><span class="fw-semibold">@member.Code</span></td>
-                            <td><code style="font-size:0.8rem;color:#6B7280;background:#F3F4F6;padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
+                            <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
                             <td>@member.FullName</td>
                             <td>@member.PhoneNumber</td>
                             <td>@(member.PackageName ?? "-")</td>
                             <td>@member.SubscriptionEndDate.ToString("dd/MM/yyyy")</td>
                             <td><span class="badge-status @badgeClass">@status</span></td>
-                            <td>@member.PaidAmount.ToString("N2") EGP</td>
+                            <td>@SharedLocalizer["{0} EGP", member.PaidAmount.ToString("N2")]</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                                    <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
-                                    <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                                    <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -100,13 +100,13 @@
         </div>
 
         <div class="p-3 border-top d-flex justify-content-between align-items-center">
-            <small class="text-muted">Showing @Model.Items.Count of @Model.TotalCount members</small>
+            <small class="text-muted">@SharedLocalizer["Showing {0} of {1} members", Model.Items.Count, Model.TotalCount]</small>
             <nav>
                 <ul class="pagination pagination-sm">
                     @if (Model.HasPreviousPage)
                     {
                         <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">Previous</a>
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">@SharedLocalizer["Previous"]</a>
                         </li>
                     }
                     @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
@@ -118,7 +118,7 @@
                     @if (Model.HasNextPage)
                     {
                         <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">Next</a>
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm">@SharedLocalizer["Next"]</a>
                         </li>
                     }
                 </ul>

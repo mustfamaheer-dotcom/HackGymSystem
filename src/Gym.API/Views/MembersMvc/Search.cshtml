@@ -5,8 +5,8 @@
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-search"></i> Advanced Search</h4>
-        <span class="receipt-badge">@(Model.HasSearched ? Model.Results!.TotalCount + " results" : "Filters")</span>
+        <h4><i class="bi bi-search"></i> @SharedLocalizer["Advanced Search"]</h4>
+        <span class="receipt-badge">@(Model.HasSearched ? SharedLocalizer["{0} results", Model.Results!.TotalCount] : SharedLocalizer["Filters"])</span>
     </div>
 
     <form asp-action="Search" method="get" class="receipt-body">
@@ -15,32 +15,32 @@
             <div class="alert alert-danger">@error</div>
         }
 
-        <div class="section-title"><i class="bi bi-funnel"></i> Filters</div>
+        <div class="section-title"><i class="bi bi-funnel"></i> @SharedLocalizer["Filters"]</div>
         <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">Name</label>
-                <input asp-for="Name" class="form-control" placeholder="Full name" />
+                <label class="form-label">@SharedLocalizer["Name"]</label>
+                <input asp-for="Name" class="form-control" placeholder="@SharedLocalizer["Full name"]" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">National ID</label>
-                <input asp-for="NationalId" class="form-control" placeholder="14 digits" maxlength="14" />
+                <label class="form-label">@SharedLocalizer["National ID"]</label>
+                <input asp-for="NationalId" class="form-control" placeholder="@SharedLocalizer["14 digits"]" maxlength="14" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">Phone Number</label>
-                <input asp-for="PhoneNumber" class="form-control" placeholder="11 digits" maxlength="11" />
+                <label class="form-label">@SharedLocalizer["Phone Number"]</label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="@SharedLocalizer["11 digits"]" maxlength="11" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">Member ID</label>
-                <input asp-for="Code" class="form-control" type="number" min="1" placeholder="e.g. 1" />
+                <label class="form-label">@SharedLocalizer["Member ID"]</label>
+                <input asp-for="Code" class="form-control" type="number" min="1" placeholder="@SharedLocalizer["e.g. 1"]" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">Receipt Number</label>
-                <input asp-for="ReceiptNumber" class="form-control" placeholder="Receipt number" />
+                <label class="form-label">@SharedLocalizer["Receipt Number"]</label>
+                <input asp-for="ReceiptNumber" class="form-control" placeholder="@SharedLocalizer["Receipt number"]" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">Package</label>
+                <label class="form-label">@SharedLocalizer["Package"]</label>
                 <select asp-for="PackageId" class="form-select">
-                    <option value="">-- All Packages --</option>
+                    <option value="">@SharedLocalizer["-- All Packages --"]</option>
                     @foreach (var plan in Model.Plans)
                     {
                         <option value="@plan.Id">@plan.Name</option>
@@ -48,36 +48,36 @@
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Subscription Status</label>
+                <label class="form-label">@SharedLocalizer["Subscription Status"]</label>
                 <select asp-for="SubscriptionStatus" class="form-select">
-                    <option value="">-- All --</option>
-                    <option value="active">Active</option>
-                    <option value="expired">Expired</option>
-                    <option value="deleted">Deleted</option>
+                    <option value="">@SharedLocalizer["-- All --"]</option>
+                    <option value="active">@SharedLocalizer["Active"]</option>
+                    <option value="expired">@SharedLocalizer["Expired"]</option>
+                    <option value="deleted">@SharedLocalizer["Deleted"]</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Payment Status</label>
+                <label class="form-label">@SharedLocalizer["Payment Status"]</label>
                 <select asp-for="PaymentStatus" class="form-select">
-                    <option value="">-- All --</option>
-                    <option value="paid">Paid (No Balance)</option>
-                    <option value="outstanding">Outstanding Balance</option>
+                    <option value="">@SharedLocalizer["-- All --"]</option>
+                    <option value="paid">@SharedLocalizer["Paid (No Balance)"]</option>
+                    <option value="outstanding">@SharedLocalizer["Outstanding Balance"]</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Expiring Soon</label>
+                <label class="form-label">@SharedLocalizer["Expiring Soon"]</label>
                 <div class="d-flex align-items-center gap-2">
                     <input asp-for="ExpiringSoon" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
-                    <span class="text-muted small">Within</span>
+                    <span class="text-muted small">@SharedLocalizer["Within"]</span>
                     <input asp-for="ExpiringWithinDays" class="form-control" type="number" min="1" style="width:80px;" />
-                    <span class="text-muted small">days</span>
+                    <span class="text-muted small">@SharedLocalizer["days"]</span>
                 </div>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Outstanding Balance</label>
+                <label class="form-label">@SharedLocalizer["Outstanding Balance"]</label>
                 <div class="d-flex align-items-center gap-2 pt-1">
                     <input asp-for="OutstandingBalance" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
-                    <span class="text-muted small">Show only members with unpaid balance</span>
+                    <span class="text-muted small">@SharedLocalizer["Show only members with unpaid balance"]</span>
                 </div>
             </div>
         </div>
@@ -86,9 +86,9 @@
         <input type="hidden" asp-for="PageSize" value="20" />
 
         <div class="receipt-footer px-0 pb-0">
-            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
-            <a asp-action="Search" class="btn btn-outline-secondary">Clear Filters</a>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
+            <a asp-action="Search" class="btn btn-outline-secondary">@SharedLocalizer["Clear Filters"]</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> @SharedLocalizer["Search"]</button>
         </div>
     </form>
 
@@ -96,13 +96,13 @@
     {
         <div class="border-top"></div>
         <div class="receipt-body">
-            <div class="section-title"><i class="bi bi-table"></i> Results (@Model.Results!.TotalCount members found)</div>
+            <div class="section-title"><i class="bi bi-table"></i> @SharedLocalizer["Results ({0} members found)", Model.Results!.TotalCount]</div>
 
             @if (Model.Results.Items.Count == 0)
             {
                 <div class="text-center py-4 text-muted">
                     <i class="bi bi-search" style="font-size: 2rem;"></i>
-                    <p class="mt-2">No members match the selected filters.</p>
+                    <p class="mt-2">@SharedLocalizer["No members match the selected filters."]</p>
                 </div>
             }
             else
@@ -111,27 +111,27 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Member ID</th>
-                                <th>Receipt</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>National ID</th>
-                                <th>Plan</th>
-                                <th>End Date</th>
-                                <th>Remaining</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>@SharedLocalizer["Member ID"]</th>
+                                <th>@SharedLocalizer["Receipt"]</th>
+                                <th>@SharedLocalizer["Name"]</th>
+                                <th>@SharedLocalizer["Phone"]</th>
+                                <th>@SharedLocalizer["National ID"]</th>
+                                <th>@SharedLocalizer["Plan"]</th>
+                                <th>@SharedLocalizer["End Date"]</th>
+                                <th>@SharedLocalizer["Remaining"]</th>
+                                <th>@SharedLocalizer["Status"]</th>
+                                <th>@SharedLocalizer["Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var member in Model.Results.Items)
                             {
                                 var isExpired = member.SubscriptionEndDate <= DateTime.UtcNow;
-                                var status = isExpired ? "Expired" : (member.IsDeleted ? "Deleted" : "Active");
+                                var status = isExpired ? SharedLocalizer["Expired"] : (member.IsDeleted ? SharedLocalizer["Deleted"] : SharedLocalizer["Active"]);
                                 var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
                                 <tr>
                                     <td><span class="fw-semibold">@member.Code</span></td>
-                                    <td><code style="font-size:0.8rem;color:#6B7280;background:#F3F4F6;padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
+                                    <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
                                     <td>@member.FullName</td>
                                     <td>@member.PhoneNumber</td>
                                     <td>@(member.NationalId ?? "-")</td>
@@ -155,7 +155,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mt-3">
-                    <small class="text-muted">Page @Model.Results.Page of @Model.Results.TotalPages</small>
+                    <small class="text-muted">@SharedLocalizer["Page {0} of {1}", Model.Results.Page, Model.Results.TotalPages]</small>
                     <nav>
                         <ul class="pagination pagination-sm">
                             @if (Model.Results.HasPreviousPage)
@@ -174,7 +174,7 @@
                                        asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
                                        asp-route-OutstandingBalance="@Model.OutstandingBalance"
                                        asp-route-Page="@(Model.Results.Page - 1)"
-                                       asp-route-PageSize="@Model.Results.PageSize">Previous</a>
+                                       asp-route-PageSize="@Model.Results.PageSize">@SharedLocalizer["Previous"]</a>
                                 </li>
                             }
                             @for (int i = Math.Max(1, Model.Results.Page - 2); i <= Math.Min(Model.Results.TotalPages, Model.Results.Page + 2); i++)
@@ -212,7 +212,7 @@
                                        asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
                                        asp-route-OutstandingBalance="@Model.OutstandingBalance"
                                        asp-route-Page="@(Model.Results.Page + 1)"
-                                       asp-route-PageSize="@Model.Results.PageSize">Next</a>
+                                       asp-route-PageSize="@Model.Results.PageSize">@SharedLocalizer["Next"]</a>
                                 </li>
                             }
                         </ul>

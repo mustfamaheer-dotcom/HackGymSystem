@@ -106,11 +106,6 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasForeignKey(a => a.MemberId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(m => m.Payments)
-            .WithOne(p => p.Member)
-            .HasForeignKey(p => p.MemberId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasQueryFilter(x => !x.IsDeleted);
     }
 

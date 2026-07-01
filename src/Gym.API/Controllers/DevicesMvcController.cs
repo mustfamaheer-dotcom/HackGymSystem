@@ -7,6 +7,8 @@ using Gym.Application.Devices.Queries.GetDeviceById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -15,16 +17,18 @@ namespace Gym.API.Controllers;
 public class DevicesMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public DevicesMvcController(IMediator mediator)
+    public DevicesMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Devices";
+        ViewData["Title"] = _localizer["Devices"];
         var query = new GetAllDevicesQuery { Page = page, PageSize = pageSize, SearchTerm = searchTerm };
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
@@ -39,14 +43,14 @@ public class DevicesMvcController : Controller
     [HttpGet("create")]
     public IActionResult Create()
     {
-        ViewData["Title"] = "New Device";
+        ViewData["Title"] = _localizer["New Device"];
         return View();
     }
 
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateDeviceCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Device";
+        ViewData["Title"] = _localizer["New Device"];
         if (!ModelState.IsValid)
             return View(command);
         var result = await _mediator.Send(command, cancellationToken);
@@ -55,14 +59,14 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = "Device created successfully";
+        TempData["Success"] = _localizer["Device created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Device";
+        ViewData["Title"] = _localizer["Edit Device"];
         var result = await _mediator.Send(new GetDeviceByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -77,10 +81,10 @@ public class DevicesMvcController : Controller
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateDeviceCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Device";
+        ViewData["Title"] = _localizer["Edit Device"];
         if (id != command.Id)
         {
-            TempData["Error"] = "Route ID and form ID do not match";
+            TempData["Error"] = _localizer["Route ID and form ID do not match"];
             return View(command);
         }
         if (!ModelState.IsValid)
@@ -91,14 +95,14 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = "Device updated successfully";
+        TempData["Success"] = _localizer["Device updated successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Device Details";
+        ViewData["Title"] = _localizer["Device Details"];
         var result = await _mediator.Send(new GetDeviceByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -111,7 +115,7 @@ public class DevicesMvcController : Controller
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Delete Device";
+        ViewData["Title"] = _localizer["Delete Device"];
         var result = await _mediator.Send(new GetDeviceByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -130,7 +134,7 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = "Device deleted successfully";
+        TempData["Success"] = _localizer["Device deleted successfully"];
         return RedirectToAction(nameof(Index));
     }
 }

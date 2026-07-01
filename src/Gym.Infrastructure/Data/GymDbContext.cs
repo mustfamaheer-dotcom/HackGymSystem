@@ -21,7 +21,6 @@ public class GymDbContext : DbContext
     public DbSet<MembershipPlan> MembershipPlans => Set<MembershipPlan>();
     public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
-    public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Offer> Offers => Set<Offer>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Device> Devices => Set<Device>();
@@ -29,7 +28,6 @@ public class GymDbContext : DbContext
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<BackupLog> BackupLogs => Set<BackupLog>();
-    public DbSet<Package> Packages => Set<Package>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

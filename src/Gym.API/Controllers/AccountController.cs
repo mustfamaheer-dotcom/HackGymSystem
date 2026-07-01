@@ -1,6 +1,9 @@
+using Gym.API.Resources;
 using Gym.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -8,10 +11,12 @@ namespace Gym.API.Controllers;
 public class AccountController : Controller
 {
     private readonly IAuthService _authService;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public AccountController(IAuthService authService)
+    public AccountController(IAuthService authService, IStringLocalizer<SharedResources> localizer)
     {
         _authService = authService;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -31,7 +36,7 @@ public class AccountController : Controller
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            ViewBag.Error = "Username and password are required";
+            ViewBag.Error = _localizer["Username and password are required"];
             return View();
         }
 
@@ -39,7 +44,7 @@ public class AccountController : Controller
 
         if (result.IsFailure)
         {
-            ViewBag.Error = result.Message ?? "Login failed";
+            ViewBag.Error = result.Message ?? _localizer["Login failed"];
             return View();
         }
 
@@ -66,5 +71,23 @@ public class AccountController : Controller
 
         Response.Cookies.Delete("accessToken");
         return RedirectToAction("Login");
+    }
+
+    [HttpPost]
+    public IActionResult SetLanguage(string culture, string returnUrl = "/")
+    {
+        if (culture != "ar" && culture != "en")
+            culture = "ar";
+
+        Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture, culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true }
+        );
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return LocalRedirect(returnUrl);
+
+        return RedirectToAction("Index", "HomeMvc");
     }
 }

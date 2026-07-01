@@ -5,6 +5,8 @@ using Gym.Application.Notifications.Queries.GetNotificationById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -13,16 +15,18 @@ namespace Gym.API.Controllers;
 public class NotificationsMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public NotificationsMvcController(IMediator mediator)
+    public NotificationsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Notifications";
+        ViewData["Title"] = _localizer["Notifications"];
         var query = new GetAllNotificationsQuery { Page = page, PageSize = pageSize };
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
@@ -36,14 +40,14 @@ public class NotificationsMvcController : Controller
     [HttpGet("create")]
     public IActionResult Create()
     {
-        ViewData["Title"] = "New Notification";
+        ViewData["Title"] = _localizer["New Notification"];
         return View();
     }
 
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateNotificationCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Notification";
+        ViewData["Title"] = _localizer["New Notification"];
         if (!ModelState.IsValid)
             return View(command);
         var result = await _mediator.Send(command, cancellationToken);
@@ -52,14 +56,14 @@ public class NotificationsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = "Notification created successfully";
+        TempData["Success"] = _localizer["Notification created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Notification Details";
+        ViewData["Title"] = _localizer["Notification Details"];
         var result = await _mediator.Send(new GetNotificationByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {

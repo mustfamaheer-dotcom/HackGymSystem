@@ -6,8 +6,8 @@
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-plus-circle"></i> New Setting</h4>
-                <span class="receipt-badge">Setting</span>
+                <h4><i class="bi bi-plus-circle"></i> @SharedLocalizer["New Setting"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["Setting"]</span>
             </div>
             <form asp-action="Create" method="post" class="receipt-body">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
@@ -18,32 +18,32 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label asp-for="Key" class="form-label"></label>
-                        <input asp-for="Key" class="form-control" placeholder="e.g. gym_name" />
+                        <input asp-for="Key" class="form-control" placeholder="@SharedLocalizer["e.g. gym_name"]" />
                         <span asp-validation-for="Key" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Group" class="form-label">Group</label>
-                        <input asp-for="Group" class="form-control" placeholder="e.g. General" />
+                        <label asp-for="Group" class="form-label">@SharedLocalizer["Group"]</label>
+                        <input asp-for="Group" class="form-control" placeholder="@SharedLocalizer["e.g. General"]" />
                     </div>
                     <div class="col-md-12">
                         <label asp-for="Value" class="form-label"></label>
-                        <textarea asp-for="Value" class="form-control" rows="3" placeholder="Enter value"></textarea>
+                        <textarea asp-for="Value" class="form-control" rows="3" placeholder="@SharedLocalizer["Enter value"]"></textarea>
                         <span asp-validation-for="Value" class="text-danger small"></span>
                     </div>
                     <div class="col-md-12">
                         <label asp-for="Description" class="form-label"></label>
-                        <textarea asp-for="Description" class="form-control" rows="2" placeholder="Optional description"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional description"]"></textarea>
                     </div>
                     <div class="col-md-12">
                         <div class="form-check">
                             <input asp-for="IsEncrypted" class="form-check-input" />
-                            <label asp-for="IsEncrypted" class="form-check-label">Encrypt this value</label>
+                            <label asp-for="IsEncrypted" class="form-check-label">@SharedLocalizer["Encrypt this value"]</label>
                         </div>
                     </div>
                 </div>
                 <div class="receipt-footer px-0 pb-0 mt-3">
-                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create</button>
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Create"]</button>
                 </div>
             </form>
         </div>

@@ -15,20 +15,17 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
     private readonly IRepository<Member> _memberRepo;
     private readonly IRepository<Membership> _membershipRepo;
     private readonly IRepository<Attendance> _attendanceRepo;
-    private readonly IRepository<Payment> _paymentRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
 
     public GetDetailedDashboardQueryHandler(
         IRepository<Member> memberRepo,
         IRepository<Membership> membershipRepo,
         IRepository<Attendance> attendanceRepo,
-        IRepository<Payment> paymentRepo,
         IRepository<MembershipPlan> planRepo)
     {
         _memberRepo = memberRepo;
         _membershipRepo = membershipRepo;
         _attendanceRepo = attendanceRepo;
-        _paymentRepo = paymentRepo;
         _planRepo = planRepo;
     }
 
@@ -38,12 +35,10 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var today = now.Date;
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var memberQuery = _memberRepo.Query();
         var membershipQuery = _membershipRepo.Query();
         var attendanceQuery = _attendanceRepo.Query();
-        var paymentQuery = _paymentRepo.Query();
 
         var totalMembers = await memberQuery.CountAsync(cancellationToken);
         var activeMembers = await memberQuery.CountAsync(m => !m.IsDeleted, cancellationToken);
@@ -66,32 +61,7 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var currentlyCheckedIn = await attendanceQuery
             .CountAsync(a => a.Date == today && a.CheckOut == null, cancellationToken);
 
-        var daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
         var avgDailyThisMonth = Math.Round((double)monthAttendance / Math.Max(now.Day, 1), 1);
-
-        var todayRevenue = await paymentQuery
-            .Where(p => p.PaymentDate.Date == today)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-        var weeklyRevenue = await paymentQuery
-            .Where(p => p.PaymentDate >= weekStart)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-        var monthlyRevenue = await paymentQuery
-            .Where(p => p.PaymentDate >= monthStart)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-        var yearlyRevenue = await paymentQuery
-            .Where(p => p.PaymentDate >= yearStart)
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-        var totalRevenue = await paymentQuery
-            .SumAsync(p => (decimal?)p.TotalAmount, cancellationToken) ?? 0;
-
-        var todayCount = await paymentQuery.CountAsync(p => p.PaymentDate.Date == today, cancellationToken);
-        var monthCount = await paymentQuery.CountAsync(p => p.PaymentDate >= monthStart, cancellationToken);
-        var cashCount = await paymentQuery.CountAsync(p => p.PaymentMethod == PaymentMethod.Cash, cancellationToken);
-        var visaCount = await paymentQuery.CountAsync(p => p.PaymentMethod == PaymentMethod.Visa, cancellationToken);
-        var instapayCount = await paymentQuery.CountAsync(p => p.PaymentMethod == PaymentMethod.Instapay, cancellationToken);
-        var walletCount = await paymentQuery.CountAsync(p => p.PaymentMethod == PaymentMethod.Wallet, cancellationToken);
-        var overdueCount = await paymentQuery
-            .CountAsync(p => p.CreatedAt < now.AddDays(-30), cancellationToken);
 
         var membershipByPlan = await membershipQuery
             .Include(m => m.Plan)
@@ -139,17 +109,6 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             .ToList();
         var sixMonthsAgo = last6Months[0];
 
-        var monthlyRevenueData = await paymentQuery
-            .Where(p => p.PaymentDate >= sixMonthsAgo)
-            .GroupBy(p => new { p.PaymentDate.Year, p.PaymentDate.Month })
-            .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(p => p.TotalAmount) })
-            .ToListAsync(cancellationToken);
-        var monthlyRevenueTrend = last6Months.Select(d => new MonthlyStatDto
-        {
-            Label = d.ToString("MMM"),
-            Value = monthlyRevenueData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Revenue ?? 0
-        }).ToList();
-
         var monthlyMembersData = await memberQuery
             .Where(m => m.CreatedAt >= sixMonthsAgo)
             .GroupBy(m => new { m.CreatedAt.Year, m.CreatedAt.Month })
@@ -189,25 +148,9 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
                 CurrentlyCheckedIn = currentlyCheckedIn,
                 AvgDailyThisMonth = avgDailyThisMonth
             },
-            Payments = new PaymentsStatsDto
-            {
-                TodayRevenue = todayRevenue,
-                WeeklyRevenue = weeklyRevenue,
-                MonthlyRevenue = monthlyRevenue,
-                YearlyRevenue = yearlyRevenue,
-                TotalRevenue = totalRevenue,
-                TodayCount = todayCount,
-                ThisMonthCount = monthCount,
-                CashCount = cashCount,
-                VisaCount = visaCount,
-                InstapayCount = instapayCount,
-                WalletCount = walletCount,
-                OverdueCount = overdueCount
-            },
             MembershipByPlan = membershipByPlan,
             RecentActivities = recentActivities,
             DailyAttendanceTrend = dailyAttendanceTrend,
-            MonthlyRevenueTrend = monthlyRevenueTrend,
             MonthlyNewMembersTrend = monthlyNewMembersTrend
         };
 

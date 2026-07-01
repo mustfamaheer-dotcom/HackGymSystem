@@ -30,8 +30,6 @@ public static class ServiceRegistration
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         services.AddScoped<IMemberRepository, MemberRepository>();
-        services.AddScoped<IPackageRepository, PackageRepository>();
-        services.AddScoped<IPackageService, PackageService>();
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();

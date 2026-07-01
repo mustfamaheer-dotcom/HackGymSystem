@@ -1,16 +1,18 @@
 @{
     var error = ViewBag.Error as string;
     Layout = null;
+    var isRtl = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("ar");
+    var lang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@lang" dir="@(isRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Hack Gym</title>
+    <title>@SharedLocalizer["Login - Hack Gym"]</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -439,6 +441,17 @@
             .form-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
         }
 
+        /* ── RTL Support ── */
+        [dir="rtl"] body { font-family: 'Tajawal', 'Inter', system-ui, sans-serif; }
+        [dir="rtl"] .auth-card { direction: rtl; text-align: right; }
+        [dir="rtl"] .auth-card input { text-align: right; }
+        [dir="rtl"] .form-check { padding-right: 1.5em; padding-left: 0; }
+        [dir="rtl"] .form-check .form-check-input { float: right; margin-left: 0; margin-right: -1.5em; }
+        [dir="rtl"] .left-content { direction: rtl; }
+        [dir="rtl"] .left-content h1 { font-family: 'Tajawal', 'Poppins', sans-serif; }
+        [dir="rtl"] .feature-card { direction: rtl; }
+        [dir="rtl"] .login-security { direction: rtl; }
+
         /* ── Reduced Motion ── */
         @@media (prefers-reduced-motion: reduce) {
             .auth-card, .error-toast, .feature-card,
@@ -453,28 +466,27 @@
             <div class="bg-pattern"></div>
             <div class="left-content">
                 <div class="logo-area">
-                    <img src="/logo.png" alt="Hack Gym" />
+                    <img src="/logo.png" alt="@SharedLocalizer["Hack Gym"]" />
                 </div>
                 <h1 class="headline">
-                    STRONGER<br>
-                    <span class="gold-text">EVERY DAY</span>
+                    @SharedLocalizer["STRONGER"]<br>
+                    <span class="gold-text">@SharedLocalizer["EVERY DAY"]</span>
                 </h1>
                 <p class="subtitle">
-                    The all-in-one platform to manage members, workouts, subscriptions,
-                    trainers, and grow your fitness business.
+                    @SharedLocalizer["The all-in-one platform to manage members, workouts, subscriptions, trainers, and grow your fitness business."]
                 </p>
                 <div class="feature-cards">
                     <div class="feature-card">
                         <div class="fc-icon"><i class="bi bi-people"></i></div>
-                        <span class="fc-text"><strong>Manage Members</strong> &mdash; Track profiles, attendance &amp; payments</span>
+                        <span class="fc-text"><strong>@SharedLocalizer["Manage Members"]</strong> @SharedLocalizer["&mdash; Track profiles, attendance &amp; payments"]</span>
                     </div>
                     <div class="feature-card">
                         <div class="fc-icon"><i class="bi bi-graph-up-arrow"></i></div>
-                        <span class="fc-text"><strong>Track Workouts</strong> &mdash; Monitor performance &amp; progress</span>
+                        <span class="fc-text"><strong>@SharedLocalizer["Track Workouts"]</strong> @SharedLocalizer["&mdash; Monitor performance &amp; progress"]</span>
                     </div>
                     <div class="feature-card">
                         <div class="fc-icon"><i class="bi bi-bar-chart-fill"></i></div>
-                        <span class="fc-text"><strong>Grow Business</strong> &mdash; Analytics, reports &amp; insights</span>
+                        <span class="fc-text"><strong>@SharedLocalizer["Grow Business"]</strong> @SharedLocalizer["&mdash; Analytics, reports &amp; insights"]</span>
                     </div>
                 </div>
             </div>
@@ -484,8 +496,8 @@
         <div class="right-panel">
             <div class="auth-card">
                 <div class="auth-header">
-                    <h1>Welcome Back!</h1>
-                    <p>Sign in to your account to continue</p>
+                    <h1>@SharedLocalizer["Welcome Back!"]</h1>
+                    <p>@SharedLocalizer["Sign in to your account to continue"]</p>
                 </div>
 
                 @if (!string.IsNullOrEmpty(error))
@@ -498,19 +510,19 @@
 
                 <form method="post" action="/Account/Login" id="loginForm" novalidate>
                     <div class="form-group">
-                        <label for="username" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Username</label>
+                        <label for="username" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">@SharedLocalizer["Username"]</label>
                         <div class="input-wrapper">
                             <i class="bi bi-person input-icon"></i>
-                            <input type="text" id="username" name="username" class="form-input" placeholder="Username" required autocomplete="username" autofocus />
+                            <input type="text" id="username" name="username" class="form-input" placeholder="@SharedLocalizer["Username"]" required autocomplete="username" autofocus />
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Password</label>
+                        <label for="password" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">@SharedLocalizer["Password"]</label>
                         <div class="input-wrapper">
                             <i class="bi bi-lock input-icon"></i>
-                            <input type="password" id="password" name="password" class="form-input" placeholder="Password" required autocomplete="current-password" />
-                            <button type="button" class="toggle-pw" onclick="togglePassword()" aria-label="Show password" tabindex="-1">
+                            <input type="password" id="password" name="password" class="form-input" placeholder="@SharedLocalizer["Password"]" required autocomplete="current-password" />
+                            <button type="button" class="toggle-pw" onclick="togglePassword()" aria-label="@SharedLocalizer["Show password"]" tabindex="-1">
                                 <i class="bi bi-eye-slash" id="pwIcon"></i>
                             </button>
                         </div>
@@ -519,26 +531,26 @@
                     <div class="form-row">
                         <label class="remember-me">
                             <input type="checkbox" name="remember" value="true" checked />
-                            Remember me
+                            @SharedLocalizer["Remember me"]
                         </label>
                     </div>
 
                     <button type="submit" class="btn-primary" id="loginBtn" onclick="handleSubmit(this)">
                         <span class="btn-spinner"></span>
-                        <span class="btn-text"><i class="bi bi-box-arrow-in-right"></i> Sign In</span>
+                        <span class="btn-text"><i class="bi bi-box-arrow-in-right"></i> @SharedLocalizer["Sign In"]</span>
                     </button>
                 </form>
 
-                <div class="divider"><span>OR</span></div>
+                <div class="divider"><span>@SharedLocalizer["OR"]</span></div>
 
-                <button type="button" class="btn-secondary" aria-label="Secure login">
-                    <i class="bi bi-shield-check"></i> Secure Login
+                <button type="button" class="btn-secondary" aria-label="@SharedLocalizer["Secure login"]">
+                    <i class="bi bi-shield-check"></i> @SharedLocalizer["Secure Login"]
                 </button>
 
                 <div class="auth-footer">
                     <span class="security-msg">
                         <i class="bi bi-lock-fill"></i>
-                        Your data is 100% secure and encrypted.
+                        @SharedLocalizer["Your data is 100% secure and encrypted."]
                     </span>
                 </div>
             </div>

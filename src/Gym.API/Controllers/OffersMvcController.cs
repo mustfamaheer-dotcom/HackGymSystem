@@ -5,6 +5,8 @@ using Gym.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -14,17 +16,20 @@ public class OffersMvcController : Controller
 {
     private readonly IOfferService _offerService;
     private readonly IRepository<MembershipPlan> _planRepository;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public OffersMvcController(IOfferService offerService, IRepository<MembershipPlan> planRepository)
+    public OffersMvcController(IOfferService offerService, IRepository<MembershipPlan> planRepository,
+        IStringLocalizer<SharedResources> localizer)
     {
         _offerService = offerService;
         _planRepository = planRepository;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Offers";
+        ViewData["Title"] = _localizer["Offers"];
         ViewBag.SearchTerm = searchTerm;
 
         var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
@@ -40,7 +45,7 @@ public class OffersMvcController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Offer";
+        ViewData["Title"] = _localizer["New Offer"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -51,7 +56,7 @@ public class OffersMvcController : Controller
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateOfferDto dto, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Offer";
+        ViewData["Title"] = _localizer["New Offer"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -67,14 +72,14 @@ public class OffersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = "Offer created successfully";
+        TempData["Success"] = _localizer["Offer created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Offer";
+        ViewData["Title"] = _localizer["Edit Offer"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -109,7 +114,7 @@ public class OffersMvcController : Controller
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateOfferDto dto, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Offer";
+        ViewData["Title"] = _localizer["Edit Offer"];
         ViewBag.Plans = await _planRepository.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
@@ -117,7 +122,7 @@ public class OffersMvcController : Controller
 
         if (id != dto.Id)
         {
-            TempData["Error"] = "Route ID and form ID do not match";
+            TempData["Error"] = _localizer["Route ID and form ID do not match"];
             return View(dto);
         }
 
@@ -131,14 +136,14 @@ public class OffersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = "Offer updated successfully";
+        TempData["Success"] = _localizer["Offer updated successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Offer Details";
+        ViewData["Title"] = _localizer["Offer Details"];
         var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
         {
@@ -151,7 +156,7 @@ public class OffersMvcController : Controller
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Delete Offer";
+        ViewData["Title"] = _localizer["Delete Offer"];
         var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
         {
@@ -170,7 +175,7 @@ public class OffersMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = "Offer deleted successfully";
+        TempData["Success"] = _localizer["Offer deleted successfully"];
         return RedirectToAction(nameof(Index));
     }
 }

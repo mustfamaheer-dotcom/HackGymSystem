@@ -5,11 +5,9 @@ public class DetailedDashboardDto
     public MembersStatsDto Members { get; set; } = new();
     public MembershipsStatsDto Memberships { get; set; } = new();
     public AttendanceStatsDto Attendance { get; set; } = new();
-    public PaymentsStatsDto Payments { get; set; } = new();
     public List<PlanDistributionDto> MembershipByPlan { get; set; } = new();
     public List<RecentActivityDto> RecentActivities { get; set; } = new();
     public List<DailyStatDto> DailyAttendanceTrend { get; set; } = new();
-    public List<MonthlyStatDto> MonthlyRevenueTrend { get; set; } = new();
     public List<MonthlyStatDto> MonthlyNewMembersTrend { get; set; } = new();
 }
 
@@ -45,34 +43,18 @@ public class AttendanceStatsDto
     public double AvgDailyThisMonth { get; set; }
 }
 
-public class PaymentsStatsDto
-{
-    public decimal TodayRevenue { get; set; }
-    public decimal WeeklyRevenue { get; set; }
-    public decimal MonthlyRevenue { get; set; }
-    public decimal YearlyRevenue { get; set; }
-    public decimal TotalRevenue { get; set; }
-    public int TodayCount { get; set; }
-    public int ThisMonthCount { get; set; }
-    public int CashCount { get; set; }
-    public int VisaCount { get; set; }
-    public int InstapayCount { get; set; }
-    public int WalletCount { get; set; }
-    public int OverdueCount { get; set; }
-    public decimal AvgTransactionValue => ThisMonthCount > 0 ? Math.Round(MonthlyRevenue / ThisMonthCount, 2) : 0;
-    public double CashPercent => GetPaymentMethodPercent(CashCount);
-    public double VisaPercent => GetPaymentMethodPercent(VisaCount);
-    public double InstapayPercent => GetPaymentMethodPercent(InstapayCount);
-    public double WalletPercent => GetPaymentMethodPercent(WalletCount);
-    private int TotalPaymentMethods => CashCount + VisaCount + InstapayCount + WalletCount;
-    private double GetPaymentMethodPercent(int count) => TotalPaymentMethods > 0 ? Math.Round(count * 100.0 / TotalPaymentMethods, 1) : 0;
-}
-
 public class PlanDistributionDto
 {
     public string PlanName { get; set; } = string.Empty;
     public int Count { get; set; }
     public double Percent { get; set; }
+}
+
+public class RecentActivityDto
+{
+    public string Type { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
 }
 
 public class DailyStatDto
@@ -86,5 +68,3 @@ public class MonthlyStatDto
     public string Label { get; set; } = string.Empty;
     public decimal Value { get; set; }
 }
-
-

@@ -6,7 +6,7 @@
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-pencil-square"></i> Edit Device</h4>
+                <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit Device"]</h4>
                 <span class="receipt-badge">@Model.Name</span>
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
@@ -22,27 +22,27 @@
                         <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="IPAddress" class="form-label">IP Address</label>
+                        <label asp-for="IPAddress" class="form-label">@SharedLocalizer["IP Address"]</label>
                         <input asp-for="IPAddress" class="form-control" />
                         <span asp-validation-for="IPAddress" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Port" class="form-label">Port</label>
+                        <label asp-for="Port" class="form-label">@SharedLocalizer["Port"]</label>
                         <input asp-for="Port" type="number" class="form-control" />
                         <span asp-validation-for="Port" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Model" class="form-label">Model</label>
+                        <label asp-for="Model" class="form-label">@SharedLocalizer["Model"]</label>
                         <input asp-for="Model" class="form-control" />
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="SerialNumber" class="form-label">Serial Number</label>
+                        <label asp-for="SerialNumber" class="form-label">@SharedLocalizer["Serial Number"]</label>
                         <input asp-for="SerialNumber" class="form-control" />
                     </div>
                 </div>
                 <div class="receipt-footer px-0 pb-0 mt-3">
-                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update"]</button>
                 </div>
             </form>
         </div>

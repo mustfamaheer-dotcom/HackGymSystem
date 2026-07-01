@@ -6,7 +6,7 @@
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-pencil-square"></i> Edit Plan</h4>
+                <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit Plan"]</h4>
                 <span class="receipt-badge">@Model.Name</span>
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
@@ -17,10 +17,10 @@
                 }
                 <div class="row g-3">
                     <div class="col-md-12 d-flex align-items-center gap-3 mb-2">
-                        <label class="form-label mb-0">Status</label>
+                        <label class="form-label mb-0">@SharedLocalizer["Status"]</label>
                         <div class="form-check form-switch mb-0">
                             <input asp-for="IsActive" class="form-check-input" role="switch" id="planStatus" />
-                            <label class="form-check-label" for="planStatus" id="statusLabel">@(Model.IsActive ? "Active" : "Inactive")</label>
+                            <label class="form-check-label" for="planStatus" id="statusLabel">@(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</label>
                         </div>
                     </div>
                     <div class="col-md-12">
@@ -34,16 +34,16 @@
                         <span asp-validation-for="Price" class="text-danger small"></span>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="DurationDays" class="form-label">Duration (Days)</label>
+                        <label asp-for="DurationDays" class="form-label">@SharedLocalizer["Duration (Days)"]</label>
                         <input asp-for="DurationDays" type="number" class="form-control" />
                         <span asp-validation-for="DurationDays" class="text-danger small"></span>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="MaxVisits" class="form-label">Max Visits</label>
+                        <label asp-for="MaxVisits" class="form-label">@SharedLocalizer["Max Visits"]</label>
                         <input asp-for="MaxVisits" type="number" class="form-control" />
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="FreezeDays" class="form-label">Freeze Days</label>
+                        <label asp-for="FreezeDays" class="form-label">@SharedLocalizer["Freeze Days"]</label>
                         <input asp-for="FreezeDays" type="number" class="form-control" />
                     </div>
                     <div class="col-md-8">
@@ -53,12 +53,13 @@
                 </div>
                 <script>
                     document.getElementById('planStatus').addEventListener('change', function() {
-                        document.getElementById('statusLabel').textContent = this.checked ? 'Active' : 'Inactive';
+                        var el = document.getElementById('statusLabel');
+                        el.textContent = this.checked ? '@SharedLocalizer["Active"]' : '@SharedLocalizer["Inactive"]';
                     });
                 </script>
                 <div class="receipt-footer px-0 pb-0 mt-3">
-                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update"]</button>
                 </div>
             </form>
         </div>

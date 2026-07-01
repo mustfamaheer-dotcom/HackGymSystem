@@ -1,15 +1,15 @@
 @model PaginatedResult<AttendanceDto>
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-clock-history"></i> Attendance</h4>
+        <h4><i class="bi bi-clock-history"></i> @SharedLocalizer["Attendance"]</h4>
     </div>
     <div class="p-3 border-bottom bg-light">
         <form asp-action="Index" method="get" class="row g-2 align-items-center">
             <div class="col-md-2">
                 <select name="pageSize" class="form-select" onchange="this.form.submit()">
-                    <option value="10" selected="@(Model?.PageSize == 10 ? "selected" : null)">10 per page</option>
-                    <option value="20" selected="@(Model?.PageSize == 20 ? "selected" : null)">20 per page</option>
-                    <option value="50" selected="@(Model?.PageSize == 50 ? "selected" : null)">50 per page</option>
+                    <option value="10" selected="@(Model?.PageSize == 10 ? "selected" : null)">@SharedLocalizer["10 per page"]</option>
+                    <option value="20" selected="@(Model?.PageSize == 20 ? "selected" : null)">@SharedLocalizer["20 per page"]</option>
+                    <option value="50" selected="@(Model?.PageSize == 50 ? "selected" : null)">@SharedLocalizer["50 per page"]</option>
                 </select>
             </div>
         </form>
@@ -26,7 +26,7 @@
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-clock-history" style="font-size: 3rem;"></i>
-            <p class="mt-2">No attendance records found.</p>
+            <p class="mt-2">@SharedLocalizer["No attendance records found."]</p>
         </div>
     }
     else
@@ -35,14 +35,14 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Member</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Check In</th>
-                        <th>Check Out</th>
-                        <th>Device</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>@SharedLocalizer["Member"]</th>
+                        <th>@SharedLocalizer["Date"]</th>
+                        <th>@SharedLocalizer["Time"]</th>
+                        <th>@SharedLocalizer["Check In"]</th>
+                        <th>@SharedLocalizer["Check Out"]</th>
+                        <th>@SharedLocalizer["Device"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@SharedLocalizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,17 +66,17 @@
                                     };
                                     var syncLabel = item.SyncStatus switch
                                     {
-                                        AttendanceSyncStatus.Synced => "Synced",
-                                        AttendanceSyncStatus.Pending => "Pending",
-                                        AttendanceSyncStatus.Failed => "Failed",
-                                        _ => "Unknown"
+                                        AttendanceSyncStatus.Synced => SharedLocalizer["Synced"],
+                                        AttendanceSyncStatus.Pending => SharedLocalizer["Pending"],
+                                        AttendanceSyncStatus.Failed => SharedLocalizer["Failed"],
+                                        _ => SharedLocalizer["Unknown"]
                                     };
                                 }
                                 <span class="badge-status @syncClass">@syncLabel</span>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -85,12 +85,12 @@
             </table>
         </div>
         <div class="p-3 border-top d-flex justify-content-between align-items-center">
-            <small class="text-muted">Showing @Model.Items.Count of @Model.TotalCount records</small>
+            <small class="text-muted">@SharedLocalizer["Showing"] @Model.Items.Count @SharedLocalizer["of"] @Model.TotalCount @SharedLocalizer["records"]</small>
             <nav>
                 <ul class="pagination pagination-sm">
                     @if (Model.HasPreviousPage)
                     {
-                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Previous</a></li>
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">@SharedLocalizer["Previous"]</a></li>
                     }
                     @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
                     {
@@ -98,7 +98,7 @@
                     }
                     @if (Model.HasNextPage)
                     {
-                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Next</a></li>
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">@SharedLocalizer["Next"]</a></li>
                     }
                 </ul>
             </nav>

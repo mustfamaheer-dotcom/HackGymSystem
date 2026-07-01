@@ -8,6 +8,8 @@ using Gym.Application.Users.Queries.GetRoles;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -16,16 +18,18 @@ namespace Gym.API.Controllers;
 public class UsersMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public UsersMvcController(IMediator mediator)
+    public UsersMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Users";
+        ViewData["Title"] = _localizer["Users"];
 
         var query = new GetAllUsersQuery { Page = page, PageSize = pageSize, SearchTerm = searchTerm };
         var result = await _mediator.Send(query, cancellationToken);
@@ -44,7 +48,7 @@ public class UsersMvcController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New User";
+        ViewData["Title"] = _localizer["New User"];
 
         var rolesResult = await _mediator.Send(new GetRolesQuery(), cancellationToken);
         ViewBag.Roles = rolesResult.Data ?? [];
@@ -55,7 +59,7 @@ public class UsersMvcController : Controller
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New User";
+        ViewData["Title"] = _localizer["New User"];
 
         var rolesResult = await _mediator.Send(new GetRolesQuery(), cancellationToken);
         ViewBag.Roles = rolesResult.Data ?? [];
@@ -71,14 +75,14 @@ public class UsersMvcController : Controller
             return View(command);
         }
 
-        TempData["Success"] = "User created successfully";
+        TempData["Success"] = _localizer["User created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit User";
+        ViewData["Title"] = _localizer["Edit User"];
 
         var rolesResult = await _mediator.Send(new GetRolesQuery(), cancellationToken);
         ViewBag.Roles = rolesResult.Data ?? [];
@@ -102,14 +106,14 @@ public class UsersMvcController : Controller
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateUserCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit User";
+        ViewData["Title"] = _localizer["Edit User"];
 
         var rolesResult = await _mediator.Send(new GetRolesQuery(), cancellationToken);
         ViewBag.Roles = rolesResult.Data ?? [];
 
         if (id != command.Id)
         {
-            TempData["Error"] = "Route ID and form ID do not match";
+            TempData["Error"] = _localizer["Route ID and form ID do not match"];
             return View(command);
         }
 
@@ -124,14 +128,14 @@ public class UsersMvcController : Controller
             return View(command);
         }
 
-        TempData["Success"] = "User updated successfully";
+        TempData["Success"] = _localizer["User updated successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "User Details";
+        ViewData["Title"] = _localizer["User Details"];
 
         var result = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
 
@@ -147,7 +151,7 @@ public class UsersMvcController : Controller
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Delete User";
+        ViewData["Title"] = _localizer["Delete User"];
 
         var result = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
 
@@ -171,7 +175,7 @@ public class UsersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = "User deleted successfully";
+        TempData["Success"] = _localizer["User deleted successfully"];
         return RedirectToAction(nameof(Index));
     }
 }

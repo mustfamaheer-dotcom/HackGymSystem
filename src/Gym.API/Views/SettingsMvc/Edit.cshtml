@@ -8,7 +8,7 @@
     <div class="col-md-8">
         <div class="receipt-card">
             <div class="receipt-header">
-                <h4><i class="bi bi-pencil-square"></i> Edit Setting</h4>
+                <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit Setting"]</h4>
                 <span class="receipt-badge">@settingKey</span>
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
@@ -19,11 +19,11 @@
                 }
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="detail-label">Key</div>
+                        <div class="detail-label">@SharedLocalizer["Key"]</div>
                         <div class="fw-semibold">@settingKey</div>
                     </div>
                     <div class="col-md-6">
-                        <div class="detail-label">Group</div>
+                        <div class="detail-label">@SharedLocalizer["Group"]</div>
                         <div class="fw-semibold">@(!string.IsNullOrEmpty(settingGroup) ? settingGroup : "General")</div>
                     </div>
                     <div class="col-md-12">
@@ -33,8 +33,8 @@
                     </div>
                 </div>
                 <div class="receipt-footer px-0 pb-0 mt-3">
-                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update"]</button>
                 </div>
             </form>
         </div>

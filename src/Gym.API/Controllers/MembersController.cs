@@ -1,3 +1,4 @@
+using Gym.API.Resources;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Members.Commands.CreateMember;
 using Gym.Application.Members.Commands.DeleteMember;
@@ -12,6 +13,7 @@ using Gym.Application.Members.Queries.SearchMembers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -19,10 +21,12 @@ namespace Gym.API.Controllers;
 public class MembersController : BaseController
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public MembersController(IMediator mediator)
+    public MembersController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -38,7 +42,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve members"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members"]));
 
         return Ok(ApiResponse<PaginatedResult<MemberDto>>.Ok(result.Data!));
     }
@@ -50,7 +54,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Member not found"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Member not found"]));
 
         return Ok(ApiResponse<MemberDto>.Ok(result.Data!));
     }
@@ -62,7 +66,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Search failed"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Search failed"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -76,7 +80,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve expiring members"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve expiring members"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -88,7 +92,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve members with outstanding balance"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members with outstanding balance"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -99,7 +103,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to create member"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to create member"]));
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
     }
@@ -108,12 +112,12 @@ public class MembersController : BaseController
     public async Task<IActionResult> UpdateMember(Guid id, [FromBody] UpdateMemberCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
-            return BadRequest(ApiResponse.Fail("Route ID and body ID do not match"));
+            return BadRequest(ApiResponse.Fail(_localizer["Route ID and body ID do not match"]));
 
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to update member"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to update member"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }
@@ -126,7 +130,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to delete member"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to delete member"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }
@@ -139,7 +143,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to restore member"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to restore member"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }

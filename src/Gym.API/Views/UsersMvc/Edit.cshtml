@@ -6,8 +6,8 @@
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-pencil-square"></i> Edit User</h4>
-        <span class="receipt-badge">Admin</span>
+        <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit User"]</h4>
+        <span class="receipt-badge">@SharedLocalizer["Admin"]</span>
     </div>
 
     <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
@@ -20,7 +20,7 @@
 
         <div class="row g-3">
             <div class="col-md-6">
-                <label asp-for="FullName" class="form-label">Full Name</label>
+                <label asp-for="FullName" class="form-label">@SharedLocalizer["Full Name"]</label>
                 <input asp-for="FullName" class="form-control" />
                 <span asp-validation-for="FullName" class="text-danger small"></span>
             </div>
@@ -30,13 +30,13 @@
                 <span asp-validation-for="Email" class="text-danger small"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="Phone" class="form-label">Phone</label>
+                <label asp-for="Phone" class="form-label">@SharedLocalizer["Phone"]</label>
                 <input asp-for="Phone" class="form-control" />
             </div>
             <div class="col-md-6">
-                <label asp-for="RoleId" class="form-label">Role</label>
+                <label asp-for="RoleId" class="form-label">@SharedLocalizer["Role"]</label>
                 <select asp-for="RoleId" class="form-select">
-                    <option value="">Select role</option>
+                    <option value="">@SharedLocalizer["Select role"]</option>
                     @foreach (var role in roles)
                     {
                         <option value="@role.Id">@role.Name</option>
@@ -47,14 +47,14 @@
             <div class="col-md-6">
                 <div class="form-check mt-2">
                     <input asp-for="IsActive" class="form-check-input" id="IsActive" />
-                    <label asp-for="IsActive" class="form-check-label">Active</label>
+                    <label asp-for="IsActive" class="form-check-label">@SharedLocalizer["Active"]</label>
                 </div>
             </div>
         </div>
 
         <div class="receipt-footer px-0 pb-0 mt-3">
-            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Cancel</a>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update"]</button>
         </div>
     </form>
 </div>

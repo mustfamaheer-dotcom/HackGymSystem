@@ -3,41 +3,41 @@
 <div class="receipt-card">
     <div class="receipt-header">
         <h4><i class="bi bi-megaphone"></i> @Model.OfferTitle</h4>
-        <span class="receipt-badge">@(Model.IsActive ? "Active" : "Inactive")</span>
+        <span class="receipt-badge">@(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</span>
     </div>
     <div class="receipt-body">
-        <div class="section-title"><i class="bi bi-info-circle"></i> Offer Information</div>
+        <div class="section-title"><i class="bi bi-info-circle"></i> @SharedLocalizer["Offer Information"]</div>
         <table class="table table-borderless table-sm">
-            <tr><td class="detail-label">Offer Title</td><td class="detail-value">@Model.OfferTitle</td></tr>
-            <tr><td class="detail-label">Linked Package</td><td class="detail-value">@(Model.LinkedPackageName ?? "All Packages")</td></tr>
-            <tr><td class="detail-label">Offer Type</td><td class="detail-value">@Model.OfferType</td></tr>
-            <tr><td class="detail-label">Bonus Months</td><td class="detail-value">@(Model.BonusMonths?.ToString() ?? "-")</td></tr>
-            <tr><td class="detail-label">Bonus Days</td><td class="detail-value">@(Model.BonusDays?.ToString() ?? "-")</td></tr>
-            <tr><td class="detail-label">Offer Price</td><td class="detail-value">@(Model.OfferPrice?.ToString("N2") + " EGP" ?? "-")</td></tr>
-            <tr><td class="detail-label">Extra Freeze Days</td><td class="detail-value">@(Model.ExtraFreezeDays?.ToString() ?? "-")</td></tr>
-            <tr><td class="detail-label">Start Date</td><td class="detail-value">@Model.StartDate.ToString("dd/MM/yyyy")</td></tr>
-            <tr><td class="detail-label">End Date</td><td class="detail-value">@Model.EndDate.ToString("dd/MM/yyyy")</td></tr>
-            <tr><td class="detail-label">Description</td><td class="detail-value">@(Model.Description ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Offer Title"]</td><td class="detail-value">@Model.OfferTitle</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Linked Package"]</td><td class="detail-value">@(Model.LinkedPackageName ?? SharedLocalizer["All Packages"])</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Offer Type"]</td><td class="detail-value">@Model.OfferType</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Bonus Months"]</td><td class="detail-value">@(Model.BonusMonths?.ToString() ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Bonus Days"]</td><td class="detail-value">@(Model.BonusDays?.ToString() ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Offer Price"]</td><td class="detail-value">@(Model.OfferPrice.HasValue ? Model.OfferPrice.Value.ToString("N2") + " " + SharedLocalizer["EGP"] : "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Extra Freeze Days"]</td><td class="detail-value">@(Model.ExtraFreezeDays?.ToString() ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Start Date"]</td><td class="detail-value">@Model.StartDate.ToString("dd/MM/yyyy")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["End Date"]</td><td class="detail-value">@Model.EndDate.ToString("dd/MM/yyyy")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Description"]</td><td class="detail-value">@(Model.Description ?? "-")</td></tr>
         </table>
-        <div class="section-divider"><span>Timestamps</span></div>
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
         <div class="row g-3">
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Created</div>
+                    <div class="detail-label">@SharedLocalizer["Created"]</div>
                     <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">Updated</div>
+                    <div class="detail-label">@SharedLocalizer["Updated"]</div>
                     <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="receipt-footer">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
-        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> @SharedLocalizer["Delete"]</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
     </div>
 </div>

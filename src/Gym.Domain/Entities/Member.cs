@@ -40,7 +40,6 @@ public class Member : BaseEntity
     public MembershipPlan? Package { get; set; }
     public ICollection<Membership> Memberships { get; set; } = new List<Membership>();
     public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     private Member() { }

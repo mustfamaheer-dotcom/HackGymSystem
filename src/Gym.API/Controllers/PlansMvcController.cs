@@ -7,6 +7,8 @@ using Gym.Application.MembershipPlans.Queries.GetPlanById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
@@ -15,16 +17,18 @@ namespace Gym.API.Controllers;
 public class PlansMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public PlansMvcController(IMediator mediator)
+    public PlansMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        ViewData["Title"] = "Plans";
+        ViewData["Title"] = _localizer["Plans"];
         var query = new GetAllPlansQuery { Page = page, PageSize = pageSize, SearchTerm = searchTerm };
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
@@ -39,14 +43,14 @@ public class PlansMvcController : Controller
     [HttpGet("create")]
     public IActionResult Create()
     {
-        ViewData["Title"] = "New Plan";
+        ViewData["Title"] = _localizer["New Plan"];
         return View();
     }
 
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreatePlanCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Plan";
+        ViewData["Title"] = _localizer["New Plan"];
         if (!ModelState.IsValid)
             return View(command);
         var result = await _mediator.Send(command, cancellationToken);
@@ -55,14 +59,14 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = "Plan created successfully";
+        TempData["Success"] = _localizer["Plan created successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Plan";
+        ViewData["Title"] = _localizer["Edit Plan"];
         var result = await _mediator.Send(new GetPlanByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -77,10 +81,10 @@ public class PlansMvcController : Controller
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdatePlanCommand command, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Plan";
+        ViewData["Title"] = _localizer["Edit Plan"];
         if (id != command.Id)
         {
-            TempData["Error"] = "Route ID and form ID do not match";
+            TempData["Error"] = _localizer["Route ID and form ID do not match"];
             return View(command);
         }
         if (!ModelState.IsValid)
@@ -91,14 +95,14 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = "Plan updated successfully";
+        TempData["Success"] = _localizer["Plan updated successfully"];
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Plan Details";
+        ViewData["Title"] = _localizer["Plan Details"];
         var result = await _mediator.Send(new GetPlanByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -111,7 +115,7 @@ public class PlansMvcController : Controller
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Delete Plan";
+        ViewData["Title"] = _localizer["Delete Plan"];
         var result = await _mediator.Send(new GetPlanByIdQuery(id), cancellationToken);
         if (result.IsFailure)
         {
@@ -130,7 +134,7 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = "Plan deleted successfully";
+        TempData["Success"] = _localizer["Plan deleted successfully"];
         return RedirectToAction(nameof(Index));
     }
 }
