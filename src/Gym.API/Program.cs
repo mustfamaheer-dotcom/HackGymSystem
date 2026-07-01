@@ -118,14 +118,15 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.MapOpenApi();
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors("AllowFrontend");
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseAuthentication();
 app.UseAuthorization();

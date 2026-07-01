@@ -42,7 +42,15 @@ public class ExceptionMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception occurred");
-            await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, "An error occurred. Please try again later.");
+
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, "An error occurred. Please try again later.");
+            }
+            else
+            {
+                throw;
+            }
         }
     }
 
