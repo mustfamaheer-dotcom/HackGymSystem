@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Offers.DTOs;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("api/offers")]
 public class OffersController : BaseController
 {
@@ -19,6 +20,7 @@ public class OffersController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? searchTerm = null, CancellationToken cancellationToken = default)
     {
         var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
@@ -29,6 +31,7 @@ public class OffersController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _offerService.GetByIdAsync(id, cancellationToken);
@@ -39,6 +42,7 @@ public class OffersController : BaseController
     }
 
     [HttpGet("active")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
     {
         var result = await _offerService.GetActiveOffersAsync(cancellationToken);
@@ -49,6 +53,7 @@ public class OffersController : BaseController
     }
 
     [HttpGet("expired")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> GetExpired(CancellationToken cancellationToken)
     {
         var result = await _offerService.GetExpiredOffersAsync(cancellationToken);
@@ -59,6 +64,7 @@ public class OffersController : BaseController
     }
 
     [HttpGet("package/{packageId}")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> GetByPackage(Guid packageId, CancellationToken cancellationToken)
     {
         var result = await _offerService.GetOffersByPackageAsync(packageId, cancellationToken);
@@ -69,6 +75,7 @@ public class OffersController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Offers.Create")]
     public async Task<IActionResult> Create([FromBody] CreateOfferDto dto, CancellationToken cancellationToken)
     {
         var result = await _offerService.CreateAsync(dto, cancellationToken);
@@ -79,6 +86,7 @@ public class OffersController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Offers.Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOfferDto dto, CancellationToken cancellationToken)
     {
         dto.Id = id;
@@ -90,6 +98,7 @@ public class OffersController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [RequirePermission("Offers.Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _offerService.DeleteAsync(id, cancellationToken);
@@ -100,6 +109,7 @@ public class OffersController : BaseController
     }
 
     [HttpPost("apply")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> Apply([FromBody] ApplyOfferDto dto, CancellationToken cancellationToken)
     {
         var result = await _offerService.ApplyOfferAsync(dto.OfferId, dto.PackageId, dto.PackagePrice, dto.PackageDurationMonths, cancellationToken);

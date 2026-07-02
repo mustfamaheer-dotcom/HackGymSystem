@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Notifications.Commands.CreateNotification;
 using Gym.Application.Notifications.Commands.MarkNotificationFailed;
 using Gym.Application.Notifications.Commands.MarkNotificationSent;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 public class NotificationsController : BaseController
 {
     private readonly IMediator _mediator;
@@ -25,6 +26,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Notifications.View")]
     public async Task<IActionResult> GetAllNotifications([FromQuery] GetAllNotificationsQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -36,6 +38,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Notifications.View")]
     public async Task<IActionResult> GetNotificationById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetNotificationByIdQuery(id), cancellationToken);
@@ -47,6 +50,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpGet("pending")]
+    [RequirePermission("Notifications.View")]
     public async Task<IActionResult> GetPendingNotifications(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetPendingNotificationsQuery(), cancellationToken);
@@ -58,6 +62,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpGet("by-member/{memberId}")]
+    [RequirePermission("Notifications.View")]
     public async Task<IActionResult> GetMemberNotifications(Guid memberId, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetMemberNotificationsQuery(memberId), cancellationToken);
@@ -69,6 +74,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Notifications.Send")]
     public async Task<IActionResult> CreateNotification([FromBody] CreateNotificationCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -80,6 +86,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpPost("{id}/mark-sent")]
+    [RequirePermission("Notifications.Send")]
     public async Task<IActionResult> MarkNotificationSent(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new MarkNotificationSentCommand(id), cancellationToken);
@@ -91,6 +98,7 @@ public class NotificationsController : BaseController
     }
 
     [HttpPost("{id}/mark-failed")]
+    [RequirePermission("Notifications.Send")]
     public async Task<IActionResult> MarkNotificationFailed(Guid id, [FromBody] MarkNotificationFailedBody body, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new MarkNotificationFailedCommand(id, body.Error), cancellationToken);

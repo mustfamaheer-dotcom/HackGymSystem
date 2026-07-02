@@ -1,0 +1,239 @@
+@model PaginatedResult<SubscriptionDto>
+@{
+    var searchTerm = ViewBag.SearchTerm as string;
+    var statusFilter = ViewBag.StatusFilter as SubscriptionStatus?;
+    var dateFrom = ViewBag.DateFrom as string;
+    var dateTo = ViewBag.DateTo as string;
+    var expiresWithin = ViewBag.ExpiresWithinDays as int?;
+    var showFilters = !string.IsNullOrEmpty(searchTerm) || statusFilter.HasValue || !string.IsNullOrEmpty(dateFrom) || !string.IsNullOrEmpty(dateTo) || expiresWithin.HasValue;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-journal-text"></i> @SharedLocalizer["Subscriptions"]</h4>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Subscription"]</a>
+    </div>
+
+    @* WhatsApp Template Selector *@
+    <div class="p-3 border-bottom bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-whatsapp text-success"></i></span>
+                    <select id="whatsappTemplate" class="form-select">
+                        <option value="">@SharedLocalizer["Select WhatsApp template..."]</option>
+                        @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+                        {
+                            foreach (var t in tpls)
+                            {
+                                <option value="@t.Value">@t.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-8 text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template above, then click the WhatsApp button on any row"]
+            </div>
+        </div>
+    </div>
+
+    @* Search & Filters *@
+    <div class="p-3 border-bottom bg-light" style="border-top:1px solid var(--border-solid);">
+        <form asp-action="Index" method="get" id="filterForm">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input type="text" name="SearchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name, receipt or phone..."]" value="@searchTerm" />
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                        <option value="10" selected="@(Model?.PageSize == 10 ? true : null)">@SharedLocalizer["10 per page"]</option>
+                        <option value="20" selected="@(Model?.PageSize == 20 ? true : null)">@SharedLocalizer["20 per page"]</option>
+                        <option value="50" selected="@(Model?.PageSize == 50 ? true : null)">@SharedLocalizer["50 per page"]</option>
+                    </select>
+                </div>
+                <div class="col-md-5 text-end">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#advancedFilters" aria-expanded="@(showFilters ? "true" : "false")">
+                        <i class="bi @(showFilters ? "bi-chevron-up" : "bi-funnel")"></i> @SharedLocalizer["Filters"]
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-danger btn-sm rounded-pill @(showFilters ? "" : "d-none")" id="clearFiltersBtn">
+                        <i class="bi bi-x-lg"></i> @SharedLocalizer["Clear"]
+                    </a>
+                </div>
+            </div>
+
+            @* Advanced Filters Panel *@
+            <div class="collapse @(showFilters ? "show" : "") mt-3" id="advancedFilters">
+                <div class="card card-body border-0 bg-white shadow-sm p-3">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-muted mb-1">@SharedLocalizer["Status"]</label>
+                            <select name="StatusFilter" class="form-select">
+                                <option value="">@SharedLocalizer["All Statuses"]</option>
+                                @foreach (var s in Enum.GetValues<SubscriptionStatus>())
+                                {
+                                    <option value="@s" selected="@(statusFilter == s ? true : null)">@SharedLocalizer[s.ToString()]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-muted mb-1">@SharedLocalizer["From Date"]</label>
+                            <input type="date" name="DateFrom" class="form-control" value="@dateFrom" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-muted mb-1">@SharedLocalizer["To Date"]</label>
+                            <input type="date" name="DateTo" class="form-control" value="@dateTo" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-muted mb-1">@SharedLocalizer["Expires Within (Days)"]</label>
+                            <input type="number" name="ExpiresWithinDays" class="form-control" min="1" value="@expiresWithin" placeholder="@SharedLocalizer["e.g. 7"]" />
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> @SharedLocalizer["Apply Filters"]</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @* Flash Messages *@
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+
+    @* Empty State *@
+    @if (Model is null || Model.Items.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-journal-text" style="font-size: 3rem;"></i>
+            <p class="mt-2">@SharedLocalizer["No subscriptions found."]</p>
+        </div>
+    }
+    else
+    {
+        @* Table *@
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>@SharedLocalizer["Receipt"]</th>
+                        <th>@SharedLocalizer["Member"]</th>
+                        <th>@SharedLocalizer["Phone"]</th>
+                        <th>@SharedLocalizer["Plan"]</th>
+                        <th>@SharedLocalizer["Start Date"]</th>
+                        <th>@SharedLocalizer["Expiration"]</th>
+                        <th>@SharedLocalizer["Paid"]</th>
+                        <th>@SharedLocalizer["Remaining"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th class="text-center">@SharedLocalizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@item.ReceiptNumber</code></td>
+                            <td class="fw-semibold">@item.MemberName</td>
+                            <td>@item.MemberPhone</td>
+                            <td>@item.PlanName</td>
+                            <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
+                            <td>@item.ExpirationDate.ToString("dd/MM/yyyy")</td>
+                            <td>@item.AmountPaid.ToString("N2")</td>
+                            <td class="@(item.RemainingBalance > 0 ? "text-danger fw-semibold" : "text-success")">@item.RemainingBalance.ToString("N2")</td>
+                            <td>
+                                <span class="badge-status @(item.Status == SubscriptionStatus.Active ? "badge-active" : item.Status == SubscriptionStatus.Frozen ? "badge-warning" : item.Status == SubscriptionStatus.Expired ? "badge-expired" : "badge-frozen")">
+                                    @SharedLocalizer[item.Status.ToString()]
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
+                                    <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
+                                       data-phone="@item.MemberPhone"
+                                       data-member="@item.MemberName"
+                                       data-receipt="@item.ReceiptNumber"
+                                       data-expiration="@item.ExpirationDate.ToString("dd/MM/yyyy")"
+                                       data-daysremaining="@((int)(item.ExpirationDate - DateTime.UtcNow).TotalDays)"
+                                       data-offers="@(item.OfferTitle ?? "")"><i class="bi bi-whatsapp"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* Pagination *@
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">@SharedLocalizer["Showing"] @Model.Items.Count @SharedLocalizer["of"] @Model.TotalCount @SharedLocalizer["subscriptions"]</small>
+            <nav>
+                <ul class="pagination pagination-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-SearchTerm="@searchTerm" asp-route-StatusFilter="@statusFilter" asp-route-DateFrom="@dateFrom" asp-route-DateTo="@dateTo" asp-route-ExpiresWithinDays="@expiresWithin" asp-route-Page="@(Model.Page - 1)" asp-route-PageSize="@Model.PageSize">@SharedLocalizer["Previous"]</a>
+                        </li>
+                    }
+                    @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-SearchTerm="@searchTerm" asp-route-StatusFilter="@statusFilter" asp-route-DateFrom="@dateFrom" asp-route-DateTo="@dateTo" asp-route-ExpiresWithinDays="@expiresWithin" asp-route-Page="@i" asp-route-PageSize="@Model.PageSize">@i</a>
+                        </li>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-SearchTerm="@searchTerm" asp-route-StatusFilter="@statusFilter" asp-route-DateFrom="@dateFrom" asp-route-DateTo="@dateTo" asp-route-ExpiresWithinDays="@expiresWithin" asp-route-Page="@(Model.Page + 1)" asp-route-PageSize="@Model.PageSize">@SharedLocalizer["Next"]</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(Json.Serialize(ViewBag.WhatsAppTemplateData ?? new List<object>()));
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var select = document.getElementById('whatsappTemplate');
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+
+                var tid = select ? select.value : '';
+                if (!tid) {
+                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    return;
+                }
+
+                var body = templateMap[tid] || '';
+                var msg = body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{ExpirationDate\}/g, btn.dataset.expiration || '')
+                    .replace(/\{DaysRemaining\}/g, btn.dataset.daysremaining || '')
+                    .replace(/\{Offers\}/g, btn.dataset.offers || '');
+
+                var phone = btn.dataset.phone || '';
+                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+            });
+        })();
+    </script>
+}

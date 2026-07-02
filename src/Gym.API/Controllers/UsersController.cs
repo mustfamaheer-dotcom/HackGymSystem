@@ -1,4 +1,4 @@
-using Gym.API.Controllers;
+using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Users.Commands.CreateUser;
@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 public class UsersController : BaseController
 {
     private readonly IMediator _mediator;
@@ -26,6 +26,7 @@ public class UsersController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Users.View")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllUsersQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -33,6 +34,7 @@ public class UsersController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Users.View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
@@ -43,6 +45,7 @@ public class UsersController : BaseController
     }
 
     [HttpGet("roles")]
+    [RequirePermission("Users.View")]
     public async Task<IActionResult> GetRoles(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetRolesQuery(), cancellationToken);
@@ -50,6 +53,7 @@ public class UsersController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Users.Create")]
     public async Task<IActionResult> Create([FromBody] CreateUserCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -60,6 +64,7 @@ public class UsersController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Users.Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
@@ -73,6 +78,7 @@ public class UsersController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [RequirePermission("Users.Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeleteUserCommand(id), cancellationToken);

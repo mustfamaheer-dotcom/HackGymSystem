@@ -3,12 +3,13 @@ using Gym.Application.Dashboard.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 public class HomeMvcController : Controller
 {
     private readonly IMediator _mediator;
@@ -20,6 +21,7 @@ public class HomeMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Dashboard.View")]
     [Route("Home")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {

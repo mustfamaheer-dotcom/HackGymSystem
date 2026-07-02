@@ -26,7 +26,16 @@ public enum PaymentMethod
     Cash,
     Visa,
     Instapay,
-    Wallet
+    Wallet,
+    VodafoneCash
+}
+
+public enum SubscriptionStatus
+{
+    Active,
+    Frozen,
+    Expired,
+    Renewed
 }
 
 public enum NotificationChannel

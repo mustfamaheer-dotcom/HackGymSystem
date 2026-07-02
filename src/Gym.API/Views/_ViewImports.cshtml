@@ -28,8 +28,17 @@
 @using Gym.Application.Settings.DTOs
 @using Gym.Application.Settings.Commands.CreateSetting
 @using Gym.Application.Settings.Commands.UpdateSetting
+@using Gym.Application.Subscriptions.DTOs
+@using Gym.Application.Subscriptions.Commands.CreateSubscription
+@using Gym.Application.Subscriptions.Commands.FreezeSubscription
+@using Gym.Application.Subscriptions.Commands.RenewSubscription
+@using Gym.Application.Subscriptions.Commands.RecordSubscriptionPayment
+@using Gym.Application.WhatsAppTemplates.DTOs
+@using Gym.Application.WhatsAppTemplates.Commands.CreateTemplate
 @using Gym.Domain.Entities
 @using Gym.Shared.Enums
+@using Gym.API.Extensions
+@using Gym.Application.Common.Interfaces
 @inject IViewLocalizer Localizer
 @inject IStringLocalizer<SharedResources> SharedLocalizer
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

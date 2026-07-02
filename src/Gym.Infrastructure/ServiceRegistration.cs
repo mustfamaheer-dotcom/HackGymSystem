@@ -37,6 +37,7 @@ public static class ServiceRegistration
         services.AddScoped<IExcelImportService, ExcelImportService>();
         services.AddScoped<IOfferService, OfferService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         return services;

@@ -1,0 +1,113 @@
+@model CreateTemplateCommand
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-plus-circle"></i> @SharedLocalizer["New Template"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["WhatsApp"]</span>
+            </div>
+            <form asp-action="Create" method="post" class="receipt-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">@SharedLocalizer["Name"] <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" placeholder="@SharedLocalizer["e.g. Expiration Reminder"]" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MessageBody" class="form-label">@SharedLocalizer["Message Body"] <span class="text-danger">*</span></label>
+                    <textarea asp-for="MessageBody" class="form-control" rows="8" id="messageBody" placeholder="@SharedLocalizer["Write your message with placeholders..."]"></textarea>
+                    <span asp-validation-for="MessageBody" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Placeholders"]</label>
+                    <div class="d-flex flex-wrap gap-2 p-2 border rounded bg-light" id="placeholderChips">
+                        <span class="badge bg-secondary fs-6 px-3 py-2" draggable="true" data-placeholder="{MemberName}">
+                            <i class="bi bi-person"></i> {MemberName}
+                        </span>
+                        <span class="badge bg-secondary fs-6 px-3 py-2" draggable="true" data-placeholder="{ReceiptNumber}">
+                            <i class="bi bi-receipt"></i> {ReceiptNumber}
+                        </span>
+                        <span class="badge bg-secondary fs-6 px-3 py-2" draggable="true" data-placeholder="{ExpirationDate}">
+                            <i class="bi bi-calendar"></i> {ExpirationDate}
+                        </span>
+                        <span class="badge bg-secondary fs-6 px-3 py-2" draggable="true" data-placeholder="{DaysRemaining}">
+                            <i class="bi bi-clock"></i> {DaysRemaining}
+                        </span>
+                        <span class="badge bg-secondary fs-6 px-3 py-2" draggable="true" data-placeholder="{Offers}">
+                            <i class="bi bi-tags"></i> {Offers}
+                        </span>
+                    </div>
+                    <small class="text-muted">@SharedLocalizer["Drag and drop placeholders into the message body"]</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Assign to Task (Optional)"]</label>
+                    <select name="TriggerType" class="form-select">
+                        <option value="">@SharedLocalizer["No assignment"]</option>
+                        @foreach (var t in Enum.GetValues<NotificationType>())
+                        {
+                            <option value="@((int)t)">@SharedLocalizer[t.ToString()]</option>
+                        }
+                    </select>
+                    <small class="text-muted">@SharedLocalizer["Assign this template to an automated task"]</small>
+                </div>
+
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Create"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var chips = document.querySelectorAll('#placeholderChips .badge[draggable]');
+            var textarea = document.getElementById('messageBody');
+
+            chips.forEach(function(chip) {
+                chip.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', chip.dataset.placeholder);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+            });
+
+            textarea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            });
+
+            textarea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                var text = e.dataTransfer.getData('text/plain');
+                if (!text) return;
+                var start = textarea.selectionStart;
+                var end = textarea.selectionEnd;
+                var val = textarea.value;
+                textarea.value = val.substring(0, start) + text + val.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + text.length;
+                textarea.focus();
+            });
+
+            chips.forEach(function(chip) {
+                chip.addEventListener('click', function(e) {
+                    if (e.target.closest('.badge')) {
+                        var text = chip.dataset.placeholder;
+                        var start = textarea.selectionStart;
+                        var end = textarea.selectionEnd;
+                        var val = textarea.value;
+                        textarea.value = val.substring(0, start) + text + val.substring(end);
+                        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+                        textarea.focus();
+                    }
+                });
+            });
+        })();
+    </script>
+}

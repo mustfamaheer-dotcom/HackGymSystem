@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Offers.DTOs;
 using Gym.Domain.Entities;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("Offers")]
 public class OffersMvcController : Controller
 {
@@ -27,6 +28,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Offers"];
@@ -43,6 +45,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpGet("create")]
+    [RequirePermission("Offers.Create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Offer"];
@@ -54,6 +57,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpPost("create")]
+    [RequirePermission("Offers.Create")]
     public async Task<IActionResult> Create(CreateOfferDto dto, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Offer"];
@@ -77,6 +81,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpGet("edit/{id}")]
+    [RequirePermission("Offers.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Offer"];
@@ -112,6 +117,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpPost("edit/{id}")]
+    [RequirePermission("Offers.Edit")]
     public async Task<IActionResult> Edit(Guid id, UpdateOfferDto dto, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Offer"];
@@ -141,6 +147,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpGet("details/{id}")]
+    [RequirePermission("Offers.View")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Offer Details"];
@@ -154,6 +161,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpGet("delete/{id}")]
+    [RequirePermission("Offers.Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Delete Offer"];
@@ -167,6 +175,7 @@ public class OffersMvcController : Controller
     }
 
     [HttpPost("delete/{id}")]
+    [RequirePermission("Offers.Delete")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
         var result = await _offerService.DeleteAsync(id, cancellationToken);

@@ -26,8 +26,14 @@ public class GymDbContext : DbContext
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<DeviceLog> DeviceLogs => Set<DeviceLog>();
     public DbSet<Setting> Settings => Set<Setting>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<SubscriptionPayment> SubscriptionPayments => Set<SubscriptionPayment>();
+    public DbSet<SubscriptionFreezeHistory> SubscriptionFreezeHistories => Set<SubscriptionFreezeHistory>();
+    public DbSet<SubscriptionTransactionLog> SubscriptionTransactionLogs => Set<SubscriptionTransactionLog>();
+    public DbSet<WhatsAppTemplate> WhatsAppTemplates => Set<WhatsAppTemplate>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<BackupLog> BackupLogs => Set<BackupLog>();
+    public DbSet<PermissionAuditLog> PermissionAuditLogs => Set<PermissionAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

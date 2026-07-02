@@ -16,17 +16,29 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
     private readonly IRepository<Membership> _membershipRepo;
     private readonly IRepository<Attendance> _attendanceRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
+    private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
+    private readonly IRepository<SubscriptionPayment> _paymentRepo;
+    private readonly IRepository<SubscriptionFreezeHistory> _freezeRepo;
+    private readonly IRepository<Offer> _offerRepo;
 
     public GetDetailedDashboardQueryHandler(
         IRepository<Member> memberRepo,
         IRepository<Membership> membershipRepo,
         IRepository<Attendance> attendanceRepo,
-        IRepository<MembershipPlan> planRepo)
+        IRepository<MembershipPlan> planRepo,
+        IRepository<Domain.Entities.Subscription> subscriptionRepo,
+        IRepository<SubscriptionPayment> paymentRepo,
+        IRepository<SubscriptionFreezeHistory> freezeRepo,
+        IRepository<Offer> offerRepo)
     {
         _memberRepo = memberRepo;
         _membershipRepo = membershipRepo;
         _attendanceRepo = attendanceRepo;
         _planRepo = planRepo;
+        _subscriptionRepo = subscriptionRepo;
+        _paymentRepo = paymentRepo;
+        _freezeRepo = freezeRepo;
+        _offerRepo = offerRepo;
     }
 
     public async Task<Result<DetailedDashboardDto>> Handle(GetDetailedDashboardQuery request, CancellationToken cancellationToken)
@@ -39,7 +51,11 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var memberQuery = _memberRepo.Query();
         var membershipQuery = _membershipRepo.Query();
         var attendanceQuery = _attendanceRepo.Query();
+        var subscriptionQuery = _subscriptionRepo.Query();
+        var paymentQuery = _paymentRepo.Query();
+        var freezeQuery = _freezeRepo.Query();
 
+        // --- Existing Stats (Members, Memberships, Attendance) ---
         var totalMembers = await memberQuery.CountAsync(cancellationToken);
         var activeMembers = await memberQuery.CountAsync(m => !m.IsDeleted, cancellationToken);
         var newThisMonth = await memberQuery.CountAsync(m => m.CreatedAt >= monthStart, cancellationToken);
@@ -120,6 +136,108 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             Value = monthlyMembersData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0
         }).ToList();
 
+        // --- Subscription Stats ---
+        var subWithPlan = subscriptionQuery
+            .Include(s => s.Plan)
+            .Include(s => s.Offer);
+
+        var totalSubs = await subWithPlan.CountAsync(cancellationToken);
+        var activeSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
+        var frozenSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Frozen, cancellationToken);
+        var expiredSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Expired, cancellationToken);
+        var renewedSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Renewed, cancellationToken);
+
+        var totalRevenue = await paymentQuery.SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
+        var revenueThisMonth = await paymentQuery
+            .Where(p => p.CreatedAt >= monthStart)
+            .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
+        var revenueThisWeek = await paymentQuery
+            .Where(p => p.CreatedAt >= weekStart)
+            .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
+        var todayRevenue = await paymentQuery
+            .Where(p => p.CreatedAt >= today)
+            .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
+
+        var totalOutstanding = await subWithPlan
+            .SumAsync(s => (decimal?)s.RemainingBalance, cancellationToken) ?? 0;
+
+        var avgSubValue = totalSubs > 0
+            ? Math.Round(await subWithPlan.SumAsync(s => (decimal?)s.TotalSubscriptionValue, cancellationToken) ?? 0 / totalSubs, 2)
+            : 0;
+
+        var expiring7Days = await subWithPlan
+            .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now
+                && s.Status == SubscriptionStatus.Active, cancellationToken);
+        var expiring30Days = await subWithPlan
+            .CountAsync(s => s.ExpirationDate <= now.AddDays(30) && s.ExpirationDate > now
+                && s.Status == SubscriptionStatus.Active, cancellationToken);
+        var subsWithOffers = await subWithPlan.CountAsync(s => s.OfferId != null, cancellationToken);
+        var freezesThisMonth = await freezeQuery
+            .CountAsync(f => f.CreatedAt >= monthStart, cancellationToken);
+
+        // Revenue by Plan
+        var revenueByPlan = await subWithPlan
+            .GroupBy(s => new { s.PlanId, s.Plan.Name })
+            .Select(g => new SubscriptionRevenueByPlanDto
+            {
+                PlanName = g.Key.Name,
+                Count = g.Count(),
+                TotalPaid = g.Sum(s => s.AmountPaid),
+                TotalOutstanding = g.Sum(s => s.RemainingBalance)
+            })
+            .ToListAsync(cancellationToken);
+
+        var totalPaidAllPlans = revenueByPlan.Sum(r => r.TotalPaid);
+        foreach (var r in revenueByPlan)
+            r.Percent = totalPaidAllPlans > 0 ? Math.Round((double)(r.TotalPaid / totalPaidAllPlans) * 100, 1) : 0;
+
+        // Daily revenue trend (last 7 days)
+        var dailyPaymentData = await paymentQuery
+            .Where(p => p.CreatedAt >= last7Days[0])
+            .GroupBy(p => new { Date = p.CreatedAt.Date })
+            .Select(g => new { g.Key.Date, Revenue = g.Sum(p => p.Amount), Count = g.Count() })
+            .ToListAsync(cancellationToken);
+        var dailySubscriptionRevenue = last7Days.Select(d => new SubscriptionDailyRevenueDto
+        {
+            Label = d.ToString("ddd"),
+            Revenue = dailyPaymentData.FirstOrDefault(x => x.Date == d)?.Revenue ?? 0,
+            SubscriptionCount = dailyPaymentData.FirstOrDefault(x => x.Date == d)?.Count ?? 0
+        }).ToList();
+
+        // Monthly revenue trend (last 6 months)
+        var monthlyPaymentData = await paymentQuery
+            .Where(p => p.CreatedAt >= sixMonthsAgo)
+            .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(p => p.Amount), Payments = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var monthlySubCounts = await subWithPlan
+            .Where(s => s.CreatedAt >= sixMonthsAgo)
+            .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var monthlySubscriptionRevenue = last6Months.Select(d => new SubscriptionMonthlyRevenueDto
+        {
+            Label = d.ToString("MMM"),
+            Revenue = monthlyPaymentData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Revenue ?? 0,
+            NewSubscriptions = monthlySubCounts.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0
+        }).ToList();
+
+        // Recent subscription activity
+        var recentSubscriptionActivity = await subscriptionQuery
+            .Include(s => s.Member)
+            .Include(s => s.Plan)
+            .OrderByDescending(s => s.CreatedAt)
+            .Take(15)
+            .Select(s => new RecentActivityDto
+            {
+                Type = s.OfferId != null ? "subscription_offer" : "subscription",
+                Description = s.Member.FullName + " - " + s.ReceiptNumber + " (" + s.Plan.Name + ")",
+                Timestamp = s.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
         var dashboard = new DetailedDashboardDto
         {
             Members = new MembersStatsDto
@@ -148,10 +266,32 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
                 CurrentlyCheckedIn = currentlyCheckedIn,
                 AvgDailyThisMonth = avgDailyThisMonth
             },
+            Subscriptions = new SubscriptionStatsDto
+            {
+                TotalSubscriptions = totalSubs,
+                ActiveSubscriptions = activeSubs,
+                FrozenSubscriptions = frozenSubs,
+                ExpiredSubscriptions = expiredSubs,
+                RenewedSubscriptions = renewedSubs,
+                TotalRevenue = totalRevenue,
+                RevenueThisMonth = revenueThisMonth,
+                RevenueThisWeek = revenueThisWeek,
+                TodayRevenue = todayRevenue,
+                TotalOutstanding = totalOutstanding,
+                AverageSubscriptionValue = avgSubValue,
+                ExpiringNext7Days = expiring7Days,
+                ExpiringNext30Days = expiring30Days,
+                SubscriptionsWithOffers = subsWithOffers,
+                FreezesThisMonth = freezesThisMonth
+            },
             MembershipByPlan = membershipByPlan,
+            SubscriptionRevenueByPlan = revenueByPlan,
             RecentActivities = recentActivities,
             DailyAttendanceTrend = dailyAttendanceTrend,
-            MonthlyNewMembersTrend = monthlyNewMembersTrend
+            MonthlyNewMembersTrend = monthlyNewMembersTrend,
+            DailySubscriptionRevenue = dailySubscriptionRevenue,
+            MonthlySubscriptionRevenue = monthlySubscriptionRevenue,
+            RecentSubscriptionActivity = recentSubscriptionActivity
         };
 
         return Result<DetailedDashboardDto>.Success(dashboard);

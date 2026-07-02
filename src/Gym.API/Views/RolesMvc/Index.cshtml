@@ -1,0 +1,89 @@
+@using Gym.API.Extensions
+@model List<RoleListDto>
+@{
+    var canCreate = User.HasPermission("Roles.Create");
+    var canEdit = User.HasPermission("Roles.Edit");
+    var canDelete = User.HasPermission("Roles.Delete");
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-shield-lock-fill"></i> @SharedLocalizer["Roles & Permissions"]</h4>
+        <div>
+            @if (canCreate)
+            {
+                <a asp-action="Create" class="btn btn-sm btn-gold">
+                    <i class="bi bi-plus-lg"></i> @SharedLocalizer["New Role"]
+                </a>
+            }
+        </div>
+    </div>
+    <div class="receipt-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>@SharedLocalizer["Role Name"]</th>
+                        <th>@SharedLocalizer["Description"]</th>
+                        <th class="text-center">@SharedLocalizer["Users"]</th>
+                        <th class="text-center">@SharedLocalizer["Permissions"]</th>
+                        <th class="text-center">@SharedLocalizer["Status"]</th>
+                        <th>@SharedLocalizer["Created"]</th>
+                        <th class="text-end">@SharedLocalizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">@SharedLocalizer["No roles found"]</td>
+                        </tr>
+                    }
+                    @foreach (var role in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@role.Name</td>
+                            <td class="text-muted small">@role.Description</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary rounded-pill">@role.UserCount</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info rounded-pill">@role.PermissionCount</span>
+                            </td>
+                            <td class="text-center">
+                                @if (role.IsActive)
+                                {
+                                    <span class="badge-status badge-active">@SharedLocalizer["Active"]</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-expired">@SharedLocalizer["Inactive"]</span>
+                                }
+                            </td>
+                            <td class="small text-muted">@role.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@role.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["View Details"]">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (canEdit && !role.IsSystem)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-outline-primary" title="@SharedLocalizer["Edit"]">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    @if (canDelete && !role.IsSystem && role.UserCount == 0)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@role.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

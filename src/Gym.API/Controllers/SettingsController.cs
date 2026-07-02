@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Settings.Commands.CreateSetting;
 using Gym.Application.Settings.Commands.DeleteSetting;
 using Gym.Application.Settings.Commands.UpdateSetting;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 public class SettingsController : BaseController
 {
     private readonly IMediator _mediator;
@@ -24,6 +25,7 @@ public class SettingsController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Settings.View")]
     public async Task<IActionResult> GetAllSettings(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAllSettingsQuery(), cancellationToken);
@@ -35,6 +37,7 @@ public class SettingsController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Settings.View")]
     public async Task<IActionResult> GetSettingById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSettingByIdQuery(id), cancellationToken);
@@ -46,6 +49,7 @@ public class SettingsController : BaseController
     }
 
     [HttpGet("by-key/{key}")]
+    [RequirePermission("Settings.View")]
     public async Task<IActionResult> GetSettingByKey(string key, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSettingByKeyQuery(key), cancellationToken);
@@ -57,6 +61,7 @@ public class SettingsController : BaseController
     }
 
     [HttpGet("by-group/{group}")]
+    [RequirePermission("Settings.View")]
     public async Task<IActionResult> GetSettingsByGroup(string group, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSettingsByGroupQuery(group), cancellationToken);
@@ -68,6 +73,7 @@ public class SettingsController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> CreateSetting([FromBody] CreateSettingCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -79,6 +85,7 @@ public class SettingsController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> UpdateSetting(Guid id, [FromBody] UpdateSettingBody body, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new UpdateSettingCommand(id, body.Value), cancellationToken);
@@ -90,6 +97,7 @@ public class SettingsController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> DeleteSetting(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeleteSettingCommand(id), cancellationToken);

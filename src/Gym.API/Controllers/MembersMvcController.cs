@@ -8,12 +8,13 @@ using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 [Route("Members")]
 public class MembersMvcController : Controller
 {
@@ -37,6 +38,7 @@ public class MembersMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Members.View")]
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, string? sortBy = null, bool sortDescending = false, CancellationToken cancellationToken = default)
     {
@@ -57,6 +59,7 @@ public class MembersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Members.Create")]
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
@@ -68,6 +71,7 @@ public class MembersMvcController : Controller
         return View(new CreateMemberDto());
     }
 
+    [RequirePermission("Members.Create")]
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateMemberDto dto, CancellationToken cancellationToken)
     {
@@ -92,6 +96,7 @@ public class MembersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Members.Edit")]
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -143,6 +148,7 @@ public class MembersMvcController : Controller
         return View(dto);
     }
 
+    [RequirePermission("Members.Edit")]
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateMemberDto dto, CancellationToken cancellationToken)
     {
@@ -173,6 +179,7 @@ public class MembersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Members.View")]
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
@@ -206,6 +213,7 @@ public class MembersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Members.Delete")]
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
@@ -222,6 +230,7 @@ public class MembersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Members.Delete")]
     [HttpPost("delete/{id}")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
@@ -237,6 +246,7 @@ public class MembersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Members.View")]
     [HttpGet("search")]
     public async Task<IActionResult> Search(MemberSearchViewModel model, CancellationToken cancellationToken)
     {
@@ -277,6 +287,7 @@ public class MembersMvcController : Controller
         return View(model);
     }
 
+    [RequirePermission("Members.View")]
     [HttpGet("import")]
     public IActionResult Import()
     {
@@ -284,6 +295,7 @@ public class MembersMvcController : Controller
         return View();
     }
 
+    [RequirePermission("Members.View")]
     [HttpPost("import")]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {

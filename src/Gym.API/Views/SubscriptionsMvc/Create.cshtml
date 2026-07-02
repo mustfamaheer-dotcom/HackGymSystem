@@ -1,0 +1,251 @@
+@model CreateSubscriptionCommand
+@{
+    var error = TempData["Error"] as string;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-plus-circle"></i> @SharedLocalizer["New Subscription"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["Subscription"]</span>
+            </div>
+            <form asp-action="Create" method="post" class="receipt-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+
+                <div class="row g-3">
+                    @* Member - Searchable *@
+                    <div class="col-md-12">
+                        <label class="form-label">@SharedLocalizer["Member"] <span class="text-danger">*</span></label>
+                        <div class="member-search-wrapper">
+                            <input type="text" id="memberSearch" class="form-control" placeholder="@SharedLocalizer["Search for a member..."]" autocomplete="off" />
+                            <select asp-for="MemberId" class="form-select" id="memberSelect" hidden>
+                                <option value="">@SharedLocalizer["Select a member"]</option>
+                            </select>
+                            <div id="memberResults" class="member-results" style="display:none;"></div>
+                            <input type="hidden" asp-for="MemberId" id="memberIdHidden" />
+                            <span asp-validation-for="MemberId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    @* Plan *@
+                    <div class="col-md-6">
+                        <label asp-for="PlanId" class="form-label">@SharedLocalizer["Plan"]</label>
+                        <select asp-for="PlanId" asp-items="ViewBag.Plans" class="form-select" id="planSelect">
+                            <option value="">@SharedLocalizer["Select a plan"]</option>
+                        </select>
+                        <span asp-validation-for="PlanId" class="text-danger small"></span>
+                    </div>
+
+                    @* Offer *@
+                    <div class="col-md-6">
+                        <label asp-for="OfferId" class="form-label">@SharedLocalizer["Offer"]</label>
+                        <select asp-for="OfferId" asp-items="ViewBag.Offers" class="form-select" id="offerSelect">
+                            <option value="">@SharedLocalizer["No offer"]</option>
+                        </select>
+                        <span asp-validation-for="OfferId" class="text-danger small"></span>
+                    </div>
+
+                    @* Start Date *@
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label">@SharedLocalizer["Start Date"] <span class="text-danger">*</span></label>
+                        <input asp-for="StartDate" type="date" class="form-control" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="StartDate" class="text-danger small"></span>
+                    </div>
+
+                    @* Payment Method *@
+                    <div class="col-md-6">
+                        <label asp-for="PaymentMethod" class="form-label">@SharedLocalizer["Payment Method"] <span class="text-danger">*</span></label>
+                        <select asp-for="PaymentMethod" asp-items="ViewBag.PaymentMethods" class="form-select">
+                            <option value="">@SharedLocalizer["Select payment method"]</option>
+                        </select>
+                        <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                    </div>
+
+                    @* Amount Paid *@
+                    <div class="col-md-4">
+                        <label asp-for="AmountPaid" class="form-label">@SharedLocalizer["Amount Paid"] <span class="text-danger">*</span></label>
+                        <input asp-for="AmountPaid" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                        <span asp-validation-for="AmountPaid" class="text-danger small"></span>
+                    </div>
+
+                    @* Admin Signature *@
+                    <div class="col-md-4">
+                        <label asp-for="AdminSignature" class="form-label">@SharedLocalizer["Admin Signature"]</label>
+                        <input asp-for="AdminSignature" class="form-control" placeholder="@SharedLocalizer["Optional"]" />
+                    </div>
+
+                    @* Notes *@
+                    <div class="col-md-4">
+                        <label asp-for="Notes" class="form-label">@SharedLocalizer["Notes"]</label>
+                        <textarea asp-for="Notes" class="form-control" rows="1" placeholder="@SharedLocalizer["Optional"]"></textarea>
+                    </div>
+                </div>
+
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Create"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.member-search-wrapper { position: relative; }
+.member-results {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 1050;
+    background: #fff; border: 1px solid #dee2e6; border-radius: 6px;
+    max-height: 220px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.member-results .member-item {
+    padding: 8px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #f1f1f1; transition: background 0.15s;
+}
+.member-results .member-item:last-child { border-bottom: none; }
+.member-results .member-item:hover,
+.member-results .member-item.active { background: #eef2ff; }
+.member-results .member-item .m-name { font-weight: 600; font-size: 0.9rem; }
+.member-results .member-item .m-phone { font-size: 0.8rem; color: #6c757d; }
+.member-results .member-item .m-badge { font-size: 0.75rem; background: #e9ecef; padding: 2px 8px; border-radius: 10px; }
+.member-no-results { padding: 14px; text-align: center; color: #6c757d; font-size: 0.85rem; }
+</style>
+
+<script>
+(function() {
+    const searchInput = document.getElementById('memberSearch');
+    const resultsDiv = document.getElementById('memberResults');
+    const hiddenInput = document.getElementById('memberIdHidden');
+    let members = [];
+    let selectedId = null;
+    let activeIndex = -1;
+
+    // Load all members from the page data
+    @{
+        var membersJson = System.Text.Json.JsonSerializer.Serialize(
+            ((System.Collections.IEnumerable)((SelectList)ViewBag.Members).Items)
+                .Cast<dynamic>()
+                .Select(m => new {
+                    id = ((object)m.Id).ToString(),
+                    name = (string)m.FullName
+                }).ToList()
+        );
+    }
+    members = @Html.Raw(membersJson);
+
+    function filterMembers(query) {
+        const q = query.toLowerCase().trim();
+        if (!q) return members.slice(0, 50);
+        return members.filter(m =>
+            m.name.toLowerCase().includes(q)
+        ).slice(0, 50);
+    }
+
+    function renderResults(query) {
+        const filtered = filterMembers(query);
+        activeIndex = -1;
+        if (filtered.length === 0 || !query) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = filtered.map((m, i) =>
+            `<div class="member-item" data-index="${i}" data-id="${m.id}" data-name="${m.name}">
+                <div>
+                    <div class="m-name">${m.name}</div>
+                </div>
+                <div class="m-badge">${m.id.slice(0,8)}</div>
+            </div>`
+        ).join('');
+
+        resultsDiv.querySelectorAll('.member-item').forEach(el => {
+            el.addEventListener('click', function() {
+                selectMember(this.dataset.id, this.dataset.name);
+            });
+            el.addEventListener('mouseenter', function() {
+                resultsDiv.querySelectorAll('.member-item').forEach(e => e.classList.remove('active'));
+                this.classList.add('active');
+                activeIndex = parseInt(this.dataset.index);
+            });
+        });
+    }
+
+    function selectMember(id, name) {
+        selectedId = id;
+        hiddenInput.value = id;
+        searchInput.value = name;
+        resultsDiv.style.display = 'none';
+        searchInput.classList.remove('is-invalid');
+        searchInput.classList.add('is-valid');
+    }
+
+    searchInput.addEventListener('input', function() {
+        if (this.value && selectedId && !members.find(m => m.id === selectedId && m.name === this.value)) {
+            selectedId = null;
+            hiddenInput.value = '';
+            searchInput.classList.remove('is-valid');
+        }
+        renderResults(this.value);
+    });
+
+    searchInput.addEventListener('focus', function() {
+        if (this.value.length > 0) renderResults(this.value);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        const items = resultsDiv.querySelectorAll('.member-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+            if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, -1);
+            items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+            if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && activeIndex >= 0 && items[activeIndex]) {
+            e.preventDefault();
+            items[activeIndex].click();
+        } else if (e.key === 'Escape') {
+            resultsDiv.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.member-search-wrapper')) {
+            resultsDiv.style.display = 'none';
+        }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!hiddenInput.value) {
+            e.preventDefault();
+            searchInput.classList.add('is-invalid');
+            searchInput.focus();
+        }
+        var planVal = document.getElementById('planSelect').value;
+        var offerVal = document.getElementById('offerSelect').value;
+        if (!planVal && !offerVal) {
+            e.preventDefault();
+            document.getElementById('planSelect').classList.add('is-invalid');
+            document.getElementById('offerSelect').classList.add('is-invalid');
+        }
+    });
+
+    // Clear validation on change
+    document.getElementById('planSelect').addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+        if (this.value) document.getElementById('offerSelect').classList.remove('is-invalid');
+    });
+    document.getElementById('offerSelect').addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+        if (this.value) document.getElementById('planSelect').classList.remove('is-invalid');
+    });
+})();
+</script>

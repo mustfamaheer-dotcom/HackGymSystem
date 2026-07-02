@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,1182 +118,1709 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="10 per page" xml:space="preserve">
-    <value>10 لكل صفحة</value>
+    <value>10 Ã™â€žÃ™Æ’Ã™â€ž Ã˜ÂµÃ™ÂÃ˜Â­Ã˜Â©</value>
   </data>
   <data name="11 digits" xml:space="preserve">
-    <value>11 رقم</value>
+    <value>11 Ã˜Â±Ã™â€šÃ™â€¦</value>
   </data>
   <data name="14 digits" xml:space="preserve">
-    <value>14 رقم</value>
+    <value>14 Ã˜Â±Ã™â€šÃ™â€¦</value>
   </data>
   <data name="20 per page" xml:space="preserve">
-    <value>20 لكل صفحة</value>
+    <value>20 Ã™â€žÃ™Æ’Ã™â€ž Ã˜ÂµÃ™ÂÃ˜Â­Ã˜Â©</value>
   </data>
   <data name="50 per page" xml:space="preserve">
-    <value>50 لكل صفحة</value>
+    <value>50 Ã™â€žÃ™Æ’Ã™â€ž Ã˜ÂµÃ™ÂÃ˜Â­Ã˜Â©</value>
   </data>
   <data name="Account Info" xml:space="preserve">
-    <value>معلومات الحساب</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨</value>
   </data>
   <data name="Actions" xml:space="preserve">
-    <value>الإجراءات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â±Ã˜Â§Ã˜Â¡Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Active" xml:space="preserve">
-    <value>نشط</value>
+    <value>Ã™â€ Ã˜Â´Ã˜Â·</value>
   </data>
   <data name="Active Members" xml:space="preserve">
-    <value>الأعضاء النشطون</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â·Ã™Ë†Ã™â€ </value>
   </data>
   <data name="Active Memberships" xml:space="preserve">
-    <value>الاشتراكات النشطة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â·Ã˜Â©</value>
   </data>
   <data name="Activity" xml:space="preserve">
-    <value>النشاط</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â·</value>
   </data>
   <data name="Add" xml:space="preserve">
-    <value>إضافة</value>
+    <value>Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â©</value>
   </data>
   <data name="Add Member" xml:space="preserve">
-    <value>إضافة عضو</value>
+    <value>Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Add User" xml:space="preserve">
-    <value>إضافة مستخدم</value>
+    <value>Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦</value>
   </data>
   <data name="Additional notes" xml:space="preserve">
-    <value>ملاحظات إضافية</value>
+    <value>Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ™Å Ã˜Â©</value>
   </data>
   <data name="Address" xml:space="preserve">
-    <value>العنوان</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã™Ë†Ã˜Â§Ã™â€ </value>
   </data>
   <data name="Admin" xml:space="preserve">
-    <value>مدير</value>
+    <value>Ã™â€¦Ã˜Â¯Ã™Å Ã˜Â±</value>
   </data>
   <data name="Admin Signature" xml:space="preserve">
-    <value>توقيع المسؤول</value>
+    <value>Ã˜ÂªÃ™Ë†Ã™â€šÃ™Å Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â¤Ã™Ë†Ã™â€ž</value>
   </data>
   <data name="Advanced Search" xml:space="preserve">
-    <value>بحث متقدم</value>
+    <value>Ã˜Â¨Ã˜Â­Ã˜Â« Ã™â€¦Ã˜ÂªÃ™â€šÃ˜Â¯Ã™â€¦</value>
   </data>
   <data name="Advertisement" xml:space="preserve">
-    <value>إعلان</value>
+    <value>Ã˜Â¥Ã˜Â¹Ã™â€žÃ˜Â§Ã™â€ </value>
   </data>
   <data name="Algerian" xml:space="preserve">
-    <value>جزائري</value>
+    <value>Ã˜Â¬Ã˜Â²Ã˜Â§Ã˜Â¦Ã˜Â±Ã™Å </value>
   </data>
   <data name="All" xml:space="preserve">
-    <value>الكل</value>
+    <value>Ã˜Â§Ã™â€žÃ™Æ’Ã™â€ž</value>
   </data>
   <data name="All Packages" xml:space="preserve">
-    <value>كل الباقات</value>
+    <value>Ã™Æ’Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="All Packages select" xml:space="preserve">
-    <value>كل الباقات</value>
+    <value>Ã™Æ’Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="All-Time Revenue" xml:space="preserve">
-    <value>إجمالي الإيرادات</value>
+    <value>Ã˜Â¥Ã˜Â¬Ã™â€¦Ã˜Â§Ã™â€žÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜Â±Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Amount" xml:space="preserve">
-    <value>المبلغ</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¨Ã™â€žÃ˜Âº</value>
   </data>
   <data name="Amount Paid" xml:space="preserve">
-    <value>المبلغ المدفوع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¨Ã™â€žÃ˜Âº Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™ÂÃ™Ë†Ã˜Â¹</value>
   </data>
   <data name="Arabic" xml:space="preserve">
-    <value>العربية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¨Ã™Å Ã˜Â©</value>
   </data>
   <data name="Attendance" xml:space="preserve">
-    <value>الحضور</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Attendance Details" xml:space="preserve">
-    <value>تفاصيل الحضور</value>
+    <value>Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Attendance Log" xml:space="preserve">
-    <value>سجل الحضور</value>
+    <value>Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Attendance Summary" xml:space="preserve">
-    <value>ملخص الحضور</value>
+    <value>Ã™â€¦Ã™â€žÃ˜Â®Ã˜Âµ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Avg Transaction Value" xml:space="preserve">
-    <value>متوسط قيمة المعاملة</value>
+    <value>Ã™â€¦Ã˜ÂªÃ™Ë†Ã˜Â³Ã˜Â· Ã™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â§Ã™â€¦Ã™â€žÃ˜Â©</value>
   </data>
   <data name="Back to List" xml:space="preserve">
-    <value>عودة للقائمة</value>
+    <value>Ã˜Â¹Ã™Ë†Ã˜Â¯Ã˜Â© Ã™â€žÃ™â€žÃ™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ã˜Â©</value>
   </data>
   <data name="Backup" xml:space="preserve">
-    <value>نسخ احتياطي</value>
+    <value>Ã™â€ Ã˜Â³Ã˜Â® Ã˜Â§Ã˜Â­Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â·Ã™Å </value>
   </data>
   <data name="Bahraini" xml:space="preserve">
-    <value>بحريني</value>
+    <value>Ã˜Â¨Ã˜Â­Ã˜Â±Ã™Å Ã™â€ Ã™Å </value>
   </data>
   <data name="Basic Information" xml:space="preserve">
-    <value>المعلومات الأساسية</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â³Ã˜Â§Ã˜Â³Ã™Å Ã˜Â©</value>
   </data>
   <data name="Bonus" xml:space="preserve">
-    <value>المكافأة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â£Ã˜Â©</value>
   </data>
   <data name="Bonus Days" xml:space="preserve">
-    <value>أيام المكافأة</value>
+    <value>Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â£Ã˜Â©</value>
   </data>
   <data name="Bonus Duration" xml:space="preserve">
-    <value>مدة المكافأة</value>
+    <value>Ã™â€¦Ã˜Â¯Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â£Ã˜Â©</value>
   </data>
   <data name="Bonus Months" xml:space="preserve">
-    <value>أشهر المكافأة</value>
+    <value>Ã˜Â£Ã˜Â´Ã™â€¡Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â£Ã˜Â©</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>إلغاء</value>
+    <value>Ã˜Â¥Ã™â€žÃ˜ÂºÃ˜Â§Ã˜Â¡</value>
   </data>
   <data name="Cancelled" xml:space="preserve">
-    <value>ملغي</value>
+    <value>Ã™â€¦Ã™â€žÃ˜ÂºÃ™Å </value>
   </data>
   <data name="Cash" xml:space="preserve">
-    <value>نقداً</value>
+    <value>Ã™â€ Ã™â€šÃ˜Â¯Ã˜Â§Ã™â€¹</value>
   </data>
   <data name="Channel" xml:space="preserve">
-    <value>القناة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€šÃ™â€ Ã˜Â§Ã˜Â©</value>
   </data>
   <data name="Check In" xml:space="preserve">
-    <value>تسجيل دخول</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž</value>
   </data>
   <data name="Check Out" xml:space="preserve">
-    <value>تسجيل خروج</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â®Ã˜Â±Ã™Ë†Ã˜Â¬</value>
   </data>
   <data name="Check-ins" xml:space="preserve">
-    <value>تسجيل الحضور</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>مسح</value>
+    <value>Ã™â€¦Ã˜Â³Ã˜Â­</value>
   </data>
   <data name="Clear Filters" xml:space="preserve">
-    <value>مسح الفلاتر</value>
+    <value>Ã™â€¦Ã˜Â³Ã˜Â­ Ã˜Â§Ã™â€žÃ™ÂÃ™â€žÃ˜Â§Ã˜ÂªÃ˜Â±</value>
   </data>
   <data name="Column" xml:space="preserve">
-    <value>العمود</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™Ë†Ã˜Â¯</value>
   </data>
   <data name="Company" xml:space="preserve">
-    <value>الشركة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â±Ã™Æ’Ã˜Â©</value>
   </data>
   <data name="Configuration" xml:space="preserve">
-    <value>الإعدادات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>تأكيد</value>
+    <value>Ã˜ÂªÃ˜Â£Ã™Æ’Ã™Å Ã˜Â¯</value>
   </data>
   <data name="Confirm Delete" xml:space="preserve">
-    <value>تأكيد الحذف</value>
+    <value>Ã˜ÂªÃ˜Â£Ã™Æ’Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â°Ã™Â</value>
   </data>
   <data name="Create" xml:space="preserve">
-    <value>إضافة</value>
+    <value>Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â©</value>
   </data>
   <data name="Create Member" xml:space="preserve">
-    <value>إنشاء العضو</value>
+    <value>Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Created" xml:space="preserve">
-    <value>تاريخ الإنشاء</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Created At" xml:space="preserve">
-    <value>تاريخ الإنشاء</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Current Occupancy" xml:space="preserve">
-    <value>الإشغال الحالي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â´Ã˜ÂºÃ˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å </value>
   </data>
   <data name="Currently in Gym" xml:space="preserve">
-    <value>في الصالة حالياً</value>
+    <value>Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â§Ã™â€žÃ˜Â© Ã˜Â­Ã˜Â§Ã™â€žÃ™Å Ã˜Â§Ã™â€¹</value>
   </data>
   <data name="Daily Attendance" xml:space="preserve">
-    <value>الحضور اليومي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¶Ã™Ë†Ã˜Â± Ã˜Â§Ã™â€žÃ™Å Ã™Ë†Ã™â€¦Ã™Å </value>
   </data>
   <data name="Danger" xml:space="preserve">
-    <value>خطر</value>
+    <value>Ã˜Â®Ã˜Â·Ã˜Â±</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
-    <value>لوحة التحكم</value>
+    <value>Ã™â€žÃ™Ë†Ã˜Â­Ã˜Â© Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã™Æ’Ã™â€¦</value>
   </data>
   <data name="Dashboard Analysis" xml:space="preserve">
-    <value>تحليل لوحة التحكم</value>
+    <value>Ã˜ÂªÃ˜Â­Ã™â€žÃ™Å Ã™â€ž Ã™â€žÃ™Ë†Ã˜Â­Ã˜Â© Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã™Æ’Ã™â€¦</value>
   </data>
   <data name="Date" xml:space="preserve">
-    <value>التاريخ</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â®</value>
   </data>
   <data name="Date of Birth" xml:space="preserve">
-    <value>تاريخ الميلاد</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ™â€¦Ã™Å Ã™â€žÃ˜Â§Ã˜Â¯</value>
   </data>
   <data name="day(s)" xml:space="preserve">
-    <value>يوم</value>
+    <value>Ã™Å Ã™Ë†Ã™â€¦</value>
   </data>
   <data name="days" xml:space="preserve">
-    <value>أيام</value>
+    <value>Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>حذف</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â</value>
   </data>
   <data name="Delete Device" xml:space="preserve">
-    <value>حذف الجهاز</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â²</value>
   </data>
   <data name="Delete Member" xml:space="preserve">
-    <value>حذف العضو</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Delete Offer" xml:space="preserve">
-    <value>حذف العرض</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Delete Payment" xml:space="preserve">
-    <value>حذف الدفعة</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹Ã˜Â©</value>
   </data>
   <data name="Delete Permanently" xml:space="preserve">
-    <value>حذف نهائي</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã™â€ Ã™â€¡Ã˜Â§Ã˜Â¦Ã™Å </value>
   </data>
   <data name="Delete Plan" xml:space="preserve">
-    <value>حذف الباقة</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Delete User" xml:space="preserve">
-    <value>حذف المستخدم</value>
+    <value>Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦</value>
   </data>
   <data name="Deleted" xml:space="preserve">
-    <value>محذوف</value>
+    <value>Ã™â€¦Ã˜Â­Ã˜Â°Ã™Ë†Ã™Â</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>الوصف</value>
+    <value>Ã˜Â§Ã™â€žÃ™Ë†Ã˜ÂµÃ™Â</value>
   </data>
   <data name="Details" xml:space="preserve">
-    <value>التفاصيل</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž</value>
   </data>
   <data name="Device" xml:space="preserve">
-    <value>الجهاز</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â²</value>
   </data>
   <data name="Device ID" xml:space="preserve">
-    <value>رقم الجهاز</value>
+    <value>Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â²</value>
   </data>
   <data name="Device Info" xml:space="preserve">
-    <value>معلومات الجهاز</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â²</value>
   </data>
   <data name="Devices" xml:space="preserve">
-    <value>الأجهزة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¬Ã™â€¡Ã˜Â²Ã˜Â©</value>
   </data>
   <data name="Discount" xml:space="preserve">
-    <value>الخصم</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â®Ã˜ÂµÃ™â€¦</value>
   </data>
   <data name="Disease Type" xml:space="preserve">
-    <value>نوع المرض</value>
+    <value>Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Duration Days" xml:space="preserve">
-    <value>المدة (أيام)</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã˜Â© (Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦)</value>
   </data>
   <data name="Duration months" xml:space="preserve">
-    <value>المدة (أشهر)</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã˜Â© (Ã˜Â£Ã˜Â´Ã™â€¡Ã˜Â±)</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>تعديل</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž</value>
   </data>
   <data name="Edit Device" xml:space="preserve">
-    <value>تعديل الجهاز</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â²</value>
   </data>
   <data name="Edit Member" xml:space="preserve">
-    <value>تعديل العضو</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Edit Offer" xml:space="preserve">
-    <value>تعديل العرض</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Edit Plan" xml:space="preserve">
-    <value>تعديل الباقة</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Edit Setting" xml:space="preserve">
-    <value>تعديل الإعداد</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯</value>
   </data>
   <data name="Edit User" xml:space="preserve">
-    <value>تعديل المستخدم</value>
+    <value>Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦</value>
   </data>
   <data name="EGP" xml:space="preserve">
-    <value>ج.م</value>
+    <value>Ã˜Â¬.Ã™â€¦</value>
   </data>
   <data name="Egyptian" xml:space="preserve">
-    <value>مصري</value>
+    <value>Ã™â€¦Ã˜ÂµÃ˜Â±Ã™Å </value>
   </data>
   <data name="Email" xml:space="preserve">
-    <value>البريد الإلكتروني</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å </value>
   </data>
   <data name="email@example.com" xml:space="preserve">
-    <value>بريد@مثال.com</value>
+    <value>Ã˜Â¨Ã˜Â±Ã™Å Ã˜Â¯@Ã™â€¦Ã˜Â«Ã˜Â§Ã™â€ž.com</value>
   </data>
   <data name="Emirati" xml:space="preserve">
-    <value>إماراتي</value>
+    <value>Ã˜Â¥Ã™â€¦Ã˜Â§Ã˜Â±Ã˜Â§Ã˜ÂªÃ™Å </value>
   </data>
   <data name="Employee" xml:space="preserve">
-    <value>الموظف</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â</value>
   </data>
   <data name="Encrypted" xml:space="preserve">
-    <value>مشفر</value>
+    <value>Ã™â€¦Ã˜Â´Ã™ÂÃ˜Â±</value>
   </data>
   <data name="End" xml:space="preserve">
-    <value>النهاية</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€ Ã™â€¡Ã˜Â§Ã™Å Ã˜Â©</value>
   </data>
   <data name="End Date" xml:space="preserve">
-    <value>تاريخ الانتهاء</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â§Ã™â€ Ã˜ÂªÃ™â€¡Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="English" xml:space="preserve">
-    <value>الإنجليزية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€ Ã˜Â¬Ã™â€žÃ™Å Ã˜Â²Ã™Å Ã˜Â©</value>
   </data>
   <data name="Enter full name" xml:space="preserve">
-    <value>أدخل الاسم الكامل</value>
+    <value>Ã˜Â£Ã˜Â¯Ã˜Â®Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€ž</value>
   </data>
   <data name="Enter subject" xml:space="preserve">
-    <value>أدخل الموضوع</value>
+    <value>Ã˜Â£Ã˜Â¯Ã˜Â®Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¶Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Enter value" xml:space="preserve">
-    <value>أدخل القيمة</value>
+    <value>Ã˜Â£Ã˜Â¯Ã˜Â®Ã™â€ž Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â©</value>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>خطأ</value>
+    <value>Ã˜Â®Ã˜Â·Ã˜Â£</value>
   </data>
   <data name="EVERY DAY" xml:space="preserve">
-    <value>كل يوم</value>
+    <value>Ã™Æ’Ã™â€ž Ã™Å Ã™Ë†Ã™â€¦</value>
   </data>
   <data name="Excel" xml:space="preserve">
-    <value>إكسل</value>
+    <value>Ã˜Â¥Ã™Æ’Ã˜Â³Ã™â€ž</value>
   </data>
   <data name="Expired" xml:space="preserve">
-    <value>منتهي</value>
+    <value>Ã™â€¦Ã™â€ Ã˜ÂªÃ™â€¡Ã™Å </value>
   </data>
   <data name="Expired Subscriptions" xml:space="preserve">
-    <value>الاشتراكات المنتهية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ™â€¡Ã™Å Ã˜Â©</value>
   </data>
   <data name="Expiring This Week" xml:space="preserve">
-    <value>المنتهي هذا الأسبوع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ™â€¡Ã™Å  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â³Ã˜Â¨Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Extra Freeze Days" xml:space="preserve">
-    <value>أيام تجميد إضافية</value>
+    <value>Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜ÂªÃ˜Â¬Ã™â€¦Ã™Å Ã˜Â¯ Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ™Å Ã˜Â©</value>
   </data>
   <data name="Female" xml:space="preserve">
-    <value>أنثى</value>
+    <value>Ã˜Â£Ã™â€ Ã˜Â«Ã™â€°</value>
   </data>
   <data name="Filters" xml:space="preserve">
-    <value>الفلاتر</value>
+    <value>Ã˜Â§Ã™â€žÃ™ÂÃ™â€žÃ˜Â§Ã˜ÂªÃ˜Â±</value>
   </data>
   <data name="Fingerprint" xml:space="preserve">
-    <value>البصمة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â©</value>
   </data>
   <data name="Fingerprint scanners" xml:space="preserve">
-    <value>ماسحات البصمة</value>
+    <value>Ã™â€¦Ã˜Â§Ã˜Â³Ã˜Â­Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â©</value>
   </data>
   <data name="Firmware Version" xml:space="preserve">
-    <value>إصدار البرنامج</value>
+    <value>Ã˜Â¥Ã˜ÂµÃ˜Â¯Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™â€ Ã˜Â§Ã™â€¦Ã˜Â¬</value>
   </data>
   <data name="Free" xml:space="preserve">
-    <value>مجاني</value>
+    <value>Ã™â€¦Ã˜Â¬Ã˜Â§Ã™â€ Ã™Å </value>
   </data>
   <data name="Free Months" xml:space="preserve">
-    <value>أشهر مجانية</value>
+    <value>Ã˜Â£Ã˜Â´Ã™â€¡Ã˜Â± Ã™â€¦Ã˜Â¬Ã˜Â§Ã™â€ Ã™Å Ã˜Â©</value>
   </data>
   <data name="Freeze Days" xml:space="preserve">
-    <value>أيام التجميد</value>
+    <value>Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã™â€¦Ã™Å Ã˜Â¯</value>
   </data>
   <data name="Freeze Period" xml:space="preserve">
-    <value>فترة التجميد</value>
+    <value>Ã™ÂÃ˜ÂªÃ˜Â±Ã˜Â© Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã™â€¦Ã™Å Ã˜Â¯</value>
   </data>
   <data name="Friend" xml:space="preserve">
-    <value>صديق</value>
+    <value>Ã˜ÂµÃ˜Â¯Ã™Å Ã™â€š</value>
   </data>
   <data name="Frozen" xml:space="preserve">
-    <value>مجمّد</value>
+    <value>Ã™â€¦Ã˜Â¬Ã™â€¦Ã™â€˜Ã˜Â¯</value>
   </data>
   <data name="Full Name" xml:space="preserve">
-    <value>الاسم الكامل</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€ž</value>
   </data>
   <data name="Gender" xml:space="preserve">
-    <value>الجنس</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â³</value>
   </data>
   <data name="General" xml:space="preserve">
-    <value>عام</value>
+    <value>Ã˜Â¹Ã˜Â§Ã™â€¦</value>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>توليد</value>
+    <value>Ã˜ÂªÃ™Ë†Ã™â€žÃ™Å Ã˜Â¯</value>
   </data>
   <data name="Group" xml:space="preserve">
-    <value>المجموعة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹Ã˜Â©</value>
   </data>
   <data name="Grow Business" xml:space="preserve">
-    <value>تنمية الأعمال</value>
+    <value>Ã˜ÂªÃ™â€ Ã™â€¦Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã™â€¦Ã˜Â§Ã™â€ž</value>
   </data>
   <data name="Hack Gym" xml:space="preserve">
-    <value>هاك جيم</value>
+    <value>Ã™â€¡Ã˜Â§Ã™Æ’ Ã˜Â¬Ã™Å Ã™â€¦</value>
   </data>
   <data name="Has Disease" xml:space="preserve">
-    <value>يعاني من مرض</value>
+    <value>Ã™Å Ã˜Â¹Ã˜Â§Ã™â€ Ã™Å  Ã™â€¦Ã™â€  Ã™â€¦Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>الرئيسية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¦Ã™Å Ã˜Â³Ã™Å Ã˜Â©</value>
   </data>
   <data name="Import Excel" xml:space="preserve">
-    <value>استيراد إكسل</value>
+    <value>Ã˜Â§Ã˜Â³Ã˜ÂªÃ™Å Ã˜Â±Ã˜Â§Ã˜Â¯ Ã˜Â¥Ã™Æ’Ã˜Â³Ã™â€ž</value>
   </data>
   <data name="Import Members" xml:space="preserve">
-    <value>استيراد الأعضاء</value>
+    <value>Ã˜Â§Ã˜Â³Ã˜ÂªÃ™Å Ã˜Â±Ã˜Â§Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Import Results" xml:space="preserve">
-    <value>نتائج الاستيراد</value>
+    <value>Ã™â€ Ã˜ÂªÃ˜Â§Ã˜Â¦Ã˜Â¬ Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã˜ÂªÃ™Å Ã˜Â±Ã˜Â§Ã˜Â¯</value>
   </data>
   <data name="Inactive" xml:space="preserve">
-    <value>غير نشط</value>
+    <value>Ã˜ÂºÃ™Å Ã˜Â± Ã™â€ Ã˜Â´Ã˜Â·</value>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>معلومات</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Instapay" xml:space="preserve">
-    <value>إنستاباي</value>
+    <value>Ã˜Â¥Ã™â€ Ã˜Â³Ã˜ÂªÃ˜Â§Ã˜Â¨Ã˜Â§Ã™Å </value>
   </data>
   <data name="IP Address" xml:space="preserve">
-    <value>عنوان IP</value>
+    <value>Ã˜Â¹Ã™â€ Ã™Ë†Ã˜Â§Ã™â€  IP</value>
   </data>
   <data name="Iraqi" xml:space="preserve">
-    <value>عراقي</value>
+    <value>Ã˜Â¹Ã˜Â±Ã˜Â§Ã™â€šÃ™Å </value>
   </data>
   <data name="Is Active" xml:space="preserve">
-    <value>نشط</value>
+    <value>Ã™â€ Ã˜Â´Ã˜Â·</value>
   </data>
   <data name="Jordanian" xml:space="preserve">
-    <value>أردني</value>
+    <value>Ã˜Â£Ã˜Â±Ã˜Â¯Ã™â€ Ã™Å </value>
   </data>
   <data name="Key" xml:space="preserve">
-    <value>المفتاح</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜ÂªÃ˜Â§Ã˜Â­</value>
   </data>
   <data name="kg" xml:space="preserve">
-    <value>كغم</value>
+    <value>Ã™Æ’Ã˜ÂºÃ™â€¦</value>
   </data>
   <data name="Kuwaiti" xml:space="preserve">
-    <value>كويتي</value>
+    <value>Ã™Æ’Ã™Ë†Ã™Å Ã˜ÂªÃ™Å </value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>اللغة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â©</value>
   </data>
   <data name="Last Connected" xml:space="preserve">
-    <value>آخر اتصال</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â§Ã˜ÂªÃ˜ÂµÃ˜Â§Ã™â€ž</value>
   </data>
   <data name="Last Error" xml:space="preserve">
-    <value>آخر خطأ</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â®Ã˜Â·Ã˜Â£</value>
   </data>
   <data name="Last Login" xml:space="preserve">
-    <value>آخر تسجيل</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž</value>
   </data>
   <data name="Last Updated" xml:space="preserve">
-    <value>آخر تحديث</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«</value>
   </data>
   <data name="Lebanese" xml:space="preserve">
-    <value>لبناني</value>
+    <value>Ã™â€žÃ˜Â¨Ã™â€ Ã˜Â§Ã™â€ Ã™Å </value>
   </data>
   <data name="Libyan" xml:space="preserve">
-    <value>ليبي</value>
+    <value>Ã™â€žÃ™Å Ã˜Â¨Ã™Å </value>
   </data>
   <data name="Linked Package" xml:space="preserve">
-    <value>الباقة المرتبطة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã˜ÂªÃ˜Â¨Ã˜Â·Ã˜Â©</value>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>جارٍ التحميل</value>
+    <value>Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã™â€¦Ã™Å Ã™â€ž</value>
   </data>
   <data name="Login" xml:space="preserve">
-    <value>تسجيل الدخول</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž</value>
   </data>
   <data name="Login failed" xml:space="preserve">
-    <value>فشل تسجيل الدخول</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž</value>
   </data>
   <data name="Logout" xml:space="preserve">
-    <value>تسجيل الخروج</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â±Ã™Ë†Ã˜Â¬</value>
   </data>
   <data name="Male" xml:space="preserve">
-    <value>ذكر</value>
+    <value>Ã˜Â°Ã™Æ’Ã˜Â±</value>
   </data>
   <data name="Manage Members" xml:space="preserve">
-    <value>إدارة الأعضاء</value>
+    <value>Ã˜Â¥Ã˜Â¯Ã˜Â§Ã˜Â±Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Max Visits" xml:space="preserve">
-    <value>الزيارات القصوى</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€šÃ˜ÂµÃ™Ë†Ã™â€°</value>
   </data>
   <data name="Medical Information" xml:space="preserve">
-    <value>المعلومات الطبية</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â·Ã˜Â¨Ã™Å Ã˜Â©</value>
   </data>
   <data name="Member" xml:space="preserve">
-    <value>العضو</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Member ID" xml:space="preserve">
-    <value>رقم العضو</value>
+    <value>Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Member Info" xml:space="preserve">
-    <value>معلومات العضو</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Member Signature" xml:space="preserve">
-    <value>توقيع العضو</value>
+    <value>Ã˜ÂªÃ™Ë†Ã™â€šÃ™Å Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Members" xml:space="preserve">
-    <value>الأعضاء</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Members Breakdown" xml:space="preserve">
-    <value>تحليل الأعضاء</value>
+    <value>Ã˜ÂªÃ˜Â­Ã™â€žÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Membership Details" xml:space="preserve">
-    <value>تفاصيل الاشتراك</value>
+    <value>Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Membership Plan" xml:space="preserve">
-    <value>باقة العضوية</value>
+    <value>Ã˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†Ã™Å Ã˜Â©</value>
   </data>
   <data name="Membership plans" xml:space="preserve">
-    <value>باقات الاشتراك</value>
+    <value>Ã˜Â¨Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Memberships" xml:space="preserve">
-    <value>الاشتراكات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Memberships by Plan" xml:space="preserve">
-    <value>الاشتراكات حسب الباقة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª Ã˜Â­Ã˜Â³Ã˜Â¨ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Message" xml:space="preserve">
-    <value>الرسالة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â³Ã˜Â§Ã™â€žÃ˜Â©</value>
   </data>
   <data name="Method" xml:space="preserve">
-    <value>الطريقة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â·Ã˜Â±Ã™Å Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Model" xml:space="preserve">
-    <value>الموديل</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¯Ã™Å Ã™â€ž</value>
   </data>
   <data name="Modules" xml:space="preserve">
-    <value>الوحدات</value>
+    <value>Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â­Ã˜Â¯Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Monthly Revenue" xml:space="preserve">
-    <value>الإيرادات الشهرية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜Â±Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â´Ã™â€¡Ã˜Â±Ã™Å Ã˜Â©</value>
   </data>
   <data name="Monthly Revenue Trend" xml:space="preserve">
-    <value>اتجاه الإيرادات الشهرية</value>
+    <value>Ã˜Â§Ã˜ÂªÃ˜Â¬Ã˜Â§Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜Â±Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â´Ã™â€¡Ã˜Â±Ã™Å Ã˜Â©</value>
   </data>
   <data name="Moroccan" xml:space="preserve">
-    <value>مغربي</value>
+    <value>Ã™â€¦Ã˜ÂºÃ˜Â±Ã˜Â¨Ã™Å </value>
   </data>
   <data name="N/A" xml:space="preserve">
-    <value>غير متاح</value>
+    <value>Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­</value>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>الاسم</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦</value>
   </data>
   <data name="National ID" xml:space="preserve">
-    <value>الرقم القومي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€šÃ™Ë†Ã™â€¦Ã™Å </value>
   </data>
   <data name="Nationality" xml:space="preserve">
-    <value>الجنسية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â³Ã™Å Ã˜Â©</value>
   </data>
   <data name="Net Amount" xml:space="preserve">
-    <value>الصافي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â§Ã™ÂÃ™Å </value>
   </data>
   <data name="Never" xml:space="preserve">
-    <value>أبداً</value>
+    <value>Ã˜Â£Ã˜Â¨Ã˜Â¯Ã˜Â§Ã™â€¹</value>
   </data>
   <data name="New Device" xml:space="preserve">
-    <value>جهاز جديد</value>
+    <value>Ã˜Â¬Ã™â€¡Ã˜Â§Ã˜Â² Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</value>
   </data>
   <data name="New Notification" xml:space="preserve">
-    <value>إشعار جديد</value>
+    <value>Ã˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â± Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</value>
   </data>
   <data name="New Offer" xml:space="preserve">
-    <value>عرض جديد</value>
+    <value>Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</value>
   </data>
   <data name="New Payment" xml:space="preserve">
-    <value>دفعة جديدة</value>
+    <value>Ã˜Â¯Ã™ÂÃ˜Â¹Ã˜Â© Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯Ã˜Â©</value>
   </data>
   <data name="New Plan" xml:space="preserve">
-    <value>باقة جديدة</value>
+    <value>Ã˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯Ã˜Â©</value>
   </data>
   <data name="New Setting" xml:space="preserve">
-    <value>إعداد جديد</value>
+    <value>Ã˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</value>
   </data>
   <data name="New This Month" xml:space="preserve">
-    <value>جديد هذا الشهر</value>
+    <value>Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â´Ã™â€¡Ã˜Â±</value>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>التالي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â§Ã™â€žÃ™Å </value>
   </data>
   <data name="No" xml:space="preserve">
-    <value>لا</value>
+    <value>Ã™â€žÃ˜Â§</value>
   </data>
   <data name="No attendance records found" xml:space="preserve">
-    <value>لم يتم العثور على سجلات حضور</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â³Ã˜Â¬Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="No devices found" xml:space="preserve">
-    <value>لم يتم العثور على أجهزة</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â£Ã˜Â¬Ã™â€¡Ã˜Â²Ã˜Â©</value>
   </data>
   <data name="No members found" xml:space="preserve">
-    <value>لم يتم العثور على أعضاء</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="No memberships found" xml:space="preserve">
-    <value>لم يتم العثور على اشتراكات</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="No notifications found" xml:space="preserve">
-    <value>لم يتم العثور على إشعارات</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="No offers found" xml:space="preserve">
-    <value>لم يتم العثور على عروض</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶</value>
   </data>
   <data name="No payments found" xml:space="preserve">
-    <value>لم يتم العثور على مدفوعات</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã™â€¦Ã˜Â¯Ã™ÂÃ™Ë†Ã˜Â¹Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="No plans found" xml:space="preserve">
-    <value>لم يتم العثور على باقات</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¨Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="No settings found" xml:space="preserve">
-    <value>لم يتم العثور على إعدادات</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="No users found" xml:space="preserve">
-    <value>لم يتم العثور على مستخدمين</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦Ã™Å Ã™â€ </value>
   </data>
   <data name="None" xml:space="preserve">
-    <value>لا يوجد</value>
+    <value>Ã™â€žÃ˜Â§ Ã™Å Ã™Ë†Ã˜Â¬Ã˜Â¯</value>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>ملاحظات</value>
+    <value>Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Notification Info" xml:space="preserve">
-    <value>معلومات الإشعار</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â±</value>
   </data>
   <data name="Notifications" xml:space="preserve">
-    <value>الإشعارات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Num" xml:space="preserve">
     <value>#</value>
   </data>
   <data name="of" xml:space="preserve">
-    <value>من</value>
+    <value>Ã™â€¦Ã™â€ </value>
   </data>
   <data name="Offer Details" xml:space="preserve">
-    <value>تفاصيل العرض</value>
+    <value>Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offer Info" xml:space="preserve">
-    <value>معلومات العرض</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offer Name" xml:space="preserve">
-    <value>اسم العرض</value>
+    <value>Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offer Price" xml:space="preserve">
-    <value>سعر العرض</value>
+    <value>Ã˜Â³Ã˜Â¹Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offer Title" xml:space="preserve">
-    <value>عنوان العرض</value>
+    <value>Ã˜Â¹Ã™â€ Ã™Ë†Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offer Type" xml:space="preserve">
-    <value>نوع العرض</value>
+    <value>Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Offers" xml:space="preserve">
-    <value>العروض</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶</value>
   </data>
   <data name="Omani" xml:space="preserve">
-    <value>عماني</value>
+    <value>Ã˜Â¹Ã™â€¦Ã˜Â§Ã™â€ Ã™Å </value>
   </data>
   <data name="Online" xml:space="preserve">
-    <value>متصل</value>
+    <value>Ã™â€¦Ã˜ÂªÃ˜ÂµÃ™â€ž</value>
   </data>
   <data name="Optional" xml:space="preserve">
-    <value>اختياري</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â±Ã™Å </value>
   </data>
   <data name="OR" xml:space="preserve">
-    <value>أو</value>
+    <value>Ã˜Â£Ã™Ë†</value>
   </data>
   <data name="Other" xml:space="preserve">
-    <value>أخرى</value>
+    <value>Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€°</value>
   </data>
   <data name="Overdue Payments" xml:space="preserve">
-    <value>المدفوعات المتأخرة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™ÂÃ™Ë†Ã˜Â¹Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â£Ã˜Â®Ã˜Â±Ã˜Â©</value>
   </data>
   <data name="Package" xml:space="preserve">
-    <value>الباقة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>صفحة</value>
+    <value>Ã˜ÂµÃ™ÂÃ˜Â­Ã˜Â©</value>
   </data>
   <data name="Paid" xml:space="preserve">
-    <value>المدفوع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™ÂÃ™Ë†Ã˜Â¹</value>
   </data>
   <data name="Palestinian" xml:space="preserve">
-    <value>فلسطيني</value>
+    <value>Ã™ÂÃ™â€žÃ˜Â³Ã˜Â·Ã™Å Ã™â€ Ã™Å </value>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>كلمة المرور</value>
+    <value>Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Payment" xml:space="preserve">
-    <value>الدفع</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payment Date" xml:space="preserve">
-    <value>تاريخ الدفع</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payment Details" xml:space="preserve">
-    <value>تفاصيل الدفع</value>
+    <value>Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payment Method" xml:space="preserve">
-    <value>طريقة الدفع</value>
+    <value>Ã˜Â·Ã˜Â±Ã™Å Ã™â€šÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payment Methods" xml:space="preserve">
-    <value>طرق الدفع</value>
+    <value>Ã˜Â·Ã˜Â±Ã™â€š Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payment Status" xml:space="preserve">
-    <value>حالة الدفع</value>
+    <value>Ã˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="Payments" xml:space="preserve">
-    <value>المدفوعات</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™ÂÃ™Ë†Ã˜Â¹Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Pending" xml:space="preserve">
-    <value>قيد الانتظار</value>
+    <value>Ã™â€šÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â§Ã™â€ Ã˜ÂªÃ˜Â¸Ã˜Â§Ã˜Â±</value>
   </data>
   <data name="Period" xml:space="preserve">
-    <value>فترة الاشتراك</value>
+    <value>Ã™ÂÃ˜ÂªÃ˜Â±Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Phone" xml:space="preserve">
-    <value>الهاتف</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â</value>
   </data>
   <data name="Phone Number" xml:space="preserve">
-    <value>رقم الهاتف</value>
+    <value>Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â</value>
   </data>
   <data name="Plan" xml:space="preserve">
-    <value>الباقة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Plan Info" xml:space="preserve">
-    <value>معلومات الباقة</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Plans" xml:space="preserve">
-    <value>الباقات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="Port" xml:space="preserve">
-    <value>المنفذ</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã™ÂÃ˜Â°</value>
   </data>
   <data name="Previous" xml:space="preserve">
-    <value>السابق</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â§Ã˜Â¨Ã™â€š</value>
   </data>
   <data name="Price" xml:space="preserve">
-    <value>السعر</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¹Ã˜Â±</value>
   </data>
   <data name="Qatari" xml:space="preserve">
-    <value>قطري</value>
+    <value>Ã™â€šÃ˜Â·Ã˜Â±Ã™Å </value>
   </data>
   <data name="Quick Amounts" xml:space="preserve">
-    <value>مبالغ سريعة</value>
+    <value>Ã™â€¦Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Âº Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹Ã˜Â©</value>
   </data>
   <data name="Reason" xml:space="preserve">
-    <value>السبب</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¨Ã˜Â¨</value>
   </data>
   <data name="Receipt" xml:space="preserve">
-    <value>الإيصال</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜ÂµÃ˜Â§Ã™â€ž</value>
   </data>
   <data name="Receipt ID" xml:space="preserve">
-    <value>رقم الإيصال</value>
+    <value>Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜ÂµÃ˜Â§Ã™â€ž</value>
   </data>
   <data name="Receipt Number" xml:space="preserve">
-    <value>رقم الإيصال</value>
+    <value>Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¥Ã™Å Ã˜ÂµÃ˜Â§Ã™â€ž</value>
   </data>
   <data name="Recent Activity" xml:space="preserve">
-    <value>آخر النشاطات</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â·Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Reception" xml:space="preserve">
-    <value>الاستقبال</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã˜ÂªÃ™â€šÃ˜Â¨Ã˜Â§Ã™â€ž</value>
   </data>
   <data name="Record Payment" xml:space="preserve">
-    <value>تسجيل الدفعة</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹Ã˜Â©</value>
   </data>
   <data name="Reference" xml:space="preserve">
-    <value>المرجع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã˜Â¬Ã˜Â¹</value>
   </data>
   <data name="Referral Source" xml:space="preserve">
-    <value>مصدر الإحالة</value>
+    <value>Ã™â€¦Ã˜ÂµÃ˜Â¯Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â­Ã˜Â§Ã™â€žÃ˜Â©</value>
   </data>
   <data name="Registration Date" xml:space="preserve">
-    <value>تاريخ التسجيل</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž</value>
   </data>
   <data name="Remaining" xml:space="preserve">
-    <value>المتبقي</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¨Ã™â€šÃ™Å </value>
   </data>
   <data name="Remaining Days" xml:space="preserve">
-    <value>الأيام المتبقية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¨Ã™â€šÃ™Å Ã˜Â©</value>
   </data>
   <data name="Remaining Visits" xml:space="preserve">
-    <value>الزيارات المتبقية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¨Ã™â€šÃ™Å Ã˜Â©</value>
   </data>
   <data name="Remember me" xml:space="preserve">
-    <value>تذكرني</value>
+    <value>Ã˜ÂªÃ˜Â°Ã™Æ’Ã˜Â±Ã™â€ Ã™Å </value>
   </data>
   <data name="Required" xml:space="preserve">
-    <value>مطلوب</value>
+    <value>Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨</value>
   </data>
   <data name="Retry Count" xml:space="preserve">
-    <value>عدد المحاولات</value>
+    <value>Ã˜Â¹Ã˜Â¯Ã˜Â¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ã™â€žÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="Role" xml:space="preserve">
-    <value>الدور</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¯Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Row" xml:space="preserve">
-    <value>الصف</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂµÃ™Â</value>
   </data>
   <data name="Saudi" xml:space="preserve">
-    <value>سعودي</value>
+    <value>Ã˜Â³Ã˜Â¹Ã™Ë†Ã˜Â¯Ã™Å </value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>حفظ</value>
+    <value>Ã˜Â­Ã™ÂÃ˜Â¸</value>
   </data>
   <data name="Scheduled Date" xml:space="preserve">
-    <value>تاريخ الجدولة</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Ë†Ã™â€žÃ˜Â©</value>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>بحث</value>
+    <value>Ã˜Â¨Ã˜Â­Ã˜Â«</value>
   </data>
   <data name="Search by" xml:space="preserve">
-    <value>بحث</value>
+    <value>Ã˜Â¨Ã˜Â­Ã˜Â«</value>
   </data>
   <data name="Secure Login" xml:space="preserve">
-    <value>دخول آمن</value>
+    <value>Ã˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž Ã˜Â¢Ã™â€¦Ã™â€ </value>
   </data>
   <data name="Select" xml:space="preserve">
-    <value>اختر</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â±</value>
   </data>
   <data name="Select Channel" xml:space="preserve">
-    <value>اختر القناة</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ™â€šÃ™â€ Ã˜Â§Ã˜Â©</value>
   </data>
   <data name="Select gender" xml:space="preserve">
-    <value>اختر الجنس</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â³</value>
   </data>
   <data name="Select nationality" xml:space="preserve">
-    <value>اختر الجنسية</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â³Ã™Å Ã˜Â©</value>
   </data>
   <data name="Select Plan" xml:space="preserve">
-    <value>اختر الباقة</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â©</value>
   </data>
   <data name="Select referral source" xml:space="preserve">
-    <value>اختر مصدر الإحالة</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã™â€¦Ã˜ÂµÃ˜Â¯Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â­Ã˜Â§Ã™â€žÃ˜Â©</value>
   </data>
   <data name="Select role" xml:space="preserve">
-    <value>اختر الدور</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¯Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Select Type" xml:space="preserve">
-    <value>اختر النوع</value>
+    <value>Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Sent Date" xml:space="preserve">
-    <value>تاريخ الإرسال</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€ž</value>
   </data>
   <data name="Serial Number" xml:space="preserve">
-    <value>الرقم التسلسلي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â³Ã™â€žÃ˜Â³Ã™â€žÃ™Å </value>
   </data>
   <data name="Setting" xml:space="preserve">
-    <value>إعداد</value>
+    <value>Ã˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>الإعدادات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Show password" xml:space="preserve">
-    <value>إظهار كلمة المرور</value>
+    <value>Ã˜Â¥Ã˜Â¸Ã™â€¡Ã˜Â§Ã˜Â± Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Showing" xml:space="preserve">
-    <value>عرض</value>
+    <value>Ã˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Sign In" xml:space="preserve">
-    <value>تسجيل الدخول</value>
+    <value>Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž</value>
   </data>
   <data name="Sign in to continue" xml:space="preserve">
-    <value>سجّل الدخول إلى حسابك للمتابعة</value>
+    <value>Ã˜Â³Ã˜Â¬Ã™â€˜Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨Ã™Æ’ Ã™â€žÃ™â€žÃ™â€¦Ã˜ÂªÃ˜Â§Ã˜Â¨Ã˜Â¹Ã˜Â©</value>
   </data>
   <data name="Signatures" xml:space="preserve">
-    <value>التوقيعات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã™â€šÃ™Å Ã˜Â¹Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Social Media" xml:space="preserve">
-    <value>تواصل اجتماعي</value>
+    <value>Ã˜ÂªÃ™Ë†Ã˜Â§Ã˜ÂµÃ™â€ž Ã˜Â§Ã˜Â¬Ã˜ÂªÃ™â€¦Ã˜Â§Ã˜Â¹Ã™Å </value>
   </data>
   <data name="Staff accounts" xml:space="preserve">
-    <value>حسابات الموظفين</value>
+    <value>Ã˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™â€ </value>
   </data>
   <data name="Start" xml:space="preserve">
-    <value>البداية</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â¯Ã˜Â§Ã™Å Ã˜Â©</value>
   </data>
   <data name="Start Date" xml:space="preserve">
-    <value>تاريخ البداية</value>
+    <value>Ã˜ÂªÃ˜Â§Ã˜Â±Ã™Å Ã˜Â® Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â¯Ã˜Â§Ã™Å Ã˜Â©</value>
   </data>
   <data name="Status" xml:space="preserve">
-    <value>الحالة</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â©</value>
   </data>
   <data name="STRONGER" xml:space="preserve">
-    <value>أقوى</value>
+    <value>Ã˜Â£Ã™â€šÃ™Ë†Ã™â€°</value>
   </data>
   <data name="Subject" xml:space="preserve">
-    <value>الموضوع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¶Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Subscription History" xml:space="preserve">
-    <value>سجل الاشتراكات</value>
+    <value>Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Subscription Information" xml:space="preserve">
-    <value>معلومات الاشتراك</value>
+    <value>Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Subscription Price" xml:space="preserve">
-    <value>سعر الاشتراك</value>
+    <value>Ã˜Â³Ã˜Â¹Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Subscription Status" xml:space="preserve">
-    <value>حالة الاشتراك</value>
+    <value>Ã˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’</value>
   </data>
   <data name="Subscriptions" xml:space="preserve">
-    <value>الاشتراكات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Success" xml:space="preserve">
-    <value>نجاح</value>
+    <value>Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Sudanese" xml:space="preserve">
-    <value>سوداني</value>
+    <value>Ã˜Â³Ã™Ë†Ã˜Â¯Ã˜Â§Ã™â€ Ã™Å </value>
   </data>
   <data name="Sync Status" xml:space="preserve">
-    <value>حالة المزامنة</value>
+    <value>Ã˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â²Ã˜Â§Ã™â€¦Ã™â€ Ã˜Â©</value>
   </data>
   <data name="Synced" xml:space="preserve">
-    <value>متزامن</value>
+    <value>Ã™â€¦Ã˜ÂªÃ˜Â²Ã˜Â§Ã™â€¦Ã™â€ </value>
   </data>
   <data name="Syrian" xml:space="preserve">
-    <value>سوري</value>
+    <value>Ã˜Â³Ã™Ë†Ã˜Â±Ã™Å </value>
   </data>
   <data name="This action cannot be undone" xml:space="preserve">
-    <value>لا يمكن التراجع عن هذا الإجراء</value>
+    <value>Ã™â€žÃ˜Â§ Ã™Å Ã™â€¦Ã™Æ’Ã™â€  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â±Ã˜Â§Ã˜Â¬Ã˜Â¹ Ã˜Â¹Ã™â€  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â±Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="This Month" xml:space="preserve">
-    <value>هذا الشهر</value>
+    <value>Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â´Ã™â€¡Ã˜Â±</value>
   </data>
   <data name="This Week" xml:space="preserve">
-    <value>هذا الأسبوع</value>
+    <value>Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â³Ã˜Â¨Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Time" xml:space="preserve">
-    <value>الوقت</value>
+    <value>Ã˜Â§Ã™â€žÃ™Ë†Ã™â€šÃ˜Âª</value>
   </data>
   <data name="Timestamps" xml:space="preserve">
-    <value>التواريخ</value>
+    <value>Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜Â§Ã˜Â±Ã™Å Ã˜Â®</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>العنوان</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã™Ë†Ã˜Â§Ã™â€ </value>
   </data>
   <data name="Today" xml:space="preserve">
-    <value>اليوم</value>
+    <value>Ã˜Â§Ã™â€žÃ™Å Ã™Ë†Ã™â€¦</value>
   </data>
   <data name="Today Attendance" xml:space="preserve">
-    <value>حضور اليوم</value>
+    <value>Ã˜Â­Ã˜Â¶Ã™Ë†Ã˜Â± Ã˜Â§Ã™â€žÃ™Å Ã™Ë†Ã™â€¦</value>
   </data>
   <data name="Toggle theme" xml:space="preserve">
-    <value>تغيير المظهر</value>
+    <value>Ã˜ÂªÃ˜ÂºÃ™Å Ã™Å Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¸Ã™â€¡Ã˜Â±</value>
   </data>
   <data name="Total" xml:space="preserve">
-    <value>الإجمالي</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã™â€¦Ã˜Â§Ã™â€žÃ™Å </value>
   </data>
   <data name="Track Workouts" xml:space="preserve">
-    <value>تتبع التمارين</value>
+    <value>Ã˜ÂªÃ˜ÂªÃ˜Â¨Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€¦Ã˜Â§Ã˜Â±Ã™Å Ã™â€ </value>
   </data>
   <data name="Transactions" xml:space="preserve">
-    <value>المعاملات</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â§Ã™â€¦Ã™â€žÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="Tunisian" xml:space="preserve">
-    <value>تونسي</value>
+    <value>Ã˜ÂªÃ™Ë†Ã™â€ Ã˜Â³Ã™Å </value>
   </data>
   <data name="Type" xml:space="preserve">
-    <value>النوع</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹</value>
   </data>
   <data name="Unknown" xml:space="preserve">
-    <value>غير معروف</value>
+    <value>Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Ë†Ã™Â</value>
   </data>
   <data name="Unlimited" xml:space="preserve">
-    <value>غير محدود</value>
+    <value>Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â­Ã˜Â¯Ã™Ë†Ã˜Â¯</value>
   </data>
   <data name="Update" xml:space="preserve">
-    <value>تحديث</value>
+    <value>Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«</value>
   </data>
   <data name="Update Member" xml:space="preserve">
-    <value>تحديث العضو</value>
+    <value>Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Updated" xml:space="preserve">
-    <value>آخر تحديث</value>
+    <value>Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«</value>
   </data>
   <data name="User Details" xml:space="preserve">
-    <value>تفاصيل المستخدم</value>
+    <value>Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦</value>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>اسم المستخدم</value>
+    <value>Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦</value>
   </data>
   <data name="Username and password are required" xml:space="preserve">
-    <value>اسم المستخدم وكلمة المرور مطلوبان</value>
+    <value>Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™Ë†Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨Ã˜Â§Ã™â€ </value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>المستخدمين</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦Ã™Å Ã™â€ </value>
   </data>
   <data name="Value" xml:space="preserve">
-    <value>القيمة</value>
+    <value>Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â©</value>
   </data>
   <data name="View" xml:space="preserve">
-    <value>عرض</value>
+    <value>Ã˜Â¹Ã˜Â±Ã˜Â¶</value>
   </data>
   <data name="Visa" xml:space="preserve">
-    <value>فيزا</value>
+    <value>Ã™ÂÃ™Å Ã˜Â²Ã˜Â§</value>
   </data>
   <data name="Visits" xml:space="preserve">
-    <value>الزيارات</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª</value>
   </data>
   <data name="Walk-in" xml:space="preserve">
-    <value>زيارة</value>
+    <value>Ã˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â©</value>
   </data>
   <data name="Wallet" xml:space="preserve">
-    <value>محفظة</value>
+    <value>Ã™â€¦Ã˜Â­Ã™ÂÃ˜Â¸Ã˜Â©</value>
   </data>
   <data name="Warning" xml:space="preserve">
-    <value>تحذير</value>
+    <value>Ã˜ÂªÃ˜Â­Ã˜Â°Ã™Å Ã˜Â±</value>
   </data>
   <data name="Weight" xml:space="preserve">
-    <value>الوزن</value>
+    <value>Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€ </value>
   </data>
   <data name="Weight kg" xml:space="preserve">
-    <value>الوزن (كغم)</value>
+    <value>Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  (Ã™Æ’Ã˜ÂºÃ™â€¦)</value>
   </data>
   <data name="Welcome Back" xml:space="preserve">
-    <value>مرحباً بعودتك</value>
+    <value>Ã™â€¦Ã˜Â±Ã˜Â­Ã˜Â¨Ã˜Â§Ã™â€¹ Ã˜Â¨Ã˜Â¹Ã™Ë†Ã˜Â¯Ã˜ÂªÃ™Æ’</value>
   </data>
   <data name="Within" xml:space="preserve">
-    <value>خلال</value>
+    <value>Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž</value>
   </data>
   <data name="Yemeni" xml:space="preserve">
-    <value>يمني</value>
+    <value>Ã™Å Ã™â€¦Ã™â€ Ã™Å </value>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>نعم</value>
-  </data>
-  <data name="Attendance Details" xml:space="preserve">
-    <value>مرطنيايان</value>
+    <value>Ã™â€ Ã˜Â¹Ã™â€¦</value>
   </data>
   <data name="records" xml:space="preserve">
-    <value>فمن</value>
+    <value>Ã˜Â³Ã˜Â¬Ã™â€žÃ˜Â§Ã˜Âª</value>
   </data>
   <data name="No attendance records found." xml:space="preserve">
-    <value>هناف ممن ماخ ملجانه العميانا</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â³Ã˜Â¬Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â­Ã˜Â¶Ã™Ë†Ã˜Â±</value>
   </data>
   <data name="Is Manual" xml:space="preserve">
-    <value>هسй�</value>
-  </data>
-  <data name="Sync Status" xml:space="preserve">
-    <value>هلاسبميان ماخ</value>
-  </data>
-  <data name="Unknown" xml:space="preserve">
-    <value>هملوا ال</value>
-  </data>
-  <data name="Check Out" xml:space="preserve">
-    <value>فمابيق ماخ</value>
-  </data>
-  <data name="View" xml:space="preserve">
-    <value>فلك</value>
+    <value>Ã™Å Ã˜Â¯Ã™Ë†Ã™Å </value>
   </data>
   <data name="Offline" xml:space="preserve">
-    <value>وان ماخ</value>
+    <value>Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜ÂµÃ™â€ž</value>
   </data>
   <data name="Member created successfully" xml:space="preserve">
-    <value>وااة الوفاد موعباخ ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë† Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Member updated successfully" xml:space="preserve">
-    <value>وااة الوفاد موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë† Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Member deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë† Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Plan created successfully" xml:space="preserve">
-    <value>وااة الوفاد فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Plan updated successfully" xml:space="preserve">
-    <value>وااة الوفاد فراناتع موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Plan deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد فراناتع فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â§Ã™â€šÃ˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Payment created successfully" xml:space="preserve">
-    <value>وااة الوفاد ميصاند ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Payment deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد ميصاند ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Offer created successfully" xml:space="preserve">
-    <value>وااة الوفاد موحاند ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Offer updated successfully" xml:space="preserve">
-    <value>وااة الوفاد موحاند ال موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Offer deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد موحاند ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Device created successfully" xml:space="preserve">
-    <value>وااة الوفاد مبعاند ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â² Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Device updated successfully" xml:space="preserve">
-    <value>وااة الوفاد مبعاند ال موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â² Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Device deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد مبعاند ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€¡Ã˜Â§Ã˜Â² Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Notification created successfully" xml:space="preserve">
-    <value>وااة الوفاد م؇ارند ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â± Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Setting created successfully" xml:space="preserve">
-    <value>وااة الوفاد مواعند ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Setting updated successfully" xml:space="preserve">
-    <value>وااة الوفاد مواعند ال موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="User created successfully" xml:space="preserve">
-    <value>وااة الوفاد مياصنا ال فراناتع فايانا</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="User updated successfully" xml:space="preserve">
-    <value>وااة الوفاد مياصنا ال موعباخ ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="User deleted successfully" xml:space="preserve">
-    <value>وااة الوفاد مياصنا ال فتعاناتع فايانق</value>
+    <value>Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­</value>
   </data>
   <data name="Route ID and form ID do not match" xml:space="preserve">
-    <value>فامية ال وأمک فبشواخ ال موعک موحل فبشواخ ال ميةرمال</value>
+    <value>Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã˜Â± Ã™â€žÃ˜Â§ Ã™Å Ã˜ÂªÃ˜Â·Ã˜Â§Ã˜Â¨Ã™â€š Ã™â€¦Ã˜Â¹ Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ™â€ Ã™â€¦Ã™Ë†Ã˜Â°Ã˜Â¬</value>
   </data>
   <data name="Route ID and body ID do not match" xml:space="preserve">
-    <value>فامية ال وأمک فبشواخ ال موعک موحل فبشواخ ال مبوميال</value>
+    <value>Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã˜Â± Ã™â€žÃ˜Â§ Ã™Å Ã˜ÂªÃ˜Â·Ã˜Â§Ã˜Â¨Ã™â€š Ã™â€¦Ã˜Â¹ Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â³Ã™â€¦</value>
   </data>
   <data name="Please select a file to upload" xml:space="preserve">
-    <value>هانية اليتاف اكللامات ال فحار</value>
+    <value>Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¡ Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€¦Ã™â€žÃ™Â Ã™â€žÃ™â€žÃ˜Â±Ã™ÂÃ˜Â¹</value>
   </data>
   <data name="File must be an .xlsx file" xml:space="preserve">
-    <value>اهماة إل فاة عباخ ال مبوميا ال X.bxslx هةعاخ</value>
+    <value>Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã™â€¦Ã™â€  Ã™â€ Ã™Ë†Ã˜Â¹ xlsx</value>
   </data>
   <data name="Token refresh failed" xml:space="preserve">
-    <value>اماند ال موعباخ ال محةو واكم</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â±Ã™â€¦Ã˜Â²</value>
   </data>
   <data name="Failed to retrieve members" xml:space="preserve">
-    <value>اماند ال موعباخ ال فوانيمقاتع موااة</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â±Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="Member not found" xml:space="preserve">
-    <value>الوفاد موعباخ ال فمانيا</value>
+    <value>Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Search failed" xml:space="preserve">
-    <value>اماند ال موعباخ ال فحمق</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â­Ã˜Â«</value>
   </data>
   <data name="Failed to retrieve expiring members" xml:space="preserve">
-    <value>اماند ال موعباخ ال فوانيمقاتع موااة الوفاد ميإلهاعي مكلواماتع فحار</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â±Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ™â€¡Ã™Å Ã˜Â© Ã˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ã˜Â§Ã˜ÂªÃ™â€¡Ã™â€¦</value>
   </data>
   <data name="Failed to retrieve members with outstanding balance" xml:space="preserve">
-    <value>اماند ال موعباخ ال فوانيمقاتع موااة الوفاد موعلاة ال فحار موعک مووك فحار</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â±Ã˜Â¯Ã˜Â§Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡ Ã˜Â°Ã™Ë†Ã™Å  Ã˜Â§Ã™â€žÃ˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã™â€žÃ™â€š</value>
   </data>
   <data name="Failed to create member" xml:space="preserve">
-    <value>اماند ال موعباخ ال موااة الوفاد</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Failed to update member" xml:space="preserve">
-    <value>اماند ال موعباخ ال موااة الوفاد موعباخ</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Failed to delete member" xml:space="preserve">
-    <value>اماند ال موعباخ ال موااة الوفاد ميعاند</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Failed to restore member" xml:space="preserve">
-    <value>اماند ال موعباخ ال فوااة الوفاد موعلبام</value>
-  </data>
-  <data name="Token refresh failed" xml:space="preserve">
-    <value>اماند ال موعباخ ال محةو واكم</value>
+    <value>Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â¹Ã˜Â§Ã˜Â¯Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¶Ã™Ë†</value>
   </data>
   <data name="Search Members" xml:space="preserve">
-    <value>اكق فاعانا ال موااة</value>
+    <value>Ã˜Â¨Ã˜Â­Ã˜Â« Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¹Ã˜Â¶Ã˜Â§Ã˜Â¡</value>
   </data>
   <data name="New User" xml:space="preserve">
-    <value>ياصنا ال فومن</value>
+    <value>Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</value>
   </data>
   <data name="m" xml:space="preserve">
-    <value>ف</value>
+    <value>Ã˜Â´</value>
   </data>
   <data name="d" xml:space="preserve">
-    <value>ق</value>
+    <value>Ã™Å </value>
   </data>
   <data name="freeze" xml:space="preserve">
-    <value>وانيمن</value>
+    <value>Ã˜ÂªÃ˜Â¬Ã™â€¦Ã™Å Ã˜Â¯</value>
+  </data>
+  <data name="This will soft-delete the member. The member can be restored later." xml:space="preserve">
+    <value>Ø³ÙŠØªÙ… Ø­Ø°Ù Ø§Ù„Ø¹Ø¶Ùˆ Ø¨Ø´ÙƒÙ„ Ù…Ø¤Ù‚Øª. ÙŠÙ…ÙƒÙ† Ø§Ø³ØªØ¹Ø§Ø¯ØªÙ‡ Ù„Ø§Ø­Ù‚Ø§Ù‹</value>
+  </data>
+  <data name="Apply Filters" xml:space="preserve">
+    <value>ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ÙÙ„Ø§ØªØ±</value>
+  </data>
+  <data name="-- Select Type --" xml:space="preserve">
+    <value>-- Ø§Ø®ØªØ± Ø§Ù„Ù†ÙˆØ¹ --</value>
+  </data>
+  <data name="Numeric" xml:space="preserve">
+    <value>Ø±Ù‚Ù…ÙŠ</value>
+  </data>
+  <data name="Daily Attendance (7 Days)" xml:space="preserve">
+    <value>Ø§Ù„Ø­Ø¶ÙˆØ± Ø§Ù„ÙŠÙˆÙ…ÙŠ (7 Ø£ÙŠØ§Ù…)</value>
+  </data>
+  <data name="Unfreeze" xml:space="preserve">
+    <value>Ø¥Ù„ØºØ§Ø¡ Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Expiring Soon" xml:space="preserve">
+    <value>Ø³ÙŠÙ†ØªÙ‡ÙŠ Ù‚Ø±ÙŠØ¨Ø§Ù‹</value>
+  </data>
+  <data name="Paid (No Balance)" xml:space="preserve">
+    <value>Ù…Ø¯ÙÙˆØ¹ (Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø±ØµÙŠØ¯)</value>
+  </data>
+  <data name="Welcome Back!" xml:space="preserve">
+    <value>Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ø¹ÙˆØ¯ØªÙƒ!</value>
+  </data>
+  <data name="No plans found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø¨Ø§Ù‚Ø§Øª</value>
+  </data>
+  <data name="Required if Has Disease is Yes" xml:space="preserve">
+    <value>Ù…Ø·Ù„ÙˆØ¨ Ø¥Ø°Ø§ ÙƒØ§Ù† ÙŠØ¹Ø§Ù†ÙŠ Ù…Ù† Ù…Ø±Ø¶ = Ù†Ø¹Ù…</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>ÙØ´Ù„</value>
+  </data>
+  <data name="e.g. Expiration Reminder" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: ØªØ°ÙƒÙŠØ± Ø¨Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Subscription expiration date" xml:space="preserve">
+    <value>ØªØ§Ø±ÙŠØ® Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Daily Revenue (7 Days)" xml:space="preserve">
+    <value>Daily Revenue (7 Days)</value>
+  </data>
+  <data name="No memberships found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø§Ø´ØªØ±Ø§ÙƒØ§Øª</value>
+  </data>
+  <data name="Membership Period" xml:space="preserve">
+    <value>ÙØªØ±Ø© Ø§Ù„Ø¹Ø¶ÙˆÙŠØ©</value>
+  </data>
+  <data name="e.g. 30" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 30</value>
+  </data>
+  <data name="Offer Information" xml:space="preserve">
+    <value>Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¹Ø±Ø¶</value>
+  </data>
+  <data name="Payment History" xml:space="preserve">
+    <value>Ø³Ø¬Ù„ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª</value>
+  </data>
+  <data name="Recent Subscriptions" xml:space="preserve">
+    <value>Recent Subscriptions</value>
+  </data>
+  <data name="Offer" xml:space="preserve">
+    <value>Ø§Ù„Ø¹Ø±Ø¶</value>
+  </data>
+  <data name="Paid Amount" xml:space="preserve">
+    <value>Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø¯ÙÙˆØ¹</value>
+  </data>
+  <data name="Encrypt this value" xml:space="preserve">
+    <value>ØªØ´ÙÙŠØ± Ù‡Ø°Ù‡ Ø§Ù„Ù‚ÙŠÙ…Ø©</value>
+  </data>
+  <data name="Payment Method:" xml:space="preserve">
+    <value>Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹:</value>
+  </data>
+  <data name="Unfreeze Date" xml:space="preserve">
+    <value>ØªØ§Ø±ÙŠØ® Ø¥Ù„ØºØ§Ø¡ Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Revenue by Plan" xml:space="preserve">
+    <value>Revenue by Plan</value>
+  </data>
+  <data name="-- All --" xml:space="preserve">
+    <value>-- Ø§Ù„ÙƒÙ„ --</value>
+  </data>
+  <data name="e.g. 15" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 15</value>
+  </data>
+  <data name="No subscriptions found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø§Ø´ØªØ±Ø§ÙƒØ§Øª</value>
+  </data>
+  <data name="e.g. 1" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 1</value>
+  </data>
+  <data name="Monthly Revenue (6 Months)" xml:space="preserve">
+    <value>Monthly Revenue (6 Months)</value>
+  </data>
+  <data name="Must match an active plan name" xml:space="preserve">
+    <value>ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ·Ø§Ø¨Ù‚ Ø§Ø³Ù… Ø¨Ø§Ù‚Ø© Ù†Ø´Ø·Ø©</value>
+  </data>
+  <data name="Avg Daily This Month" xml:space="preserve">
+    <value>Ø§Ù„Ù…ØªÙˆØ³Ø· Ø§Ù„ÙŠÙˆÙ…ÙŠ Ù‡Ø°Ø§ Ø§Ù„Ø´Ù‡Ø±</value>
+  </data>
+  <data name="Freeze End" xml:space="preserve">
+    <value>Ù†Ù‡Ø§ÙŠØ© Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Please fix the following errors:" xml:space="preserve">
+    <value>ÙŠØ±Ø¬Ù‰ ØªØµØ­ÙŠØ­ Ø§Ù„Ø£Ø®Ø·Ø§Ø¡ Ø§Ù„ØªØ§Ù„ÙŠØ©:</value>
+  </data>
+  <data name="Total Value" xml:space="preserve">
+    <value>Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠØ©</value>
+  </data>
+  <data name="Membership" xml:space="preserve">
+    <value>Ø§Ù„Ø¹Ø¶ÙˆÙŠØ©</value>
+  </data>
+  <data name="Login - Hack Gym" xml:space="preserve">
+    <value>Login - Hack Gym</value>
+  </data>
+  <data name="Back to Members" xml:space="preserve">
+    <value>Ø¹ÙˆØ¯Ø© Ù„Ù„Ø£Ø¹Ø¶Ø§Ø¡</value>
+  </data>
+  <data name="14-digit ID" xml:space="preserve">
+    <value>Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ù…ÙƒÙˆÙ† Ù…Ù† 14 Ø®Ø§Ù†Ø©</value>
+  </data>
+  <data name="-- Select --" xml:space="preserve">
+    <value>-- Ø§Ø®ØªØ± --</value>
+  </data>
+  <data name="By" xml:space="preserve">
+    <value>Ø¨ÙˆØ§Ø³Ø·Ø©</value>
+  </data>
+  <data name="Must not exceed price" xml:space="preserve">
+    <value>ÙŠØ¬Ø¨ Ø£Ù„Ø§ ÙŠØªØ¬Ø§ÙˆØ² Ø§Ù„Ø³Ø¹Ø±</value>
+  </data>
+  <data name="Total Freeze Days" xml:space="preserve">
+    <value>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø£ÙŠØ§Ù… Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Discounts" xml:space="preserve">
+    <value>Ø§Ù„Ø®ØµÙˆÙ…Ø§Øª</value>
+  </data>
+  <data name="Search by name..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¨Ø§Ù„Ø§Ø³Ù…...</value>
+  </data>
+  <data name="Write your message with placeholders..." xml:space="preserve">
+    <value>Ø§ÙƒØªØ¨ Ø±Ø³Ø§Ù„ØªÙƒ Ù…Ø¹ Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª...</value>
+  </data>
+  <data name="Member's full name" xml:space="preserve">
+    <value>Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„ Ù„Ù„Ø¹Ø¶Ùˆ</value>
+  </data>
+  <data name="-- All Packages --" xml:space="preserve">
+    <value>-- ÙƒÙ„ Ø§Ù„Ø¨Ø§Ù‚Ø§Øª --</value>
+  </data>
+  <data name="Search by name, receipt or phone..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¨Ø§Ù„Ø§Ø³Ù… Ø£Ùˆ Ø§Ù„Ø¥ÙŠØµØ§Ù„ Ø£Ùˆ Ø§Ù„Ù‡Ø§ØªÙ...</value>
+  </data>
+  <data name="Transaction History" xml:space="preserve">
+    <value>Ø³Ø¬Ù„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª</value>
+  </data>
+  <data name="setting(s)" xml:space="preserve">
+    <value>Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</value>
+  </data>
+  <data name="Subscription receipt number" xml:space="preserve">
+    <value>Ø±Ù‚Ù… Ø¥ÙŠØµØ§Ù„ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Remaining balance" xml:space="preserve">
+    <value>Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ</value>
+  </data>
+  <data name="Device Information" xml:space="preserve">
+    <value>Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¬Ù‡Ø§Ø²</value>
+  </data>
+  <data name="Message Body" xml:space="preserve">
+    <value>Ù†Øµ Ø§Ù„Ø±Ø³Ø§Ù„Ø©</value>
+  </data>
+  <data name="Running Balance" xml:space="preserve">
+    <value>Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø¬Ø§Ø±ÙŠ</value>
+  </data>
+  <data name="Cash, Visa, Instapay, Wallet" xml:space="preserve">
+    <value>Ù†Ù‚Ø¯Ø§Ù‹ØŒ ÙÙŠØ²Ø§ØŒ Ø¥Ù†Ø³ØªØ§Ø¨Ø§ÙŠØŒ Ù…Ø­ÙØ¸Ø©</value>
+  </data>
+  <data name="Message Preview" xml:space="preserve">
+    <value>Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ø±Ø³Ø§Ù„Ø©</value>
+  </data>
+  <data name="Membership Receipt" xml:space="preserve">
+    <value>Ø¥ÙŠØµØ§Ù„ Ø§Ù„Ø¹Ø¶ÙˆÙŠØ©</value>
+  </data>
+  <data name="Active Retention Rate" xml:space="preserve">
+    <value>Active Retention Rate</value>
+  </data>
+  <data name="No subscription data." xml:space="preserve">
+    <value>No subscription data.</value>
+  </data>
+  <data name="Avg Subscription Value" xml:space="preserve">
+    <value>Avg Subscription Value</value>
+  </data>
+  <data name="Min 6 characters" xml:space="preserve">
+    <value>6 Ø£Ø­Ø±Ù Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„</value>
+  </data>
+  <data name="e.g. General" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: Ø¹Ø§Ù…</value>
+  </data>
+  <data name="Subscription Health" xml:space="preserve">
+    <value>Subscription Health</value>
+  </data>
+  <data name="Defaults to today" xml:space="preserve">
+    <value>Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ø§Ù„ÙŠÙˆÙ…</value>
+  </data>
+  <data name="Search by username, name, or email..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¨Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø£Ùˆ Ø§Ù„Ø§Ø³Ù… Ø£Ùˆ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ...</value>
+  </data>
+  <data name="No members found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø£Ø¹Ø¶Ø§Ø¡</value>
+  </data>
+  <data name="Show only members with unpaid balance" xml:space="preserve">
+    <value>Ø¥Ø¸Ù‡Ø§Ø± Ø§Ù„Ø£Ø¹Ø¶Ø§Ø¡ Ø°ÙˆÙŠ Ø§Ù„Ø±ØµÙŠØ¯ ØºÙŠØ± Ø§Ù„Ù…Ø¯ÙÙˆØ¹ ÙÙ‚Ø·</value>
+  </data>
+  <data name="Paid via Offers" xml:space="preserve">
+    <value>Paid via Offers</value>
+  </data>
+  <data name="Select a plan" xml:space="preserve">
+    <value>Ø§Ø®ØªØ± Ø¨Ø§Ù‚Ø©</value>
+  </data>
+  <data name="Freezes This Month" xml:space="preserve">
+    <value>Freezes This Month</value>
+  </data>
+  <data name="Edit Template" xml:space="preserve">
+    <value>ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù‚Ø§Ù„Ø¨</value>
+  </data>
+  <data name="-- Select Channel --" xml:space="preserve">
+    <value>-- Ø§Ø®ØªØ± Ø§Ù„Ù‚Ù†Ø§Ø© --</value>
+  </data>
+  <data name="New Members (6 Months)" xml:space="preserve">
+    <value>Ø§Ù„Ø£Ø¹Ø¶Ø§Ø¡ Ø§Ù„Ø¬Ø¯Ø¯ (6 Ø£Ø´Ù‡Ø±)</value>
+  </data>
+  <data name="subs" xml:space="preserve">
+    <value>subs</value>
+  </data>
+  <data name="Are you sure you want to delete user" xml:space="preserve">
+    <value>Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</value>
+  </data>
+  <data name="expiring in 30 days" xml:space="preserve">
+    <value>expiring in 30 days</value>
+  </data>
+  <data name="Are you sure you want to delete this offer? This action cannot be undone." xml:space="preserve">
+    <value>Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ø¹Ø±Ø¶ØŸ Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø§Ù„ØªØ±Ø§Ø¬Ø¹ Ø¹Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</value>
+  </data>
+  <data name="Has Disease / Condition" xml:space="preserve">
+    <value>ÙŠØ¹Ø§Ù†ÙŠ Ù…Ù† Ù…Ø±Ø¶ / Ø­Ø§Ù„Ø©</value>
+  </data>
+  <data name="Offer Price (EGP)" xml:space="preserve">
+    <value>Ø³Ø¹Ø± Ø§Ù„Ø¹Ø±Ø¶ (Ø¬.Ù…)</value>
+  </data>
+  <data name="Duration (Days)" xml:space="preserve">
+    <value>Ø§Ù„Ù…Ø¯Ø© (Ø£ÙŠØ§Ù…)</value>
+  </data>
+  <data name="New Template" xml:space="preserve">
+    <value>Ù‚Ø§Ù„Ø¨ Ø¬Ø¯ÙŠØ¯</value>
+  </data>
+  <data name="Select a member" xml:space="preserve">
+    <value>Ø§Ø®ØªØ± Ø¹Ø¶ÙˆØ§Ù‹</value>
+  </data>
+  <data name="total subscriptions" xml:space="preserve">
+    <value>total subscriptions</value>
+  </data>
+  <data name="No templates yet." xml:space="preserve">
+    <value>Ù„Ø§ ØªÙˆØ¬Ø¯ Ù‚ÙˆØ§Ù„Ø¨ Ø¨Ø¹Ø¯</value>
+  </data>
+  <data name="Enter notification message" xml:space="preserve">
+    <value>Ø£Ø¯Ø®Ù„ Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±</value>
+  </data>
+  <data name="No offer" xml:space="preserve">
+    <value>Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ø±Ø¶</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±</value>
+  </data>
+  <data name="Active Subscriptions" xml:space="preserve">
+    <value>Active Subscriptions</value>
+  </data>
+  <data name="Notification Information" xml:space="preserve">
+    <value>Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±</value>
+  </data>
+  <data name="The all-in-one platform to manage members, workouts, subscriptions, trainers, and grow your fitness business." xml:space="preserve">
+    <value>Ø§Ù„Ù…Ù†ØµØ© Ø§Ù„Ù…ØªÙƒØ§Ù…Ù„Ø© Ù„Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø£Ø¹Ø¶Ø§Ø¡ ÙˆØ§Ù„ØªÙ…Ø§Ø±ÙŠÙ† ÙˆØ§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª ÙˆØ§Ù„Ù…Ø¯Ø±Ø¨ÙŠÙ† ÙˆØªÙ†Ù…ÙŠØ© Ø£Ø¹Ù…Ø§Ù„Ùƒ Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ©</value>
+  </data>
+  <data name="No devices found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø£Ø¬Ù‡Ø²Ø©</value>
+  </data>
+  <data name="Available placeholders:" xml:space="preserve">
+    <value>Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ù…ØªØ§Ø­Ø©:</value>
+  </data>
+  <data name="Sign in to your account to continue" xml:space="preserve">
+    <value>Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¥Ù„Ù‰ Ø­Ø³Ø§Ø¨Ùƒ Ù„Ù„Ù…ØªØ§Ø¨Ø¹Ø©</value>
+  </data>
+  <data name="No offers found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø¹Ø±ÙˆØ¶</value>
+  </data>
+  <data name="Select Excel File" xml:space="preserve">
+    <value>Ø§Ø®ØªØ± Ù…Ù„Ù Ø¥ÙƒØ³Ù„</value>
+  </data>
+  <data name="No members match the selected filters." xml:space="preserve">
+    <value>Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø£Ø¹Ø¶Ø§Ø¡ ØªØ·Ø§Ø¨Ù‚ Ø§Ù„ÙÙ„Ø§ØªØ± Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©</value>
+  </data>
+  <data name="e.g. 2+1 Free" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 2+1 Ù…Ø¬Ø§Ù†Ø§Ù‹</value>
+  </data>
+  <data name="Outstanding Balance" xml:space="preserve">
+    <value>Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø¹Ù„Ù‚</value>
+  </data>
+  <data name="Renewed" xml:space="preserve">
+    <value>Renewed</value>
+  </data>
+  <data name="No settings found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</value>
+  </data>
+  <data name="Yes/No or True/False" xml:space="preserve">
+    <value>Ù†Ø¹Ù…/Ù„Ø§ Ø£Ùˆ ØµØ­ÙŠØ­/Ø®Ø·Ø£</value>
+  </data>
+  <data name="Messages" xml:space="preserve">
+    <value>Ø§Ù„Ø±Ø³Ø§Ø¦Ù„</value>
+  </data>
+  <data name="No attendance records." xml:space="preserve">
+    <value>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø³Ø¬Ù„Ø§Øª Ø­Ø¶ÙˆØ±</value>
+  </data>
+  <data name="To Date" xml:space="preserve">
+    <value>Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</value>
+  </data>
+  <data name="Search by name, receipt, phone, or National ID..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¨Ø§Ù„Ø§Ø³Ù… Ø£Ùˆ Ø§Ù„Ø¥ÙŠØµØ§Ù„ Ø£Ùˆ Ø§Ù„Ù‡Ø§ØªÙ Ø£Ùˆ Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ù‚ÙˆÙ…ÙŠ...</value>
+  </data>
+  <data name="Imported Successfully" xml:space="preserve">
+    <value>ØªÙ… Ø§Ù„Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­</value>
+  </data>
+  <data name="-- Select Plan --" xml:space="preserve">
+    <value>-- Ø§Ø®ØªØ± Ø§Ù„Ø¨Ø§Ù‚Ø© --</value>
+  </data>
+  <data name="New Subscription" xml:space="preserve">
+    <value>Ø§Ø´ØªØ±Ø§Ùƒ Ø¬Ø¯ÙŠØ¯</value>
+  </data>
+  <data name="No subscriptions yet." xml:space="preserve">
+    <value>No subscriptions yet.</value>
+  </data>
+  <data name="Plan Name" xml:space="preserve">
+    <value>Ø§Ø³Ù… Ø§Ù„Ø¨Ø§Ù‚Ø©</value>
+  </data>
+  <data name="Total Revenue" xml:space="preserve">
+    <value>Total Revenue</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</value>
+  </data>
+  <data name="Same Plan" xml:space="preserve">
+    <value>Ù†ÙØ³ Ø§Ù„Ø¨Ø§Ù‚Ø©</value>
+  </data>
+  <data name="From Date" xml:space="preserve">
+    <value>Ù…Ù† ØªØ§Ø±ÙŠØ®</value>
+  </data>
+  <data name="Revenue This Month" xml:space="preserve">
+    <value>Revenue This Month</value>
+  </data>
+  <data name="e.g. gym_name" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: gym_name</value>
+  </data>
+  <data name="Expires Within (Days)" xml:space="preserve">
+    <value>ØªÙ†ØªÙ‡ÙŠ Ø®Ù„Ø§Ù„ (Ø£ÙŠØ§Ù…)</value>
+  </data>
+  <data name="WhatsApp" xml:space="preserve">
+    <value>ÙˆØ§ØªØ³Ø§Ø¨</value>
+  </data>
+  <data name="e.g. 8080" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 8080</value>
+  </data>
+  <data name="e.g. 7" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 7</value>
+  </data>
+  <data name="No notifications found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø¥Ø´Ø¹Ø§Ø±Ø§Øª</value>
+  </data>
+  <data name="of total" xml:space="preserve">
+    <value>Ù…Ù† Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ</value>
+  </data>
+  <data name="Plan Information" xml:space="preserve">
+    <value>Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¨Ø§Ù‚Ø©</value>
+  </data>
+  <data name="This action cannot be undone." xml:space="preserve">
+    <value>Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø§Ù„ØªØ±Ø§Ø¬Ø¹ Ø¹Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</value>
+  </data>
+  <data name="14 digits, skipped if duplicate" xml:space="preserve">
+    <value>14 Ø±Ù‚Ù…ØŒ ÙŠØªÙ… ØªØ®Ø·ÙŠÙ‡ Ø¥Ø°Ø§ ÙƒØ§Ù† Ù…ÙƒØ±Ø±Ø§Ù‹</value>
+  </data>
+  <data name="Due" xml:space="preserve">
+    <value>Due</value>
+  </data>
+  <data name="Max" xml:space="preserve">
+    <value>Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ù‚ØµÙ‰</value>
+  </data>
+  <data name="Search by title..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¨Ø§Ù„Ø¹Ù†ÙˆØ§Ù†...</value>
+  </data>
+  <data name="Freeze History" xml:space="preserve">
+    <value>Ø³Ø¬Ù„ Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Subscription Revenue" xml:space="preserve">
+    <value>Subscription Revenue</value>
+  </data>
+  <data name="Today's Attendance" xml:space="preserve">
+    <value>Ø­Ø¶ÙˆØ± Ø§Ù„ÙŠÙˆÙ…</value>
+  </data>
+  <data name="Renew Subscription" xml:space="preserve">
+    <value>ØªØ¬Ø¯ÙŠØ¯ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Select payment method" xml:space="preserve">
+    <value>Ø§Ø®ØªØ± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹</value>
+  </data>
+  <data name="e.g. 5000" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 5000</value>
+  </data>
+  <data name="Current active offers list" xml:space="preserve">
+    <value>Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¹Ø±ÙˆØ¶ Ø§Ù„Ù†Ø´Ø·Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ©</value>
+  </data>
+  <data name="No recent activity." xml:space="preserve">
+    <value>Ù„Ø§ ØªÙˆØ¬Ø¯ Ù†Ø´Ø§Ø·Ø§Øª Ø­Ø¯ÙŠØ«Ø©</value>
+  </data>
+  <data name="Total Members" xml:space="preserve">
+    <value>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£Ø¹Ø¶Ø§Ø¡</value>
+  </data>
+  <data name="Optional description" xml:space="preserve">
+    <value>ÙˆØµÙ Ø§Ø®ØªÙŠØ§Ø±ÙŠ</value>
+  </data>
+  <data name="Freeze Subscription" xml:space="preserve">
+    <value>ØªØ¬Ù…ÙŠØ¯ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Duration (months)" xml:space="preserve">
+    <value>Ø§Ù„Ù…Ø¯Ø© (Ø£Ø´Ù‡Ø±)</value>
+  </data>
+  <data name="All Statuses" xml:space="preserve">
+    <value>Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ø§Ù„Ø§Øª</value>
+  </data>
+  <data name="Avg Revenue / Sub" xml:space="preserve">
+    <value>Avg Revenue / Sub</value>
+  </data>
+  <data name="No active memberships." xml:space="preserve">
+    <value>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¹Ø¶ÙˆÙŠØ§Øª Ù†Ø´Ø·Ø©</value>
+  </data>
+  <data name="Member Information" xml:space="preserve">
+    <value>Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¹Ø¶Ùˆ</value>
+  </data>
+  <data name="No subscription history." xml:space="preserve">
+    <value>Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø³Ø¬Ù„ Ø§Ø´ØªØ±Ø§ÙƒØ§Øª</value>
+  </data>
+  <data name="Enter plan name" xml:space="preserve">
+    <value>Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ø¨Ø§Ù‚Ø©</value>
+  </data>
+  <data name="Days until expiration" xml:space="preserve">
+    <value>Ø§Ù„Ø£ÙŠØ§Ù… Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ© Ø­ØªÙ‰ Ø§Ù„Ø§Ù†ØªÙ‡Ø§Ø¡</value>
+  </data>
+  <data name="Subscription Details" xml:space="preserve">
+    <value>ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Enter username" xml:space="preserve">
+    <value>Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</value>
+  </data>
+  <data name="Medical" xml:space="preserve">
+    <value>Ø·Ø¨ÙŠ</value>
+  </data>
+  <data name="Expiration Date" xml:space="preserve">
+    <value>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ù†ØªÙ‡Ø§Ø¡</value>
+  </data>
+  <data name="No payments recorded." xml:space="preserve">
+    <value>Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ù…Ø³Ø¬Ù„Ø©</value>
+  </data>
+  <data name="#" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="e.g. 500" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 500</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Ø§Ù„Ù…Ø¯Ø©</value>
+  </data>
+  <data name="Expiring in 7 Days" xml:space="preserve">
+    <value>Expiring in 7 Days</value>
+  </data>
+  <data name="Search for a member..." xml:space="preserve">
+    <value>Ø¨Ø­Ø« Ø¹Ù† Ø¹Ø¶Ùˆ...</value>
+  </data>
+  <data name="WhatsApp Templates" xml:space="preserve">
+    <value>Ù‚ÙˆØ§Ù„Ø¨ ÙˆØ§ØªØ³Ø§Ø¨</value>
+  </data>
+  <data name="Defaults to 1" xml:space="preserve">
+    <value>Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© 1</value>
+  </data>
+  <data name="e.g. 192.168.1.100" xml:space="preserve">
+    <value>Ù…Ø«Ø§Ù„: 192.168.1.100</value>
+  </data>
+  <data name="No users found." xml:space="preserve">
+    <value>Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†</value>
+  </data>
+  <data name="Subscription" xml:space="preserve">
+    <value>Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</value>
+  </data>
+  <data name="Your data is 100% secure and encrypted." xml:space="preserve">
+    <value>Ø¨ÙŠØ§Ù†Ø§ØªÙƒ Ø¢Ù…Ù†Ø© ÙˆÙ…Ø´ÙØ±Ø© 100%</value>
+  </data>
+  <data name="Enter device name" xml:space="preserve">
+    <value>Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ø¬Ù‡Ø§Ø²</value>
+  </data>
+  <data name="Payment Summary" xml:space="preserve">
+    <value>Ù…Ù„Ø®Øµ Ø§Ù„Ø¯ÙØ¹</value>
+  </data>
+  <data name="Reference Number" xml:space="preserve">
+    <value>Ø±Ù‚Ù… Ø§Ù„Ù…Ø±Ø¬Ø¹</value>
+  </data>
+  <data name="Expiration" xml:space="preserve">
+    <value>Ø§Ù„Ø§Ù†ØªÙ‡Ø§Ø¡</value>
+  </data>
+  <data name="Renew" xml:space="preserve">
+    <value>ØªØ¬Ø¯ÙŠØ¯</value>
+  </data>
+  <data name="Freeze Start" xml:space="preserve">
+    <value>Ø¨Ø¯Ø§ÙŠØ© Ø§Ù„ØªØ¬Ù…ÙŠØ¯</value>
+  </data>
+  <data name="Weight (kg)" xml:space="preserve">
+    <value>Ø§Ù„ÙˆØ²Ù† (ÙƒØºÙ…)</value>
+  </data>
+  <data name="Import Another File" xml:space="preserve">
+    <value>Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ù…Ù„Ù Ø¢Ø®Ø±</value>
+  </data>  <data name="Upload &amp; Import" xml:space="preserve">
+    <value>رفع واستيراد</value>
+  </data>
+  <data name="Upload an &lt;strong&gt;.xlsx&lt;/strong&gt; file with the following columns:" xml:space="preserve">
+    <value>قم بتحميل ملف xlsx بالأعمدة التالية:</value>
+  </data>
+  <data name="Analysis &amp;amp; reports" xml:space="preserve">
+    <value>التحليلات والتقارير</value>
+  </data>
+  <data name="&amp;mdash; Track profiles, attendance &amp;amp; payments" xml:space="preserve">
+    <value>— تتبع الملفات الشخصية والحضور والمدفوعات</value>
+  </data>
+  <data name="Member &amp; Plan" xml:space="preserve">
+    <value>العضو والباقة</value>
+  </data>
+  <data name="&amp;mdash; Monitor performance &amp;amp; progress" xml:space="preserve">
+    <value>— مراقبة الأداء والتقدم</value>
+  </data>
+  <data name="&amp;mdash; Analytics, reports &amp;amp; insights" xml:space="preserve">
+    <value>— التحليلات والتقارير والرؤى</value>
   </data>
 </root>

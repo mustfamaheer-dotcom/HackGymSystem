@@ -5,12 +5,13 @@ using Gym.Application.Notifications.Queries.GetNotificationById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 [Route("Notifications")]
 public class NotificationsMvcController : Controller
 {
@@ -23,6 +24,7 @@ public class NotificationsMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Notifications.View")]
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
@@ -37,6 +39,7 @@ public class NotificationsMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Notifications.Send")]
     [HttpGet("create")]
     public IActionResult Create()
     {
@@ -44,6 +47,7 @@ public class NotificationsMvcController : Controller
         return View();
     }
 
+    [RequirePermission("Notifications.Send")]
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateNotificationCommand command, CancellationToken cancellationToken)
     {
@@ -60,6 +64,7 @@ public class NotificationsMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Notifications.View")]
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {

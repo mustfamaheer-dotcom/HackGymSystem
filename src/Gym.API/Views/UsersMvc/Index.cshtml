@@ -6,7 +6,7 @@
 <div class="receipt-card">
     <div class="receipt-header">
         <h4><i class="bi bi-shield-lock-fill"></i> @SharedLocalizer["Users"]</h4>
-        <a asp-action="Create" asp-controller="UsersMvc" class="inline-flex items-center justify-center font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-md hover:shadow-lg px-4 py-2 text-sm">@SharedLocalizer["Add User"]</a>
+        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add User"]</a>
     </div>
     <div class="p-3 border-bottom bg-light">
         <form asp-action="Index" method="get" class="row g-2 align-items-center">

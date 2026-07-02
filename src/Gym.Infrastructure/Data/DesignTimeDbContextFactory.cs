@@ -8,7 +8,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GymDbConte
     public GymDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<GymDbContext>();
-        optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;");
+        optionsBuilder.UseSqlServer("Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true");
 
         return new GymDbContext(optionsBuilder.Options);
     }

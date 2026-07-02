@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Memberships.Commands.CancelMembership;
 using Gym.Application.Memberships.Commands.CreateMembership;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 public class MembershipsController : BaseController
 {
     private readonly IMediator _mediator;
@@ -25,6 +26,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Memberships.View")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllMembershipsQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -35,6 +37,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Memberships.View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetMembershipByIdQuery(id), cancellationToken);
@@ -45,6 +48,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpGet("by-member/{memberId}")]
+    [RequirePermission("Memberships.View")]
     public async Task<IActionResult> GetByMember(Guid memberId, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetMemberMembershipsQuery(memberId), cancellationToken);
@@ -55,6 +59,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Memberships.Manage")]
     public async Task<IActionResult> Create([FromBody] CreateMembershipCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -65,6 +70,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpPost("{id}/renew")]
+    [RequirePermission("Memberships.Manage")]
     public async Task<IActionResult> Renew(Guid id, [FromBody] RenewMembershipRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new RenewMembershipCommand(id, request.NewEndDate, request.AdditionalDays, request.AdditionalVisits), cancellationToken);
@@ -75,6 +81,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpPost("{id}/freeze")]
+    [RequirePermission("Memberships.Manage")]
     public async Task<IActionResult> Freeze(Guid id, [FromBody] FreezeMembershipRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new FreezeMembershipCommand(id, request.FreezeDays), cancellationToken);
@@ -85,6 +92,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpPost("{id}/unfreeze")]
+    [RequirePermission("Memberships.Manage")]
     public async Task<IActionResult> Unfreeze(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new UnfreezeMembershipCommand(id), cancellationToken);
@@ -95,6 +103,7 @@ public class MembershipsController : BaseController
     }
 
     [HttpPost("{id}/cancel")]
+    [RequirePermission("Memberships.Manage")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CancelMembershipCommand(id), cancellationToken);

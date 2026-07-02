@@ -176,6 +176,238 @@
         </div>
     </div>
 
+    @if (User.HasClaim("permission", "Dashboard.Revenue"))
+    {
+        @* --- Subscription Revenue KPIs --- *@
+        <h5 style="font-family:'Poppins',sans-serif;font-weight:600;color:var(--charcoal);margin:1.5rem 0 1rem;display:flex;align-items:center;gap:0.5rem;">
+            <i style="color:var(--amber);" class="bi bi-cash-stack"></i> @SharedLocalizer["Subscription Revenue"]
+        </h5>
+
+        <div class="kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+            <div class="kpi-card">
+                <div class="kpi-accent" style="background:linear-gradient(135deg,#10B981,#34D399)"></div>
+                <div class="kpi-top">
+                    <div class="kpi-value" style="font-size:1.1rem;">@Model.Subscriptions.TotalRevenue.ToString("N2")</div>
+                    <div class="kpi-icon icon-bg-green"><i class="bi bi-cash"></i></div>
+                </div>
+                <div class="kpi-label">@SharedLocalizer["Total Revenue"]</div>
+                <div class="kpi-sub"><span class="trend-up">@Model.Subscriptions.TodayRevenue.ToString("N2")</span> @SharedLocalizer["today"]</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent" style="background:linear-gradient(135deg,#3B82F6,#60A5FA)"></div>
+                <div class="kpi-top">
+                    <div class="kpi-value" style="font-size:1.1rem;">@Model.Subscriptions.RevenueThisMonth.ToString("N2")</div>
+                    <div class="kpi-icon icon-bg-blue"><i class="bi bi-graph-up-arrow"></i></div>
+                </div>
+                <div class="kpi-label">@SharedLocalizer["Revenue This Month"]</div>
+                <div class="kpi-sub"><span class="trend-up">@Model.Subscriptions.RevenueThisWeek.ToString("N2")</span> @SharedLocalizer["this week"]</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent" style="background:linear-gradient(135deg,#6366F1,#818CF8)"></div>
+                <div class="kpi-top">
+                    <div class="kpi-value">@Model.Subscriptions.ActiveSubscriptions</div>
+                    <div class="kpi-icon icon-bg-indigo"><i class="bi bi-journal-text"></i></div>
+                </div>
+                <div class="kpi-label">@SharedLocalizer["Active Subscriptions"]</div>
+                <div class="kpi-sub"><span>@Model.Subscriptions.ActivePercent%</span> @SharedLocalizer["of total"]</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent" style="background:linear-gradient(135deg,#EF4444,#F87171)"></div>
+                <div class="kpi-top">
+                    <div class="kpi-value" style="font-size:1.1rem;">@Model.Subscriptions.TotalOutstanding.ToString("N2")</div>
+                    <div class="kpi-icon icon-bg-red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                </div>
+                <div class="kpi-label">@SharedLocalizer["Outstanding Balance"]</div>
+                <div class="kpi-sub"><span>@Model.Subscriptions.ExpiringNext30Days</span> @SharedLocalizer["expiring in 30 days"]</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent" style="background:linear-gradient(135deg,#F59E0B,#FBBF24)"></div>
+                <div class="kpi-top">
+                    <div class="kpi-value">@Model.Subscriptions.AverageSubscriptionValue.ToString("N0")</div>
+                    <div class="kpi-icon icon-bg-amber"><i class="bi bi-receipt"></i></div>
+                </div>
+                <div class="kpi-label">@SharedLocalizer["Avg Subscription Value"]</div>
+                <div class="kpi-sub"><span>@Model.Subscriptions.TotalSubscriptions</span> @SharedLocalizer["total subscriptions"]</div>
+            </div>
+        </div>
+
+        @* --- Revenue Trend Charts --- *@
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="dash-card-header"><i class="bi bi-cash-stack"></i> @SharedLocalizer["Daily Revenue (7 Days)"]</div>
+                    <div class="dash-card-body">
+                        @{
+                            var maxRev = Model.DailySubscriptionRevenue.Max(d => d.Revenue);
+                            var revMax = maxRev > 0 ? maxRev : 1;
+                        }
+                        <div class="bar-chart">
+                            @foreach (var item in Model.DailySubscriptionRevenue)
+                            {
+                                var heightPct = (double)item.Revenue * 100.0 / (double)revMax;
+                                <div class="bar-item">
+                                    <span class="bar-value" style="font-size:0.7rem;">@item.Revenue.ToString("N0")</span>
+                                    <div class="bar" style="height:@(heightPct)%;background:linear-gradient(180deg,#10B981,#34D399);"></div>
+                                    <span class="bar-label">@item.Label</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="dash-card-header"><i class="bi bi-bar-chart-line"></i> @SharedLocalizer["Monthly Revenue (6 Months)"]</div>
+                    <div class="dash-card-body">
+                        @{
+                            var maxMonthlyRev = Model.MonthlySubscriptionRevenue.Max(m => m.Revenue);
+                            var monthlyRevMax = maxMonthlyRev > 0 ? maxMonthlyRev : 1;
+                        }
+                        <div class="bar-chart">
+                            @foreach (var item in Model.MonthlySubscriptionRevenue)
+                            {
+                                var heightPct = (double)item.Revenue * 100.0 / (double)monthlyRevMax;
+                                <div class="bar-item">
+                                    <span class="bar-value" style="font-size:0.7rem;">@item.Revenue.ToString("N0")</span>
+                                    <div class="bar" style="height:@(heightPct)%;background:linear-gradient(180deg,#6366F1,#818CF8);"></div>
+                                    <span class="bar-label">@item.Label</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* --- Revenue by Plan + Subscription Health --- *@
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="dash-card-header"><i class="bi bi-pie-chart-fill"></i> @SharedLocalizer["Revenue by Plan"]</div>
+                    <div class="dash-card-body">
+                        @if (Model.SubscriptionRevenueByPlan.Count == 0)
+                        {
+                            <p style="color:var(--text-muted-custom);font-size:0.85rem;text-align:center;padding:1rem 0;">@SharedLocalizer["No subscription data."]</p>
+                        }
+                        else
+                        {
+                            var colors = new[] { "#10B981", "#6366F1", "#F59E0B", "#3B82F6", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6" };
+                            var ci = 0;
+                            @foreach (var plan in Model.SubscriptionRevenueByPlan)
+                            {
+                                var c = colors[ci % colors.Length];
+                                <div style="margin-bottom:0.85rem;">
+                                    <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.2rem;">
+                                        <span class="insight-text">@plan.PlanName</span>
+                                        <span>
+                                            <span class="stat-value">@plan.TotalPaid.ToString("N2")</span>
+                                            <span style="font-weight:400;color:var(--text-muted-custom);font-size:0.75rem;">(@plan.Percent%)</span>
+                                        </span>
+                                    </div>
+                                    <div class="progress-thin"><div class="progress-fill" style="width:@(plan.Percent)%;background:linear-gradient(135deg,@c,transparent);"></div></div>
+                                    <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted-custom);margin-top:0.15rem;">
+                                        <span>@plan.Count @SharedLocalizer["subs"]</span>
+                                        <span>@SharedLocalizer["Due"]: @plan.TotalOutstanding.ToString("N2")</span>
+                                    </div>
+                                </div>
+                                ci++;
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="dash-card-header"><i class="bi bi-heart-pulse-fill"></i> @SharedLocalizer["Subscription Health"]</div>
+                    <div class="dash-card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="stat-box stat-box-active" style="padding:0.6rem;text-align:center;">
+                                    <div class="stat-box-value" style="color:#10B981;font-size:1.1rem;">@Model.Subscriptions.ActiveSubscriptions</div>
+                                    <div class="stat-box-label" style="font-size:0.75rem;">@SharedLocalizer["Active"]</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box stat-box-frozen" style="padding:0.6rem;text-align:center;">
+                                    <div class="stat-box-value" style="color:#3B82F6;font-size:1.1rem;">@Model.Subscriptions.FrozenSubscriptions</div>
+                                    <div class="stat-box-label" style="font-size:0.75rem;">@SharedLocalizer["Frozen"]</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box stat-box-expired" style="padding:0.6rem;text-align:center;">
+                                    <div class="stat-box-value" style="color:#F59E0B;font-size:1.1rem;">@Model.Subscriptions.ExpiredSubscriptions</div>
+                                    <div class="stat-box-label" style="font-size:0.75rem;">@SharedLocalizer["Expired"]</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box" style="padding:0.6rem;text-align:center;background:var(--bg-indigo-soft);">
+                                    <div class="stat-box-value" style="color:#6366F1;font-size:1.1rem;">@Model.Subscriptions.RenewedSubscriptions</div>
+                                    <div class="stat-box-label" style="font-size:0.75rem;">@SharedLocalizer["Renewed"]</div>
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="insight-list">
+                            <li><span class="insight-dot" style="background:#10B981"></span><span class="insight-text">@SharedLocalizer["Paid via Offers"]</span><span class="insight-value">@Model.Subscriptions.SubscriptionsWithOffers</span></li>
+                            <li><span class="insight-dot" style="background:#3B82F6"></span><span class="insight-text">@SharedLocalizer["Expiring in 7 Days"]</span><span class="insight-value" style="color:#EF4444;">@Model.Subscriptions.ExpiringNext7Days</span></li>
+                            <li><span class="insight-dot" style="background:#F59E0B"></span><span class="insight-text">@SharedLocalizer["Expiring in 30 Days"]</span><span class="insight-value">@Model.Subscriptions.ExpiringNext30Days</span></li>
+                            <li><span class="insight-dot" style="background:#8B5CF6"></span><span class="insight-text">@SharedLocalizer["Freezes This Month"]</span><span class="insight-value">@Model.Subscriptions.FreezesThisMonth</span></li>
+                            <li><span class="insight-dot" style="background:#6366F1"></span><span class="insight-text">@SharedLocalizer["Avg Revenue / Sub"]</span><span class="insight-value">@Model.Subscriptions.AvgRevenuePerSubscription.ToString("N2")</span></li>
+                        </ul>
+                        @if (Model.Subscriptions.TotalSubscriptions > 0)
+                        {
+                            var subOccupancy = Model.Subscriptions.ActiveSubscriptions > 0
+                                ? Math.Round(Model.Subscriptions.ActiveSubscriptions * 100.0 / Model.Subscriptions.TotalSubscriptions, 1)
+                                : 0;
+                            <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--table-row-border);">
+                                <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+                                    <span style="font-weight:500;color:var(--text-secondary);">@SharedLocalizer["Active Retention Rate"]</span>
+                                    <span style="font-weight:600;color:#10B981;">@subOccupancy%</span>
+                                </div>
+                                <div class="progress-thin">
+                                    <div class="progress-fill" style="width:@(Math.Min(subOccupancy,100))%;background:linear-gradient(135deg,#10B981,#34D399);"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* --- Recent Subscription Activity --- *@
+        <div class="row g-3 mb-4">
+            <div class="col-md-12">
+                <div class="dash-card">
+                    <div class="dash-card-header"><i class="bi bi-journal-text"></i> @SharedLocalizer["Recent Subscriptions"]</div>
+                    <div class="dash-card-body" style="padding:0.75rem 1.25rem;">
+                        @if (Model.RecentSubscriptionActivity.Count == 0)
+                        {
+                            <p style="color:var(--text-muted-custom);font-size:0.85rem;text-align:center;padding:1rem 0;">@SharedLocalizer["No subscriptions yet."]</p>
+                        }
+                        else
+                        {
+                            <ul class="activity-feed" style="max-height:220px;overflow-y:auto;">
+                                @foreach (var activity in Model.RecentSubscriptionActivity)
+                                {
+                                    var isOffer = activity.Type == "subscription_offer";
+                                    <li>
+                                        <div class="activity-icon" style="background:@(isOffer ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.15)");">
+                                            <i class="bi @(isOffer ? "bi-tag-fill" : "bi-journal-plus")" style="color:@(isOffer ? "#F59E0B" : "#10B981");"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="act-desc">@activity.Description</div>
+                                            <div class="act-time">@activity.Timestamp.ToString("dd MMM yyyy")</div>
+                                        </div>
+                                        <span class="act-time" style="white-space:nowrap;">@activity.Timestamp.ToString("HH:mm")</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     @* Recent Activity + Attendance Summary *@
     <div class="row g-3">
         <div class="col-md-7">

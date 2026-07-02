@@ -576,58 +576,105 @@
                     <i class="bi bi-grid-1x2-fill"></i> @SharedLocalizer["Home"]
                 </a>
             </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DashboardMvc" ? "active" : "")" asp-controller="DashboardMvc" asp-action="Index">
-                    <i class="bi bi-bar-chart-fill"></i> @SharedLocalizer["Dashboard"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembersMvc" ? "active" : "")" asp-controller="MembersMvc" asp-action="Index">
-                    <i class="bi bi-people-fill"></i> @SharedLocalizer["Members"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PlansMvc" ? "active" : "")" asp-controller="PlansMvc" asp-action="Index">
-                    <i class="bi bi-card-list"></i> @SharedLocalizer["Plans"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembershipsMvc" ? "active" : "")" asp-controller="MembershipsMvc" asp-action="Index">
-                    <i class="bi bi-ticket-perforated-fill"></i> @SharedLocalizer["Memberships"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AttendancesMvc" ? "active" : "")" asp-controller="AttendancesMvc" asp-action="Index">
-                    <i class="bi bi-check-circle-fill"></i> @SharedLocalizer["Attendance"]
-                </a>
-            </div>
-            <div class="nav-item">
-
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "OffersMvc" ? "active" : "")" asp-controller="OffersMvc" asp-action="Index">
-                    <i class="bi bi-tags-fill"></i> @SharedLocalizer["Offers"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DevicesMvc" ? "active" : "")" asp-controller="DevicesMvc" asp-action="Index">
-                    <i class="bi bi-display"></i> @SharedLocalizer["Devices"]
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "NotificationsMvc" ? "active" : "")" asp-controller="NotificationsMvc" asp-action="Index">
-                    <i class="bi bi-bell-fill"></i> @SharedLocalizer["Notifications"]
-                </a>
-            </div>
-            @if (User.IsInRole("Owner"))
+            @if (User.HasClaim("permission", "Dashboard.View"))
             {
                 <div class="nav-item">
-                    <a class="nav-link" asp-controller="UsersMvc" asp-action="Index">
-                        <i class="bi bi-shield-lock-fill"></i> @SharedLocalizer["Users"]
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DashboardMvc" ? "active" : "")" asp-controller="DashboardMvc" asp-action="Index">
+                        <i class="bi bi-bar-chart-fill"></i> @SharedLocalizer["Dashboard"]
                     </a>
                 </div>
             }
-            @if (User.IsInRole("Owner"))
+            @if (User.HasClaim("permission", "Members.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembersMvc" ? "active" : "")" asp-controller="MembersMvc" asp-action="Index">
+                        <i class="bi bi-people-fill"></i> @SharedLocalizer["Members"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Plans.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PlansMvc" ? "active" : "")" asp-controller="PlansMvc" asp-action="Index">
+                        <i class="bi bi-card-list"></i> @SharedLocalizer["Plans"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Memberships.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembershipsMvc" ? "active" : "")" asp-controller="MembershipsMvc" asp-action="Index">
+                        <i class="bi bi-ticket-perforated-fill"></i> @SharedLocalizer["Memberships"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Subscriptions.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SubscriptionsMvc" ? "active" : "")" asp-controller="SubscriptionsMvc" asp-action="Index">
+                        <i class="bi bi-journal-text"></i> @SharedLocalizer["Subscriptions"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Attendance.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AttendancesMvc" ? "active" : "")" asp-controller="AttendancesMvc" asp-action="Index">
+                        <i class="bi bi-check-circle-fill"></i> @SharedLocalizer["Attendance"]
+                    </a>
+                </div>
+            }
+            <div class="nav-item">
+            </div>
+            @if (User.HasClaim("permission", "Offers.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "OffersMvc" ? "active" : "")" asp-controller="OffersMvc" asp-action="Index">
+                        <i class="bi bi-tags-fill"></i> @SharedLocalizer["Offers"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Devices.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DevicesMvc" ? "active" : "")" asp-controller="DevicesMvc" asp-action="Index">
+                        <i class="bi bi-display"></i> @SharedLocalizer["Devices"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "WhatsApp.Send"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WhatsAppTemplatesMvc" ? "active" : "")" asp-controller="WhatsAppTemplatesMvc" asp-action="Index">
+                        <i class="bi bi-whatsapp"></i> @SharedLocalizer["WhatsApp"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Notifications.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "NotificationsMvc" ? "active" : "")" asp-controller="NotificationsMvc" asp-action="Index">
+                        <i class="bi bi-bell-fill"></i> @SharedLocalizer["Notifications"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Roles.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RolesMvc" ? "active" : "")" asp-controller="RolesMvc" asp-action="Index">
+                        <i class="bi bi-shield-lock-fill"></i> @SharedLocalizer["Roles & Permissions"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Users.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link" asp-controller="UsersMvc" asp-action="Index">
+                        <i class="bi bi-person-badge-fill"></i> @SharedLocalizer["Users"]
+                    </a>
+                </div>
+            }
+            @if (User.HasClaim("permission", "Settings.View"))
             {
                 <div class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SettingsMvc" ? "active" : "")" asp-controller="SettingsMvc" asp-action="Index">

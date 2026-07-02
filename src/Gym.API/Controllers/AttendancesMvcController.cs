@@ -4,12 +4,13 @@ using Gym.Application.Attendances.Queries.GetAttendanceById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 [Route("Attendance")]
 public class AttendancesMvcController : Controller
 {
@@ -22,6 +23,7 @@ public class AttendancesMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Attendance.View")]
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
@@ -39,6 +41,7 @@ public class AttendancesMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Attendance.View")]
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {

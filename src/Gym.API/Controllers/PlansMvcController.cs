@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.MembershipPlans.DTOs;
 using Gym.Application.MembershipPlans.Commands.CreatePlan;
 using Gym.Application.MembershipPlans.Commands.UpdatePlan;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("Plans")]
 public class PlansMvcController : Controller
 {
@@ -26,6 +27,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Plans.View")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Plans"];
@@ -41,6 +43,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpGet("create")]
+    [RequirePermission("Plans.Create")]
     public IActionResult Create()
     {
         ViewData["Title"] = _localizer["New Plan"];
@@ -48,6 +51,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpPost("create")]
+    [RequirePermission("Plans.Create")]
     public async Task<IActionResult> Create(CreatePlanCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Plan"];
@@ -64,6 +68,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpGet("edit/{id}")]
+    [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Plan"];
@@ -79,6 +84,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpPost("edit/{id}")]
+    [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> Edit(Guid id, UpdatePlanCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Plan"];
@@ -100,6 +106,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpGet("details/{id}")]
+    [RequirePermission("Plans.View")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Plan Details"];
@@ -113,6 +120,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpGet("delete/{id}")]
+    [RequirePermission("Plans.Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Delete Plan"];
@@ -126,6 +134,7 @@ public class PlansMvcController : Controller
     }
 
     [HttpPost("delete/{id}")]
+    [RequirePermission("Plans.Delete")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeletePlanCommand(id), cancellationToken);

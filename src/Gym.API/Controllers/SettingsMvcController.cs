@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Settings.DTOs;
 using Gym.Application.Settings.Commands.CreateSetting;
 using Gym.Application.Settings.Commands.UpdateSetting;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("Settings")]
 public class SettingsMvcController : Controller
 {
@@ -25,6 +26,7 @@ public class SettingsMvcController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Settings.View")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Settings"];
@@ -40,6 +42,7 @@ public class SettingsMvcController : Controller
     }
 
     [HttpGet("create")]
+    [RequirePermission("Settings.Edit")]
     public IActionResult Create()
     {
         ViewData["Title"] = _localizer["New Setting"];
@@ -47,6 +50,7 @@ public class SettingsMvcController : Controller
     }
 
     [HttpPost("create")]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> Create(CreateSettingCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Setting"];
@@ -63,6 +67,7 @@ public class SettingsMvcController : Controller
     }
 
     [HttpGet("edit/{id}")]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Setting"];
@@ -80,6 +85,7 @@ public class SettingsMvcController : Controller
     }
 
     [HttpPost("edit/{id}")]
+    [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> Edit(Guid id, UpdateSettingCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Setting"];

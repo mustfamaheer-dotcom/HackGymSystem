@@ -8,12 +8,13 @@ using Gym.Application.Users.Queries.GetRoles;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("Users")]
 public class UsersMvcController : Controller
 {
@@ -26,6 +27,7 @@ public class UsersMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Users.View")]
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
@@ -45,6 +47,7 @@ public class UsersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Users.Create")]
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
@@ -56,6 +59,7 @@ public class UsersMvcController : Controller
         return View();
     }
 
+    [RequirePermission("Users.Create")]
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateUserCommand command, CancellationToken cancellationToken)
     {
@@ -79,6 +83,7 @@ public class UsersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Users.Edit")]
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -103,6 +108,7 @@ public class UsersMvcController : Controller
         return View(command);
     }
 
+    [RequirePermission("Users.Edit")]
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateUserCommand command, CancellationToken cancellationToken)
     {
@@ -132,6 +138,7 @@ public class UsersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Users.View")]
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
@@ -148,6 +155,7 @@ public class UsersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Users.Delete")]
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
@@ -164,6 +172,7 @@ public class UsersMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Users.Delete")]
     [HttpPost("delete/{id}")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {

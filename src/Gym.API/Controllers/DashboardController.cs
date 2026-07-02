@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Dashboard.Queries.GetDashboard;
 using Gym.Application.Dashboard.DTOs;
 using Gym.Application.Common.DTOs;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 public class DashboardController : BaseController
 {
     private readonly IMediator _mediator;
@@ -18,6 +19,7 @@ public class DashboardController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Dashboard.View")]
     public async Task<IActionResult> GetDashboard(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetDashboardQuery(), cancellationToken);

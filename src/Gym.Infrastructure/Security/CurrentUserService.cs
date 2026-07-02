@@ -37,4 +37,19 @@ public class CurrentUserService : ICurrentUserService
     public bool IsInRole(string role)
         => _httpContextAccessor.HttpContext?.User?
             .IsInRole(role) ?? false;
+
+    public List<string> Permissions
+    {
+        get
+        {
+            var claims = _httpContextAccessor.HttpContext?.User?
+                .FindAll("permission") ?? Enumerable.Empty<Claim>();
+            return claims.Select(c => c.Value).ToList();
+        }
+    }
+
+    public bool HasPermission(string permission)
+    {
+        return Permissions.Contains(permission, StringComparer.OrdinalIgnoreCase);
+    }
 }

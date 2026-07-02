@@ -34,15 +34,15 @@ public class AuthService : IAuthService
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var (accessToken, refreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user);
-
-        user.UpdateRefreshToken(refreshToken, expiresAt);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         var permissions = user.Role.RolePermissions?
             .Select(rp => rp.Permission?.Name ?? string.Empty)
             .Where(p => !string.IsNullOrEmpty(p))
             .ToList() ?? new List<string>();
+
+        var (accessToken, refreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user, permissions);
+
+        user.UpdateRefreshToken(refreshToken, expiresAt);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<AuthResponse>.Success(new AuthResponse
         {
@@ -75,15 +75,15 @@ public class AuthService : IAuthService
         if (user is null || user.RefreshTokenExpiry <= DateTime.UtcNow)
             return Result<AuthResponse>.Failure("Invalid or expired refresh token.");
 
-        var (accessToken, newRefreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user);
-        user.UpdateRefreshToken(newRefreshToken, expiresAt);
-        _unitOfWork.Repository<User>().Update(user);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         var permissions = user.Role.RolePermissions?
             .Select(rp => rp.Permission?.Name ?? string.Empty)
             .Where(p => !string.IsNullOrEmpty(p))
             .ToList() ?? new List<string>();
+
+        var (accessToken, newRefreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user, permissions);
+        user.UpdateRefreshToken(newRefreshToken, expiresAt);
+        _unitOfWork.Repository<User>().Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<AuthResponse>.Success(new AuthResponse
         {

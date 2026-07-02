@@ -7,12 +7,13 @@ using Gym.Application.Devices.Queries.GetDeviceById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 [Route("Devices")]
 public class DevicesMvcController : Controller
 {
@@ -25,6 +26,7 @@ public class DevicesMvcController : Controller
         _localizer = localizer;
     }
 
+    [RequirePermission("Devices.View")]
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
@@ -40,6 +42,7 @@ public class DevicesMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpGet("create")]
     public IActionResult Create()
     {
@@ -47,6 +50,7 @@ public class DevicesMvcController : Controller
         return View();
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateDeviceCommand command, CancellationToken cancellationToken)
     {
@@ -63,6 +67,7 @@ public class DevicesMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -78,6 +83,7 @@ public class DevicesMvcController : Controller
         return View(command);
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpPost("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id, UpdateDeviceCommand command, CancellationToken cancellationToken)
     {
@@ -99,6 +105,7 @@ public class DevicesMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RequirePermission("Devices.View")]
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
@@ -112,6 +119,7 @@ public class DevicesMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpGet("delete/{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
@@ -125,6 +133,7 @@ public class DevicesMvcController : Controller
         return View(result.Data);
     }
 
+    [RequirePermission("Devices.Manage")]
     [HttpPost("delete/{id}")]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {

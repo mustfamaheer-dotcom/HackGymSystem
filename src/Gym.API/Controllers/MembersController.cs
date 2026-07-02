@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.API.Resources;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Members.Commands.CreateMember;
@@ -17,7 +18,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner,Receptionist")]
+[Authorize]
 public class MembersController : BaseController
 {
     private readonly IMediator _mediator;
@@ -30,6 +31,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Members.View")]
     public async Task<IActionResult> GetAllMembers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -48,6 +50,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Members.View")]
     public async Task<IActionResult> GetMemberById(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetMemberByIdQuery(id);
@@ -60,6 +63,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet("search")]
+    [RequirePermission("Members.View")]
     public async Task<IActionResult> SearchMembers([FromQuery] string searchTerm, CancellationToken cancellationToken)
     {
         var query = new SearchMembersQuery(searchTerm);
@@ -72,6 +76,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet("expiring")]
+    [RequirePermission("Members.View")]
     public async Task<IActionResult> GetExpiringMembers(
         [FromQuery] int withinDays = 7,
         CancellationToken cancellationToken = default)
@@ -86,6 +91,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet("outstanding-balance")]
+    [RequirePermission("Subscriptions.PaymentHistory")]
     public async Task<IActionResult> GetMembersWithOutstandingBalance(CancellationToken cancellationToken)
     {
         var query = new GetMembersWithOutstandingBalanceQuery();
@@ -98,6 +104,7 @@ public class MembersController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Members.Create")]
     public async Task<IActionResult> CreateMember([FromBody] CreateMemberCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -109,6 +116,7 @@ public class MembersController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Members.Edit")]
     public async Task<IActionResult> UpdateMember(Guid id, [FromBody] UpdateMemberCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
@@ -123,7 +131,7 @@ public class MembersController : BaseController
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Owner")]
+    [RequirePermission("Members.Delete")]
     public async Task<IActionResult> DeleteMember(Guid id, CancellationToken cancellationToken)
     {
         var command = new DeleteMemberCommand(id);
@@ -136,7 +144,7 @@ public class MembersController : BaseController
     }
 
     [HttpPatch("{id}/restore")]
-    [Authorize(Roles = "Owner")]
+    [RequirePermission("Members.Delete")]
     public async Task<IActionResult> RestoreMember(Guid id, CancellationToken cancellationToken)
     {
         var command = new RestoreMemberCommand(id);

@@ -1,0 +1,408 @@
+@model SubscriptionDetailDto
+@{
+    var isActive = Model.Status == SubscriptionStatus.Active;
+    var isFrozen = Model.Status == SubscriptionStatus.Frozen;
+    var isExpired = Model.Status == SubscriptionStatus.Expired;
+    var isRenewed = Model.Status == SubscriptionStatus.Renewed;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-journal-text"></i> @SharedLocalizer["Subscription Details"]</h4>
+        <span class="receipt-badge @(isActive ? "badge-active" : isFrozen ? "badge-warning" : isExpired ? "badge-expired" : "badge-frozen")">
+            @SharedLocalizer[Model.Status.ToString()]
+        </span>
+    </div>
+
+    @* Action Buttons *@
+    <div class="p-3 border-bottom bg-light d-flex gap-2 flex-wrap">
+        @if (isActive)
+        {
+            <button class="btn btn-outline-info btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#freezeModal">
+                <i class="bi bi-snow"></i> @SharedLocalizer["Freeze"]
+            </button>
+            <button class="btn btn-outline-warning btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#renewModal">
+                <i class="bi bi-arrow-repeat"></i> @SharedLocalizer["Renew"]
+            </button>
+        }
+        @if (isFrozen)
+        {
+            <form asp-action="Unfreeze" asp-route-id="@Model.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-success btn-sm rounded-pill">
+                    <i class="bi bi-play-fill"></i> @SharedLocalizer["Unfreeze"]
+                </button>
+            </form>
+        }
+        @if (Model.RemainingBalance > 0)
+        {
+            <button class="btn btn-outline-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                <i class="bi bi-cash"></i> @SharedLocalizer["Record Payment"]
+            </button>
+        }
+        <div class="d-inline-flex align-items-center gap-1">
+            <select id="whatsappTemplate" class="form-select form-select-sm" style="width:auto;max-width:180px;">
+                <option value="">@SharedLocalizer["Select template..."]</option>
+                @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+                {
+                    foreach (var t in tpls)
+                    {
+                        <option value="@t.Value">@t.Text</option>
+                    }
+                }
+            </select>
+            <a id="whatsappBtn" class="btn btn-success btn-sm rounded-pill" data-phone="@(Model.Member?.PhoneNumber)" data-member="@(Model.Member?.FullName)" data-receipt="@Model.ReceiptNumber" data-expiration="@Model.ExpirationDate.ToString("dd/MM/yyyy")" data-remaining="@Model.RemainingBalance.ToString("N2")" data-daysremaining="@((Model.ExpirationDate - DateTime.UtcNow).Days)" href="#" target="_blank">
+                <i class="bi bi-whatsapp"></i>
+            </a>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill ms-auto">
+            <i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]
+        </a>
+    </div>
+
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+
+    <div class="receipt-body">
+        @* Summary Cards *@
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-3 text-center h-100">
+                    <div class="detail-label">@SharedLocalizer["Total Value"]</div>
+                    <div class="fs-5 fw-bold text-primary mt-1">@Model.TotalSubscriptionValue.ToString("N2")</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-3 text-center h-100">
+                    <div class="detail-label">@SharedLocalizer["Amount Paid"]</div>
+                    <div class="fs-5 fw-bold text-success mt-1">@Model.AmountPaid.ToString("N2")</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-3 text-center h-100">
+                    <div class="detail-label">@SharedLocalizer["Remaining"]</div>
+                    <div class="fs-5 fw-bold @(Model.RemainingBalance > 0 ? "text-danger" : "text-success") mt-1">@Model.RemainingBalance.ToString("N2")</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-3 text-center h-100">
+                    <div class="detail-label">@SharedLocalizer["Expiration"]</div>
+                    <div class="fs-5 fw-bold @(isExpired ? "text-danger" : "") mt-1">@Model.ExpirationDate.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @* Subscription Info *@
+            <div class="col-md-6">
+                <div class="section-title"><i class="bi bi-info-circle"></i> @SharedLocalizer["Subscription Information"]</div>
+                <table class="table table-borderless table-sm">
+                    <tr><td class="detail-label">@SharedLocalizer["Receipt Number"]</td><td class="detail-value"><code style="font-size:0.85rem;">@Model.ReceiptNumber</code></td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Start Date"]</td><td class="detail-value">@Model.StartDate.ToString("dd/MM/yyyy")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Expiration Date"]</td><td class="detail-value">@Model.ExpirationDate.ToString("dd/MM/yyyy")</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Payment Method"]</td><td class="detail-value">@SharedLocalizer[Model.PaymentMethod.ToString()]</td></tr>
+                    @if (!string.IsNullOrEmpty(Model.AdminSignature))
+                    {
+                        <tr><td class="detail-label">@SharedLocalizer["Admin Signature"]</td><td class="detail-value">@Model.AdminSignature</td></tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <tr><td class="detail-label">@SharedLocalizer["Notes"]</td><td class="detail-value">@Model.Notes</td></tr>
+                    }
+                </table>
+            </div>
+
+            @* Member & Plan Info *@
+            <div class="col-md-6">
+                <div class="section-title"><i class="bi bi-person"></i> @SharedLocalizer["Member & Plan"]</div>
+                <table class="table table-borderless table-sm">
+                    <tr><td class="detail-label">@SharedLocalizer["Member"]</td><td class="detail-value fw-semibold">@Model.Member?.FullName</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Phone"]</td><td class="detail-value">@Model.Member?.PhoneNumber</td></tr>
+                    <tr><td class="detail-label">@SharedLocalizer["Plan"]</td><td class="detail-value">@Model.Plan?.Name (@Model.Plan?.Price.ToString("N2") @SharedLocalizer["EGP"])</td></tr>
+                    @if (Model.Offer != null)
+                    {
+                        <tr><td class="detail-label">@SharedLocalizer["Offer"]</td><td class="detail-value">@Model.Offer.OfferTitle</td></tr>
+                    }
+                    <tr><td class="detail-label">@SharedLocalizer["Total Freeze Days"]</td><td class="detail-value">@(Model.TotalFreezeDays > 0 ? Model.TotalFreezeDays.ToString() : SharedLocalizer["None"])</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>@SharedLocalizer["Payment History"]</span></div>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>@SharedLocalizer["Date"]</th>
+                        <th>@SharedLocalizer["Amount"]</th>
+                        <th>@SharedLocalizer["Method"]</th>
+                        <th>@SharedLocalizer["Reference"]</th>
+                        <th>@SharedLocalizer["Running Balance"]</th>
+                        <th>@SharedLocalizer["Notes"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Payments.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">@SharedLocalizer["No payments recorded."]</td></tr>
+                    }
+                    @foreach (var p in Model.Payments)
+                    {
+                        <tr>
+                            <td>@p.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td class="fw-semibold text-success">+@p.Amount.ToString("N2")</td>
+                            <td>@SharedLocalizer[p.PaymentMethod.ToString()]</td>
+                            <td>@(p.ReferenceNumber ?? "-")</td>
+                            <td>@p.RunningBalance.ToString("N2")</td>
+                            <td>@(p.Notes ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.FreezeHistories.Count > 0)
+        {
+            <div class="section-divider"><span>@SharedLocalizer["Freeze History"]</span></div>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>@SharedLocalizer["Freeze Start"]</th>
+                            <th>@SharedLocalizer["Freeze End"]</th>
+                            <th>@SharedLocalizer["Days"]</th>
+                            <th>@SharedLocalizer["Reason"]</th>
+                            <th>@SharedLocalizer["Unfreeze Date"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var f in Model.FreezeHistories)
+                        {
+                            <tr>
+                                <td>@f.FreezeStart.ToString("dd/MM/yyyy")</td>
+                                <td>@f.FreezeEnd.ToString("dd/MM/yyyy")</td>
+                                <td>@f.FreezeDays</td>
+                                <td>@(f.Reason ?? "-")</td>
+                                <td>@(f.UnfreezeDate == default ? "-" : f.UnfreezeDate.ToString("dd/MM/yyyy"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Model.TransactionLogs.Count > 0)
+        {
+            <div class="section-divider"><span>@SharedLocalizer["Transaction History"]</span></div>
+            <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>@SharedLocalizer["Date"]</th>
+                            <th>@SharedLocalizer["Action"]</th>
+                            <th>@SharedLocalizer["Description"]</th>
+                            <th>@SharedLocalizer["By"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model.TransactionLogs)
+                        {
+                            <tr>
+                                <td>@t.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><span class="badge-status badge-frozen" style="font-size:0.75rem;">@t.Action</span></td>
+                                <td>@t.Description</td>
+                                <td>@(t.PerformedByName ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @* Timestamps *@
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">@SharedLocalizer["Created"]</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">@SharedLocalizer["Updated"]</div>
+                    <div class="fw-semibold mt-1">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Freeze Modal *@
+<div class="modal fade" id="freezeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="Freeze" asp-route-id="@Model.Id" method="post" class="modal-content">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-snow"></i> @SharedLocalizer["Freeze Subscription"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Freeze Days"] <span class="text-danger">*</span></label>
+                    <input type="number" name="freezeDays" class="form-control" min="1" max="@(Model.Plan?.FreezeDays ?? 365)" required />
+                    <small class="text-muted">@SharedLocalizer["Max"]: @(Model.Plan?.FreezeDays?.ToString() ?? SharedLocalizer["Unlimited"]) @SharedLocalizer["days"]</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Reason"]</label>
+                    <textarea name="reason" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional"]"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-info"><i class="bi bi-snow"></i> @SharedLocalizer["Freeze"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Payment Modal *@
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="AddPayment" asp-route-id="@Model.Id" method="post" class="modal-content">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cash"></i> @SharedLocalizer["Record Payment"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Amount"] <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" name="Amount" class="form-control" step="0.01" min="0.01" max="@Model.RemainingBalance" required />
+                        <span class="input-group-text">@SharedLocalizer["EGP"]</span>
+                    </div>
+                    <small class="text-muted">@SharedLocalizer["Remaining balance"]: @Model.RemainingBalance.ToString("N2")</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Payment Method"] <span class="text-danger">*</span></label>
+                    <select name="PaymentMethod" class="form-select" asp-items="ViewBag.PaymentMethods"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Reference Number"]</label>
+                    <input type="text" name="ReferenceNumber" class="form-control" placeholder="@SharedLocalizer["Optional"]" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@SharedLocalizer["Notes"]</label>
+                    <textarea name="Notes" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional"]"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Record Payment"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(Json.Serialize(ViewBag.WhatsAppTemplateData ?? new List<object>()));
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var select = document.getElementById('whatsappTemplate');
+            var btn = document.getElementById('whatsappBtn');
+
+            function renderMessage(templateId) {
+                var body = templateMap[templateId] || '';
+                return body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{ExpirationDate\}/g, btn.dataset.expiration || '')
+                    .replace(/\{DaysRemaining\}/g, btn.dataset.daysremaining || '')
+                    .replace(/\{Offers\}/g, '');
+            }
+
+            select.addEventListener('change', function() {
+                var tid = this.value;
+                if (tid) {
+                    var msg = renderMessage(tid);
+                    var phone = btn.dataset.phone || '';
+                    btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.href = '#';
+                    btn.classList.add('disabled');
+                }
+            });
+
+            btn.addEventListener('click', function(e) {
+                if (!select.value) {
+                    e.preventDefault();
+                    alert('@SharedLocalizer["Please select a template first"]');
+                }
+            });
+        })();
+    </script>
+}
+
+@* Renew Modal *@
+<div class="modal fade" id="renewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form asp-action="Renew" asp-route-id="@Model.Id" method="post" class="modal-content">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat"></i> @SharedLocalizer["Renew Subscription"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["New Plan"]</label>
+                        <select name="NewPlanId" class="form-select" asp-items="ViewBag.Plans">
+                            <option value="">@SharedLocalizer["Same Plan"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Offer"]</label>
+                        <select name="OfferId" class="form-select" asp-items="ViewBag.Offers">
+                            <option value="">@SharedLocalizer["No offer"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Start Date"] <span class="text-danger">*</span></label>
+                        <input type="date" name="StartDate" class="form-control" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Payment Method"] <span class="text-danger">*</span></label>
+                        <select name="PaymentMethod" class="form-select" asp-items="ViewBag.PaymentMethods"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Amount Paid"] <span class="text-danger">*</span></label>
+                        <input type="number" name="AmountPaid" class="form-control" step="0.01" min="0" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Admin Signature"]</label>
+                        <input type="text" name="AdminSignature" class="form-control" placeholder="@SharedLocalizer["Optional"]" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@SharedLocalizer["Notes"]</label>
+                        <textarea name="Notes" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional"]"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat"></i> @SharedLocalizer["Renew"]</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -25,6 +25,13 @@ public class TokenService : ITokenService
         return (accessToken, refreshToken, DateTime.UtcNow.AddMinutes(GetAccessTokenExpiryMinutes()));
     }
 
+    public async Task<(string accessToken, string refreshToken, DateTime expiresAt)> GenerateTokensAsync(User user, List<string> permissions)
+    {
+        var accessToken = await GenerateAccessTokenAsync(user, permissions);
+        var refreshToken = GenerateRefreshToken();
+        return (accessToken, refreshToken, DateTime.UtcNow.AddMinutes(GetAccessTokenExpiryMinutes()));
+    }
+
     public async Task<Guid?> ValidateTokenAsync(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -69,6 +76,11 @@ public class TokenService : ITokenService
 
     private async Task<string> GenerateAccessTokenAsync(User user)
     {
+        return await GenerateAccessTokenAsync(user, new List<string>());
+    }
+
+    private async Task<string> GenerateAccessTokenAsync(User user, List<string> permissions)
+    {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiryMinutes = GetAccessTokenExpiryMinutes();
@@ -81,6 +93,11 @@ public class TokenService : ITokenService
             new(ClaimTypes.Role, user.Role?.Name ?? "User"),
             new("fullName", user.FullName)
         };
+
+        foreach (var perm in permissions)
+        {
+            claims.Add(new Claim("permission", perm));
+        }
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],

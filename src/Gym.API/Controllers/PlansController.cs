@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
 using Gym.Application.MembershipPlans.Commands.CreatePlan;
 using Gym.Application.MembershipPlans.Commands.DeletePlan;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 public class PlansController : BaseController
 {
     private readonly IMediator _mediator;
@@ -24,6 +25,7 @@ public class PlansController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Plans.View")]
     public async Task<IActionResult> GetAllPlans([FromQuery] GetAllPlansQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -35,6 +37,7 @@ public class PlansController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Plans.View")]
     public async Task<IActionResult> GetPlanById(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetPlanByIdQuery(id);
@@ -47,6 +50,7 @@ public class PlansController : BaseController
     }
 
     [HttpGet("active")]
+    [RequirePermission("Plans.View")]
     public async Task<IActionResult> GetActivePlans(CancellationToken cancellationToken)
     {
         var query = new GetActivePlansQuery();
@@ -59,6 +63,7 @@ public class PlansController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Plans.Create")]
     public async Task<IActionResult> CreatePlan([FromBody] CreatePlanCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -70,6 +75,7 @@ public class PlansController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> UpdatePlan(Guid id, [FromBody] UpdatePlanCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
@@ -84,6 +90,7 @@ public class PlansController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [RequirePermission("Plans.Delete")]
     public async Task<IActionResult> DeletePlan(Guid id, CancellationToken cancellationToken)
     {
         var command = new DeletePlanCommand(id);
@@ -96,6 +103,7 @@ public class PlansController : BaseController
     }
 
     [HttpPatch("{id}/status")]
+    [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> TogglePlanStatus(Guid id, [FromBody] TogglePlanStatusRequest request, CancellationToken cancellationToken)
     {
         var command = new TogglePlanStatusCommand(id, request.IsActive);

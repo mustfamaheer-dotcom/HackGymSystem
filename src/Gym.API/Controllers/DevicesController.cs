@@ -1,3 +1,4 @@
+using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Devices.Commands.CreateDevice;
 using Gym.Application.Devices.Commands.DeleteDevice;
@@ -17,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Gym.API.Controllers;
 
-[Authorize(Roles = "Owner")]
+[Authorize]
 public class DevicesController : BaseController
 {
     private readonly IMediator _mediator;
@@ -32,6 +33,7 @@ public class DevicesController : BaseController
     }
 
     [HttpGet]
+    [RequirePermission("Devices.View")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllDevicesQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -42,6 +44,7 @@ public class DevicesController : BaseController
     }
 
     [HttpGet("{id}")]
+    [RequirePermission("Devices.View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetDeviceByIdQuery(id), cancellationToken);
@@ -52,6 +55,7 @@ public class DevicesController : BaseController
     }
 
     [HttpGet("active")]
+    [RequirePermission("Devices.View")]
     public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetActiveDevicesQuery(), cancellationToken);
@@ -62,6 +66,7 @@ public class DevicesController : BaseController
     }
 
     [HttpPost]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Create([FromBody] CreateDeviceCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -72,6 +77,7 @@ public class DevicesController : BaseController
     }
 
     [HttpPut("{id}")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDeviceRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateDeviceCommand(
@@ -86,6 +92,7 @@ public class DevicesController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeleteDeviceCommand(id), cancellationToken);
@@ -96,6 +103,7 @@ public class DevicesController : BaseController
     }
 
     [HttpPost("{id}/sync")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Sync(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetDeviceByIdQuery(id);
@@ -110,6 +118,7 @@ public class DevicesController : BaseController
     }
 
     [HttpGet("{id}/logs")]
+    [RequirePermission("Devices.View")]
     public async Task<IActionResult> GetLogs(Guid id, CancellationToken cancellationToken)
     {
         var logs = await _deviceLogRepo.Query()
@@ -131,6 +140,7 @@ public class DevicesController : BaseController
     }
 
     [HttpPost("{id}/test-connection")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> TestConnection(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetDeviceByIdQuery(id);
@@ -164,6 +174,7 @@ public class DevicesController : BaseController
     }
 
     [HttpPatch("{id}/status")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> ToggleStatus(Guid id, [FromBody] ToggleDeviceStatusRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ToggleDeviceStatusCommand(id, request.Status), cancellationToken);
