@@ -7,8 +7,11 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GymDbConte
 {
     public GymDbContext CreateDbContext(string[] args)
     {
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? "Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+
         var optionsBuilder = new DbContextOptionsBuilder<GymDbContext>();
-        optionsBuilder.UseSqlServer("Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true");
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new GymDbContext(optionsBuilder.Options);
     }

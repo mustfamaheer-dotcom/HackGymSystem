@@ -1,3 +1,13 @@
 @echo off
-cd /d "D:\ORBIT Work\Phase 1\System\System"
-dotnet run --no-build --project "src\Gym.API" --urls "http://localhost:5000" > api-output.txt 2>&1
+title Gym API Server
+color 0A
+
+:: Portable - uses the script's own location
+cd /d "%~dp0src\Gym.API"
+
+:: Allow override via environment variable (set by run.bat or manually)
+if not defined ConnectionStrings__DefaultConnection (
+    set "ConnectionStrings__DefaultConnection=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+)
+
+dotnet run --no-build -c Release --urls "http://localhost:5000"

@@ -54,10 +54,6 @@ public static class SeedData
     private static readonly Guid PermDevicesView = Guid.Parse("D1000013-0000-0000-0000-000000000001");
     private static readonly Guid PermDevicesManage = Guid.Parse("D1000013-0000-0000-0000-000000000002");
     private static readonly Guid PermBackupManage = Guid.Parse("D1000014-0000-0000-0000-000000000001");
-    private static readonly Guid PermNotificationsView = Guid.Parse("D1000015-0000-0000-0000-000000000001");
-    private static readonly Guid PermNotificationsSend = Guid.Parse("D1000015-0000-0000-0000-000000000002");
-    private static readonly Guid PermMembershipsView = Guid.Parse("D1000016-0000-0000-0000-000000000001");
-    private static readonly Guid PermMembershipsManage = Guid.Parse("D1000016-0000-0000-0000-000000000002");
 
     private static readonly List<(Guid Id, string Name, string Description, string Module)> AllPermissions = new()
     {
@@ -104,11 +100,7 @@ public static class SeedData
         (PermRolesDelete, "Roles.Delete", "Delete roles", "Roles & Permissions"),
         (PermDevicesView, "Devices.View", "View devices", "Devices"),
         (PermDevicesManage, "Devices.Manage", "Manage devices", "Devices"),
-        (PermBackupManage, "Backup.Manage", "Manage backups", "Backup"),
-        (PermNotificationsView, "Notifications.View", "View notifications", "Notifications"),
-        (PermNotificationsSend, "Notifications.Send", "Send notifications", "Notifications"),
-        (PermMembershipsView, "Memberships.View", "View memberships", "Memberships"),
-        (PermMembershipsManage, "Memberships.Manage", "Manage memberships", "Memberships")
+        (PermBackupManage, "Backup.Manage", "Manage backups", "Backup")
     };
 
     public static void Seed(ModelBuilder builder)
@@ -197,9 +189,6 @@ public static class SeedData
             PermAttendanceView,
             PermAttendanceExport,
             PermWhatsAppSend,
-            PermMembershipsView,
-            PermNotificationsView,
-            PermNotificationsSend,
             PermImportExportImport,
             PermImportExportExport
         };
@@ -214,8 +203,7 @@ public static class SeedData
             PermDashboardView,
             PermMembersView,
             PermAttendanceView,
-            PermLeadsView,
-            PermNotificationsView
+            PermLeadsView
         };
 
         foreach (var permId in trainerPermissions)
@@ -244,9 +232,7 @@ public static class SeedData
             new { Id = Guid.Parse("E3F4A5B6-C7D8-9012-E345-678901234567"), Key = "BackupPath", Value = "C:\\Backups\\GymManagement", Group = "Backup", Description = "Database backup location", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("F4A5B6C7-D8E9-0123-F456-789012345678"), Key = "WorkingHoursStart", Value = "08:00", Group = "General", Description = "Gym opening time", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("A5B6C7D8-E9F0-1234-A567-890123456789"), Key = "WorkingHoursEnd", Value = "22:00", Group = "General", Description = "Gym closing time", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
-            new { Id = Guid.Parse("B6C7D8E9-F0A1-2345-B678-901234567890"), Key = "ReminderDays", Value = "7,3,1", Group = "Notifications", Description = "Membership expiry reminder days", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
-            new { Id = Guid.Parse("C7D8E9F0-A1B2-3456-C789-012345678901"), Key = "WhatsAppEnabled", Value = "false", Group = "Notifications", Description = "Enable WhatsApp notifications", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
-            new { Id = Guid.Parse("D8E9F0A1-B2C3-4567-D890-123456789012"), Key = "SMSEnabled", Value = "false", Group = "Notifications", Description = "Enable SMS notifications", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
+
             new { Id = Guid.Parse("E9F0A1B2-C3D4-5678-E901-234567890123"), Key = "DefaultCurrency", Value = "EGP", Group = "General", Description = "Default currency symbol", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null }
         );
     }

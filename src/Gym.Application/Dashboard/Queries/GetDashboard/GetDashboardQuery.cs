@@ -13,18 +13,18 @@ public record GetDashboardQuery : IRequest<Result<DashboardDto>>;
 public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Result<DashboardDto>>
 {
     private readonly IRepository<Member> _memberRepo;
-    private readonly IRepository<Membership> _membershipRepo;
+    private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IRepository<Attendance> _attendanceRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
 
     public GetDashboardQueryHandler(
         IRepository<Member> memberRepo,
-        IRepository<Membership> membershipRepo,
+        IRepository<Domain.Entities.Subscription> subscriptionRepo,
         IRepository<Attendance> attendanceRepo,
         IRepository<MembershipPlan> planRepo)
     {
         _memberRepo = memberRepo;
-        _membershipRepo = membershipRepo;
+        _subscriptionRepo = subscriptionRepo;
         _attendanceRepo = attendanceRepo;
         _planRepo = planRepo;
     }
@@ -39,18 +39,18 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         var activeMembers = await _memberRepo.Query()
             .CountAsync(m => !m.IsDeleted, cancellationToken);
 
-        var activeMemberships = await _membershipRepo.Query()
-            .CountAsync(m => m.Status == MembershipStatus.Active, cancellationToken);
+        var activeSubs = await _subscriptionRepo.Query()
+            .CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
 
         var todayCheckIns = await _attendanceRepo.Query()
             .CountAsync(a => a.Date == today, cancellationToken);
 
-        var expiringMemberships = await _membershipRepo.Query()
-            .CountAsync(m => m.EndDate <= now.AddDays(7) && m.EndDate > now && m.Status == MembershipStatus.Active, cancellationToken);
+        var expiringSubs = await _subscriptionRepo.Query()
+            .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active, cancellationToken);
 
-        var membershipByPlan = await _membershipRepo.Query()
-            .Include(m => m.Plan)
-            .GroupBy(m => new { m.PlanId, m.Plan.Name })
+        var subsByPlan = await _subscriptionRepo.Query()
+            .Include(s => s.Plan)
+            .GroupBy(s => new { s.PlanId, s.Plan.Name })
             .Select(g => new MembershipStatsDto
             {
                 PlanName = g.Key.Name,
@@ -62,10 +62,10 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         {
             TotalMembers = totalMembers,
             ActiveMembers = activeMembers,
-            ActiveMemberships = activeMemberships,
+            ActiveMemberships = activeSubs,
             TodayCheckIns = todayCheckIns,
-            ExpiringMemberships = expiringMemberships,
-            MembershipByPlan = membershipByPlan
+            ExpiringMemberships = expiringSubs,
+            MembershipByPlan = subsByPlan
         };
 
         return Result<DashboardDto>.Success(dashboard);

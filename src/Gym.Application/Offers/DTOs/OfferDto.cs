@@ -23,15 +23,22 @@ public class OfferDto : IMapFrom<Offer>
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public string OfferTypeDisplay => OfferType switch
+    public string OfferTypeDisplay
     {
-        OfferType.BonusDuration => $"Bonus Duration (+{BonusMonths}m +{BonusDays}d)" + (LinkedPackageName != null ? $" - {LinkedPackageName}" : ""),
-        OfferType.FixedPrice => $"{OfferPrice:N2} EGP" + (LinkedPackageName != null ? $" - {LinkedPackageName}" : ""),
-        OfferType.ExtraFreeze => $"+{ExtraFreezeDays} Freeze Days" + (LinkedPackageName != null ? $" - {LinkedPackageName}" : ""),
-        OfferType.FreeRegistration => "Free Registration" + (LinkedPackageName != null ? $" - {LinkedPackageName}" : ""),
-        OfferType.Custom => "Custom" + (LinkedPackageName != null ? $" - {LinkedPackageName}" : ""),
-        _ => ""
-    };
+        get
+        {
+            var duration = "";
+            if (BonusMonths > 0) duration += $"+{BonusMonths}m ";
+            if (BonusDays > 0) duration += $"+{BonusDays}d ";
+            duration = duration.TrimEnd();
+
+            var price = OfferPrice.HasValue ? $"{OfferPrice:N2} EGP" : "";
+            var parts = new[] { price, duration };
+            var display = string.Join(" ", parts.Where(p => !string.IsNullOrEmpty(p)));
+            if (LinkedPackageName != null) display += $" - {LinkedPackageName}";
+            return display;
+        }
+    }
 
     public void Mapping(Profile profile)
     {

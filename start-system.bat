@@ -24,6 +24,24 @@ set "NO_SQLCMD="
 where sqlcmd >nul 2>&1
 if %ERRORLEVEL% NEQ 0 set "NO_SQLCMD=1"
 
+:: -------------------------------------------------
+:: Auto-detect SQL Server (LocalDB or full instance)
+:: -------------------------------------------------
+set "CONN_STR=Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+set "DB_INSTANCE=localhost"
+
+where sqlcmd >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    sqlcmd -S "(localdb)\MSSQLLocalDB" -E -Q "SELECT 1" >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        set "CONN_STR=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+        set "DB_INSTANCE=(localdb)\MSSQLLocalDB"
+    )
+)
+
+:: Set environment variable so all tools and the app use the same connection
+set "ConnectionStrings__DefaultConnection=%CONN_STR%"
+
 :: =============================================
 :: STEP 0 - Database Menu
 :: =============================================
@@ -32,6 +50,8 @@ echo.
 echo  ===================================================
 echo       HACK GYM SYSTEM - Full Setup Launcher
 echo  ===================================================
+echo.
+echo   Database: %DB_INSTANCE%
 echo.
 if defined NO_SQLCMD (
     echo  [NOTE] sqlcmd not found. Backup / Restore / SQL-Init
@@ -78,7 +98,7 @@ if "!DT!"=="" set "DT=00000000_000000"
 set "DT=!DT:~0,8!_!DT:~8,6!"
 set "BACKUP_FILE=%BACKUP_DIR%\%DB_NAME%_!DT!.bak"
 
-sqlcmd -S localhost -E -C -Q "BACKUP DATABASE [%DB_NAME%] TO DISK='!BACKUP_FILE:\=\\!' WITH FORMAT, INIT, NAME='GymManagementDb Full Backup'"
+sqlcmd -S %DB_INSTANCE% -E -C -Q "BACKUP DATABASE [%DB_NAME%] TO DISK='!BACKUP_FILE:\=\\!' WITH FORMAT, INIT, NAME='GymManagementDb Full Backup'"
 if %ERRORLEVEL% EQU 0 (
     echo   SUCCESS: Backup saved to: !BACKUP_FILE!
 ) else (
@@ -130,7 +150,7 @@ if /i not "!CONFIRM!"=="YES" (
 
 :: Get default data path from SQL Server
 set "DATA_PATH="
-for /f "usebackq tokens=*" %%P in (`sqlcmd -S localhost -E -C -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
+for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -C -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
     set "DATA_PATH=%%P"
 )
 if "!DATA_PATH!"=="" set "DATA_PATH=C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\"
@@ -141,17 +161,17 @@ echo   Restoring: !RESTORE_FILE!
 echo   Data path: !DATA_PATH!
 echo.
 
-sqlcmd -S localhost -E -C -Q "ALTER DATABASE [%DB_NAME%] SET SINGLE_USER WITH ROLLBACK IMMEDIATE" >nul 2>&1
-sqlcmd -S localhost -E -C -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH MOVE 'GymManagementDb' TO '!DATA_PATH:\=\\!GymManagementDb.mdf', MOVE 'GymManagementDb_log' TO '!DATA_PATH:\=\\!GymManagementDb_log.ldf', REPLACE, RECOVERY"
+sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET SINGLE_USER WITH ROLLBACK IMMEDIATE" >nul 2>&1
+sqlcmd -S %DB_INSTANCE% -E -C -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH MOVE 'GymManagementDb' TO '!DATA_PATH:\=\\!GymManagementDb.mdf', MOVE 'GymManagementDb_log' TO '!DATA_PATH:\=\\!GymManagementDb_log.ldf', REPLACE, RECOVERY"
 if %ERRORLEVEL% EQU 0 (
-    sqlcmd -S localhost -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+    sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     echo   SUCCESS: Database restored successfully.
     echo.
     echo   Press any key to continue to application startup...
     pause >nul
     goto db_done
 ) else (
-    sqlcmd -S localhost -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+    sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     echo   ERROR: Restore failed. Check backup file and SQL Server logs.
     echo.
     goto db_menu
@@ -173,7 +193,7 @@ if /i not "!CONFIRM!"=="YES" (
     echo.
     goto db_menu
 )
-sqlcmd -S localhost -E -C -i "%SQL_INIT%"
+sqlcmd -S %DB_INSTANCE% -E -C -i "%SQL_INIT%"
 if %ERRORLEVEL% EQU 0 (
     echo   SUCCESS: Database initialized.
 ) else (
@@ -251,9 +271,14 @@ ping -n 3 127.0.0.1 >nul
 echo   Done.
 
 :: =============================================
-:: STEP 3 - Frontend build
+:: STEP 3 - Frontend build (skip if no frontend dir)
 :: =============================================
 echo.
+if not exist "%FRONTEND_DIR%" (
+    echo [3/6] Skipping frontend build (gym-web not found)
+    echo   The app will serve MVC views from the API directly.
+    goto :step4
+)
 echo [3/6] Building frontend...
 
 where node >nul 2>&1
@@ -286,6 +311,8 @@ if exist "%FRONTEND_DIR%\dist" (
     echo   WARNING: No dist folder. The app will serve API responses only.
 )
 
+:step4
+
 :: =============================================
 :: STEP 4 - API build
 :: =============================================
@@ -310,7 +337,11 @@ echo   API: Build complete.
 :: STEP 5 - Deploy frontend to wwwroot
 :: =============================================
 echo.
-echo [5/6] Deploying frontend to wwwroot...
+if not exist "%FRONTEND_DIR%" (
+    echo [5] Skipping frontend deploy (gym-web not found)
+    goto :step6
+)
+echo [5] Deploying frontend to wwwroot...
 if not exist "%WWWROOT%" mkdir "%WWWROOT%"
 
 if exist "%FRONTEND_DIR%\dist" (
@@ -320,6 +351,8 @@ if exist "%FRONTEND_DIR%\dist" (
     echo   No dist folder - skipping deploy.
 )
 
+:step6
+
 :: =============================================
 :: STEP 6 - Generate run-api.bat and launch
 :: =============================================
@@ -327,23 +360,27 @@ echo.
 echo [6/6] Launching server...
 echo.
 
-:: Write run-api.bat inline so we never depend on a missing file
+:: Write run-api.bat inline (portable, uses relative path)
 set "RUN_API=%PROJECT_ROOT%run-api.bat"
 (
     echo @echo off
     echo title Gym API Server
     echo color 0A
-    echo cd /d "%API_PROJECT%"
+    echo cd /d "%%~dp0src\Gym.API"
+    echo if not defined ConnectionStrings__DefaultConnection ^(
+    echo     set "ConnectionStrings__DefaultConnection=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+    echo ^)
     echo echo.
     echo echo  ============================================================
-    echo echo   Gym API Server - http://localhost:5000
-    echo echo   Default login: admin / Admin@123
+    echo echo   Hack Gym - API Server
+    echo echo   URL: http://localhost:5000
+    echo echo   Login: admin / Admin@123
     echo echo   Press Ctrl+C to stop.
     echo echo  ============================================================
     echo echo.
     echo dotnet run --no-build -c Release --urls "http://0.0.0.0:5000"
     echo echo.
-    echo echo  Server stopped. Press any key to close.
+    echo echo  Server stopped.
     echo pause ^>nul
 ) > "%RUN_API%"
 
@@ -355,12 +392,12 @@ echo   Close the "Gym API Server" window or press Ctrl+C there to stop.
 echo  ============================================================
 echo.
 
+:: Launch API in its own persistent window (not /wait so this window stays here)
+start "Gym API Server" cmd /c ""%RUN_API%""
+
 :: Give API a moment to start, then open browser
 ping -n 4 127.0.0.1 >nul
 start "" http://localhost:5000
-
-:: Launch API in its own persistent window (not /wait so this window stays open)
-start "Gym API Server" cmd /c ""%RUN_API%""
 
 echo.
 echo  Launcher done. The API is running in the "Gym API Server" window.

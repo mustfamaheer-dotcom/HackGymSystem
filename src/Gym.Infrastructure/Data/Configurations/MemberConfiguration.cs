@@ -96,11 +96,6 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasForeignKey(x => x.PackageId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasMany(m => m.Memberships)
-            .WithOne(m => m.Member)
-            .HasForeignKey(m => m.MemberId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasMany(m => m.Attendances)
             .WithOne(a => a.Member)
             .HasForeignKey(a => a.MemberId)

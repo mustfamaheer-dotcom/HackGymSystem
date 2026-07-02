@@ -1,57 +1,30 @@
 using Gym.Shared.Common;
-using Gym.Shared.Enums;
 
 namespace Gym.Domain.Entities;
 
 public class Notification : BaseEntity
 {
-    public Guid? MemberId { get; set; }
-    public NotificationType Type { get; set; }
-    public NotificationChannel Channel { get; set; }
-    public string Subject { get; set; }
-    public string Message { get; set; }
-    public NotificationStatus Status { get; set; } = NotificationStatus.Pending;
-    public DateTime? ScheduledDate { get; set; }
-    public DateTime? SentDate { get; set; }
-    public bool IsPending { get; set; } = true;
-    public int RetryCount { get; set; }
-    public string? LastError { get; set; }
+    public Guid MemberId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Body { get; set; } = string.Empty;
+    public bool IsRead { get; set; }
+    public DateTime? ReadAt { get; set; }
 
-    public Member? Member { get; set; }
+    public Member Member { get; set; } = null!;
 
     private Notification() { }
 
-    public Notification(Guid? memberId, NotificationType type, NotificationChannel channel,
-        string subject, string message, DateTime? scheduledDate = null)
+    public Notification(Guid memberId, string title, string body)
     {
         MemberId = memberId;
-        Type = type;
-        Channel = channel;
-        Subject = subject;
-        Message = message;
-        ScheduledDate = scheduledDate ?? DateTime.UtcNow;
+        Title = title;
+        Body = body;
     }
 
-    public void MarkSent()
+    public void MarkRead()
     {
-        Status = NotificationStatus.Sent;
-        SentDate = DateTime.UtcNow;
-        IsPending = false;
-        MarkUpdated();
-    }
-
-    public void MarkFailed(string error)
-    {
-        Status = NotificationStatus.Failed;
-        LastError = error;
-        RetryCount++;
-        MarkUpdated();
-    }
-
-    public void MarkPending()
-    {
-        Status = NotificationStatus.Pending;
-        IsPending = true;
+        IsRead = true;
+        ReadAt = DateTime.UtcNow;
         MarkUpdated();
     }
 }

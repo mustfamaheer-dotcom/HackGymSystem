@@ -136,49 +136,6 @@
             </div>
         </div>
 
-        <div class="section-divider"><span>@SharedLocalizer["Subscription History"]</span></div>
-        <div class="section-title"><i class="bi bi-clock-history"></i> @SharedLocalizer["Subscription History"]</div>
-        @{
-            var memberships = ViewBag.Memberships as IReadOnlyList<Membership>;
-        }
-        @if (memberships is null || memberships.Count == 0)
-        {
-            <p class="text-muted small">@SharedLocalizer["No subscription history."]</p>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>@SharedLocalizer["#"]</th>
-                            <th>@SharedLocalizer["Plan"]</th>
-                            <th>@SharedLocalizer["Start"]</th>
-                            <th>@SharedLocalizer["End"]</th>
-                            <th>@SharedLocalizer["Status"]</th>
-                            <th>@SharedLocalizer["Price"]</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (int i = 0; i < memberships.Count; i++)
-                        {
-                            var m = memberships[i];
-                            <tr>
-                                <td>@(i + 1)</td>
-                                <td>@m.Plan?.Name</td>
-                                <td>@m.StartDate.ToString("dd/MM/yyyy")</td>
-                                <td>@m.EndDate.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <span class="badge-status @(m.Status == MembershipStatus.Active ? "badge-active" : m.Status == MembershipStatus.Frozen ? "badge-warning" : "badge-expired")">@SharedLocalizer[m.Status.ToString()]</span>
-                                </td>
-                                <td>@(m.Plan?.Price.ToString("N2") ?? "-")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-
         <div class="section-divider"><span>@SharedLocalizer["Attendance Log"]</span></div>
         <div class="section-title"><i class="bi bi-door-open"></i> @SharedLocalizer["Attendance Log"]</div>
         @{

@@ -28,10 +28,5 @@ public class MembershipPlanConfiguration : IEntityTypeConfiguration<MembershipPl
         builder.Property(x => x.MaxVisits);
 
         builder.Property(x => x.FreezeDays);
-
-        builder.HasMany(p => p.Memberships)
-            .WithOne(m => m.Plan)
-            .HasForeignKey(m => m.PlanId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

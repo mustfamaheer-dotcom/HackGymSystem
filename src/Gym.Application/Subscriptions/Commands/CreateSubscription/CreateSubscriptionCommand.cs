@@ -48,6 +48,19 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         if (member == null)
             return Result<Guid>.Failure("Member not found");
 
+        // Check for existing active subscription
+        var activeSub = await _subscriptionRepo.Query()
+            .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && s.Status == SubscriptionStatus.Active, cancellationToken);
+
+        // If member has active sub and no offer selected → reject
+        if (activeSub != null && !request.OfferId.HasValue)
+            return Result<Guid>.Failure("Member already has an active subscription");
+
+        // If member has active sub and offer is selected → extend the active sub
+        if (activeSub != null && request.OfferId.HasValue)
+            return await HandleExtendAsync(activeSub, member, request, cancellationToken);
+
+        // --- No active subscription → create a new one ---
         Guid resolvedPlanId;
         MembershipPlan plan;
 
@@ -62,30 +75,90 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         }
         else if (request.OfferId.HasValue)
         {
-            Domain.Entities.Offer? resolvedOffer = await _offerRepo.Query()
+            var resolvedOffer = await _offerRepo.Query()
                 .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
             if (resolvedOffer == null)
                 return Result<Guid>.Failure("Offer not found");
-            if (!resolvedOffer.LinkedPackageId.HasValue)
-                return Result<Guid>.Failure("Selected offer does not have a linked plan");
-            resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
-            plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
-            if (plan == null)
-                return Result<Guid>.Failure("Linked plan not found");
-            if (!plan.IsActive)
-                return Result<Guid>.Failure("Linked plan is not active");
+
+            if (resolvedOffer.LinkedPackageId.HasValue)
+            {
+                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
+                plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
+                if (plan == null)
+                    return Result<Guid>.Failure("Linked plan not found");
+                if (!plan.IsActive)
+                    return Result<Guid>.Failure("Linked plan is not active");
+            }
+            else
+            {
+                // Offer has no linked plan — pick the first active plan as FK reference
+                plan = await _planRepo.Query()
+                    .Where(p => p.IsActive)
+                    .OrderBy(p => p.Name)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (plan == null)
+                    return Result<Guid>.Failure("No active plan found to link the offer to");
+                resolvedPlanId = plan.Id;
+            }
         }
         else
         {
             return Result<Guid>.Failure("Either plan or offer must be selected");
         }
 
-        var hasActive = await _subscriptionRepo.AnyAsync(s =>
-            s.MemberId == request.MemberId && s.Status == SubscriptionStatus.Active, cancellationToken);
-        if (hasActive)
-            return Result<Guid>.Failure("Member already has an active subscription");
+        return await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
+    }
 
-        decimal totalValue = plan.Price;
+    private async Task<Result<Guid>> HandleExtendAsync(
+        Domain.Entities.Subscription activeSub, Member member,
+        CreateSubscriptionCommand request, CancellationToken cancellationToken)
+    {
+        var offer = await _offerRepo.Query()
+            .FirstOrDefaultAsync(o => o.Id == request.OfferId, cancellationToken);
+        if (offer == null)
+            return Result<Guid>.Failure("Offer not found");
+        if (!offer.IsActive)
+            return Result<Guid>.Failure("Offer is not active");
+        if (offer.StartDate > DateTime.UtcNow || offer.EndDate < DateTime.UtcNow)
+            return Result<Guid>.Failure("Offer is not within its valid date range");
+
+        // Extend the active subscription's expiration by offer's bonus months/days
+        activeSub.ExpirationDate = activeSub.ExpirationDate
+            .AddMonths(offer.BonusMonths ?? 0)
+            .AddDays(offer.BonusDays ?? 0);
+
+        _subscriptionRepo.Update(activeSub);
+
+        // Record payment against the active subscription
+        if (request.AmountPaid > 0)
+        {
+            activeSub.RecordPayment(request.AmountPaid);
+
+            var payment = new SubscriptionPayment(
+                activeSub.Id, request.AmountPaid, request.PaymentMethod,
+                activeSub.RemainingBalance, null, null,
+                request.Notes);
+            await _unitOfWork.Repository<SubscriptionPayment>().AddAsync(payment, cancellationToken);
+        }
+
+        // Log the extension
+        var log = new SubscriptionTransactionLog(
+            activeSub.Id, "Extended with Offer",
+            $"Subscription {activeSub.ReceiptNumber} extended by " +
+            $"{(offer.BonusMonths > 0 ? $"{offer.BonusMonths} month(s) " : "")}" +
+            $"{(offer.BonusDays > 0 ? $"{offer.BonusDays} day(s) " : "")}" +
+            $"via offer {offer.OfferTitle}");
+        await _unitOfWork.Repository<SubscriptionTransactionLog>().AddAsync(log, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<Guid>.Success(activeSub.Id, "Subscription extended with offer successfully");
+    }
+
+    private async Task<Result<Guid>> HandleNewAsync(
+        Member member, MembershipPlan plan, Guid resolvedPlanId,
+        CreateSubscriptionCommand request, CancellationToken cancellationToken)
+    {
         Domain.Entities.Offer? offer = null;
 
         if (request.OfferId.HasValue)
@@ -98,40 +171,31 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
                 return Result<Guid>.Failure("Offer is not active");
             if (offer.StartDate > DateTime.UtcNow || offer.EndDate < DateTime.UtcNow)
                 return Result<Guid>.Failure("Offer is not within its valid date range");
-
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != resolvedPlanId)
                 return Result<Guid>.Failure("Offer is not applicable to the selected plan");
-
-            totalValue = offer.OfferType switch
-            {
-                OfferType.FixedPrice => offer.OfferPrice ?? plan.Price,
-                OfferType.BonusDuration => plan.Price,
-                OfferType.ExtraFreeze => plan.Price,
-                OfferType.FreeRegistration => plan.Price,
-                OfferType.Custom => plan.Price,
-                _ => plan.Price
-            };
         }
 
-        if (totalValue < 0)
-            totalValue = 0;
-
+        // Calculate total value based on offer type
+        var totalValue = CalculateTotalValue(plan.Price, offer);
+        if (totalValue < 0) totalValue = 0;
         if (request.AmountPaid > totalValue)
             return Result<Guid>.Failure("Amount paid cannot exceed total subscription value");
 
-        int durationDays = plan.DurationDays;
-        int freeMonths = 0;
+        // Calculate expiration: plan duration + offer bonuses
+        var durationDays = plan.DurationDays;
+        var bonusMonths = offer?.BonusMonths ?? 0;
+        var bonusDays = offer?.BonusDays ?? 0;
 
-        if (offer != null && offer.OfferType == OfferType.BonusDuration)
-        {
-            if (offer.BonusMonths.HasValue)
-                freeMonths = offer.BonusMonths.Value;
-            else if (offer.BonusDays.HasValue)
-                durationDays += offer.BonusDays.Value;
-        }
+        var expirationDate = request.StartDate
+            .AddDays(durationDays)
+            .AddMonths(bonusMonths)
+            .AddDays(bonusDays);
 
-        var expirationDate = request.StartDate.AddDays(durationDays).AddMonths(freeMonths);
+        // Minimum 1 month duration
+        if (expirationDate == request.StartDate)
+            expirationDate = request.StartDate.AddMonths(1);
 
+        // Generate receipt number
         var lastReceipt = await _subscriptionRepo.Query()
             .OrderByDescending(s => s.ReceiptNumber)
             .Select(s => s.ReceiptNumber)
@@ -174,6 +238,18 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(subscription.Id, "Subscription created successfully");
+    }
+
+    private static decimal CalculateTotalValue(decimal planPrice, Domain.Entities.Offer? offer)
+    {
+        if (offer == null) return planPrice;
+
+        return offer.OfferType switch
+        {
+            OfferType.FixedPrice => offer.OfferPrice ?? planPrice,
+            OfferType.FreeRegistration => 0,
+            _ => planPrice // BonusDuration, ExtraFreeze, Custom — plan price unchanged
+        };
     }
 }
 

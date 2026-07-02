@@ -3,6 +3,7 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Offers.DTOs;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
+using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -97,21 +98,20 @@ public class OffersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var dto = result.Data!;
-        var model = new UpdateOfferDto
-        {
-            Id = dto.Id,
-            OfferTitle = dto.OfferTitle,
-            LinkedPackageId = dto.LinkedPackageId,
-            OfferType = dto.OfferType,
-            BonusMonths = dto.BonusMonths,
-            BonusDays = dto.BonusDays,
-            OfferPrice = dto.OfferPrice,
-            ExtraFreezeDays = dto.ExtraFreezeDays,
-            Description = dto.Description,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate
-        };
+            var dto = result.Data!;
+            var model = new UpdateOfferDto
+            {
+                Id = dto.Id,
+                OfferTitle = dto.OfferTitle,
+                LinkedPackageId = dto.LinkedPackageId,
+                OfferType = OfferType.FixedPrice,
+                OfferPrice = dto.OfferPrice,
+                BonusMonths = dto.BonusMonths,
+                BonusDays = dto.BonusDays,
+                Description = dto.Description,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate
+            };
 
         return View(model);
     }

@@ -13,7 +13,6 @@ public record GetDetailedDashboardQuery : IRequest<Result<DetailedDashboardDto>>
 public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashboardQuery, Result<DetailedDashboardDto>>
 {
     private readonly IRepository<Member> _memberRepo;
-    private readonly IRepository<Membership> _membershipRepo;
     private readonly IRepository<Attendance> _attendanceRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
@@ -23,7 +22,6 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
 
     public GetDetailedDashboardQueryHandler(
         IRepository<Member> memberRepo,
-        IRepository<Membership> membershipRepo,
         IRepository<Attendance> attendanceRepo,
         IRepository<MembershipPlan> planRepo,
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
@@ -32,7 +30,6 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         IRepository<Offer> offerRepo)
     {
         _memberRepo = memberRepo;
-        _membershipRepo = membershipRepo;
         _attendanceRepo = attendanceRepo;
         _planRepo = planRepo;
         _subscriptionRepo = subscriptionRepo;
@@ -49,27 +46,27 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var memberQuery = _memberRepo.Query();
-        var membershipQuery = _membershipRepo.Query();
         var attendanceQuery = _attendanceRepo.Query();
         var subscriptionQuery = _subscriptionRepo.Query();
         var paymentQuery = _paymentRepo.Query();
         var freezeQuery = _freezeRepo.Query();
 
-        // --- Existing Stats (Members, Memberships, Attendance) ---
+        // --- Existing Stats (Members, Subscriptions, Attendance) ---
         var totalMembers = await memberQuery.CountAsync(cancellationToken);
         var activeMembers = await memberQuery.CountAsync(m => !m.IsDeleted, cancellationToken);
         var newThisMonth = await memberQuery.CountAsync(m => m.CreatedAt >= monthStart, cancellationToken);
         var maleCount = await memberQuery.CountAsync(m => m.Gender == Gender.Male, cancellationToken);
         var femaleCount = await memberQuery.CountAsync(m => m.Gender == Gender.Female, cancellationToken);
 
-        var totalMemberships = await membershipQuery.CountAsync(cancellationToken);
-        var activeMemberships = await membershipQuery.CountAsync(m => m.Status == MembershipStatus.Active, cancellationToken);
-        var frozenMemberships = await membershipQuery.CountAsync(m => m.Status == MembershipStatus.Frozen, cancellationToken);
-        var expiredMemberships = await membershipQuery.CountAsync(m => m.Status == MembershipStatus.Expired, cancellationToken);
-        var cancelledMemberships = await membershipQuery.CountAsync(m => m.Status == MembershipStatus.Cancelled, cancellationToken);
+        var totalSubsList = await subscriptionQuery.ToListAsync(cancellationToken);
+        var totalSubscriptions = totalSubsList.Count;
+        var activeSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Active);
+        var frozenSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Frozen);
+        var expiredSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Expired);
+        var cancelledSubscriptions = 0;
 
-        var expiringThisWeek = await membershipQuery
-            .CountAsync(m => m.EndDate <= now.AddDays(7) && m.EndDate > now && m.Status == MembershipStatus.Active, cancellationToken);
+        var expiringThisWeek = totalSubsList
+            .Count(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active);
 
         var todayAttendance = await attendanceQuery.CountAsync(a => a.Date == today, cancellationToken);
         var weekAttendance = await attendanceQuery.CountAsync(a => a.Date >= weekStart, cancellationToken);
@@ -79,16 +76,22 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
 
         var avgDailyThisMonth = Math.Round((double)monthAttendance / Math.Max(now.Day, 1), 1);
 
-        var membershipByPlan = await membershipQuery
-            .Include(m => m.Plan)
-            .Where(m => m.Status == MembershipStatus.Active)
-            .GroupBy(m => new { m.PlanId, m.Plan.Name })
-            .Select(g => new PlanDistributionDto
+        var activeSubsWithPlan = totalSubsList.Where(s => s.Status == SubscriptionStatus.Active).ToList();
+        var subsByPlan = activeSubsWithPlan
+            .GroupBy(s => s.PlanId)
+            .Select(g => new
             {
-                PlanName = g.Key.Name,
-                Count = g.Count()
+                PlanId = g.Key,
+                Count = g.Count(),
+                PlanName = g.First().Plan?.Name ?? ""
             })
-            .ToListAsync(cancellationToken);
+            .ToList();
+
+        var membershipByPlan = subsByPlan.Select(s => new PlanDistributionDto
+        {
+            PlanName = s.PlanName,
+            Count = s.Count
+        }).ToList();
 
         var totalPlanMembers = membershipByPlan.Sum(p => p.Count);
         foreach (var plan in membershipByPlan)
@@ -410,16 +413,16 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
                 NewThisMonth = newThisMonth,
                 MaleCount = maleCount,
                 FemaleCount = femaleCount,
-                ExpiredSubscriptions = expiredMemberships,
+                ExpiredSubscriptions = expiredSubscriptions,
                 ExpiringThisWeek = expiringThisWeek
             },
             Memberships = new MembershipsStatsDto
             {
-                Total = totalMemberships,
-                Active = activeMemberships,
-                Frozen = frozenMemberships,
-                Expired = expiredMemberships,
-                Cancelled = cancelledMemberships
+                Total = totalSubscriptions,
+                Active = activeSubscriptions,
+                Frozen = frozenSubscriptions,
+                Expired = expiredSubscriptions,
+                Cancelled = cancelledSubscriptions
             },
             Attendance = new AttendanceStatsDto
             {

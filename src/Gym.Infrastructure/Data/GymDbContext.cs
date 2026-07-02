@@ -19,10 +19,8 @@ public class GymDbContext : DbContext
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<Member> Members => Set<Member>();
     public DbSet<MembershipPlan> MembershipPlans => Set<MembershipPlan>();
-    public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Offer> Offers => Set<Offer>();
-    public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<DeviceLog> DeviceLogs => Set<DeviceLog>();
     public DbSet<Setting> Settings => Set<Setting>();

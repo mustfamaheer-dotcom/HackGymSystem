@@ -567,7 +567,7 @@
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <div class="brand-icon">@SharedLocalizer["HG"]</div>
+            <img src="/logo.png" alt="@SharedLocalizer["Hack Gym"]" style="height:38px;width:auto;border-radius:10px;" />
             <h5>@SharedLocalizer["Hack Gym"]</h5>
         </div>
         <nav class="sidebar-nav">
@@ -597,14 +597,6 @@
                 <div class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PlansMvc" ? "active" : "")" asp-controller="PlansMvc" asp-action="Index">
                         <i class="bi bi-card-list"></i> @SharedLocalizer["Plans"]
-                    </a>
-                </div>
-            }
-            @if (User.HasClaim("permission", "Memberships.View"))
-            {
-                <div class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "MembershipsMvc" ? "active" : "")" asp-controller="MembershipsMvc" asp-action="Index">
-                        <i class="bi bi-ticket-perforated-fill"></i> @SharedLocalizer["Memberships"]
                     </a>
                 </div>
             }
@@ -647,14 +639,6 @@
                 <div class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WhatsAppTemplatesMvc" ? "active" : "")" asp-controller="WhatsAppTemplatesMvc" asp-action="Index">
                         <i class="bi bi-whatsapp"></i> @SharedLocalizer["WhatsApp"]
-                    </a>
-                </div>
-            }
-            @if (User.HasClaim("permission", "Notifications.View"))
-            {
-                <div class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "NotificationsMvc" ? "active" : "")" asp-controller="NotificationsMvc" asp-action="Index">
-                        <i class="bi bi-bell-fill"></i> @SharedLocalizer["Notifications"]
                     </a>
                 </div>
             }

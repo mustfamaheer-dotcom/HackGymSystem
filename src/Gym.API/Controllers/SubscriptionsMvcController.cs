@@ -204,9 +204,17 @@ public class SubscriptionsMvcController : Controller
         var offers = await _offerRepo.Query()
             .Where(o => o.IsActive && o.StartDate <= DateTime.UtcNow && o.EndDate >= DateTime.UtcNow)
             .OrderBy(o => o.OfferTitle)
-            .Select(o => new { o.Id, o.OfferTitle })
+            .Select(o => new { o.Id, o.OfferTitle, o.OfferPrice, o.BonusMonths, o.BonusDays, o.LinkedPackageId, o.OfferType })
             .ToListAsync(cancellationToken);
         ViewBag.Offers = new SelectList(offers, "Id", "OfferTitle");
+        ViewBag.OfferList = offers.Select(o =>
+        {
+            var parts = new List<string>();
+            if (o.OfferPrice.HasValue) parts.Add($"{o.OfferPrice:N2} EGP");
+            if (o.BonusMonths > 0) parts.Add($"+{o.BonusMonths}m");
+            if (o.BonusDays > 0) parts.Add($"+{o.BonusDays}d");
+            return new { o.Id, Display = $"{o.OfferTitle} ({string.Join(" ", parts)})", o.LinkedPackageId, o.OfferType };
+        }).ToList();
 
         var paymentMethods = Enum.GetValues<PaymentMethod>()
             .Select(pm => new { Value = pm.ToString(), Text = _localizer[pm.ToString()] })
@@ -233,9 +241,17 @@ public class SubscriptionsMvcController : Controller
         var offers = await _offerRepo.Query()
             .Where(o => o.IsActive && o.StartDate <= DateTime.UtcNow && o.EndDate >= DateTime.UtcNow)
             .OrderBy(o => o.OfferTitle)
-            .Select(o => new { o.Id, o.OfferTitle })
+            .Select(o => new { o.Id, o.OfferTitle, o.OfferPrice, o.BonusMonths, o.BonusDays, o.LinkedPackageId, o.OfferType })
             .ToListAsync(cancellationToken);
         ViewBag.Offers = new SelectList(offers, "Id", "OfferTitle");
+        ViewBag.OfferList = offers.Select(o =>
+        {
+            var parts = new List<string>();
+            if (o.OfferPrice.HasValue) parts.Add($"{o.OfferPrice:N2} EGP");
+            if (o.BonusMonths > 0) parts.Add($"+{o.BonusMonths}m");
+            if (o.BonusDays > 0) parts.Add($"+{o.BonusDays}d");
+            return new { o.Id, Display = $"{o.OfferTitle} ({string.Join(" ", parts)})", o.LinkedPackageId, o.OfferType };
+        }).ToList();
 
         var paymentMethods = Enum.GetValues<PaymentMethod>()
             .Select(pm => new { Value = pm.ToString(), Text = _localizer[pm.ToString()] })

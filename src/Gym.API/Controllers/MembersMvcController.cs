@@ -21,19 +21,17 @@ public class MembersMvcController : Controller
     private readonly IMemberService _memberService;
     private readonly IExcelImportService _excelImportService;
     private readonly IRepository<MembershipPlan> _planRepository;
-    private readonly IRepository<Membership> _membershipRepository;
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IStringLocalizer<SharedResources> _localizer;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
-        IRepository<MembershipPlan> planRepository, IRepository<Membership> membershipRepository,
+        IRepository<MembershipPlan> planRepository,
         IRepository<Attendance> attendanceRepository,
         IStringLocalizer<SharedResources> localizer)
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
         _planRepository = planRepository;
-        _membershipRepository = membershipRepository;
         _attendanceRepository = attendanceRepository;
         _localizer = localizer;
     }
@@ -193,12 +191,6 @@ public class MembersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var memberships = await _membershipRepository.Query()
-            .Include(m => m.Plan)
-            .Where(m => m.MemberId == id)
-            .OrderByDescending(m => m.StartDate)
-            .ToListAsync(cancellationToken);
-
         var attendances = await _attendanceRepository.Query()
             .Include(a => a.Device)
             .Where(a => a.MemberId == id)
@@ -207,7 +199,6 @@ public class MembersMvcController : Controller
             .Take(50)
             .ToListAsync(cancellationToken);
 
-        ViewBag.Memberships = memberships;
         ViewBag.Attendances = attendances;
 
         return View(result.Data);

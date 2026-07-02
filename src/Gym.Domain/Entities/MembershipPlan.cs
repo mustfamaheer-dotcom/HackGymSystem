@@ -12,8 +12,6 @@ public class MembershipPlan : BaseEntity
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public ICollection<Membership> Memberships { get; set; } = new List<Membership>();
-
     private MembershipPlan() { }
 
     public MembershipPlan(string name, decimal price, int durationDays,

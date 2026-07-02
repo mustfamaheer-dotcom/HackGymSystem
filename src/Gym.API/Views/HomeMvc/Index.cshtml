@@ -3,13 +3,11 @@
     var canDashboard = User.HasClaim("permission", "Dashboard.View");
     var canMembers = User.HasClaim("permission", "Members.View");
     var canPlans = User.HasClaim("permission", "Plans.View");
-    var canMemberships = User.HasClaim("permission", "Memberships.View");
     var canSubscriptions = User.HasClaim("permission", "Subscriptions.View");
     var canAttendance = User.HasClaim("permission", "Attendance.View");
     var canOffers = User.HasClaim("permission", "Offers.View");
     var canDevices = User.HasClaim("permission", "Devices.View");
     var canWhatsApp = User.HasClaim("permission", "WhatsApp.Send");
-    var canNotifications = User.HasClaim("permission", "Notifications.View");
     var canUsers = User.HasClaim("permission", "Users.View");
     var canSettings = User.HasClaim("permission", "Settings.View");
     var canRoles = User.HasClaim("permission", "Roles.View");
@@ -92,31 +90,6 @@
                             <i class="bi bi-card-list mod-icon"></i>
                             <div class="mod-title">@SharedLocalizer["Plans"]</div>
                             <div class="mod-desc">@SharedLocalizer["Membership plans"]</div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            @if (canMemberships)
-            {
-                <div class="col-md-3 col-6">
-                    <a asp-controller="MembershipsMvc" asp-action="Index" class="text-decoration-none">
-                        <div class="mod-card mod-bg-warning">
-                            <i class="bi bi-ticket-perforated-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Memberships"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Subscriptions"]</div>
-                        </div>
-                    </a>
-                </div>
-            }
-            else
-            {
-                <div class="col-md-3 col-6">
-                    <div class="text-decoration-none" style="cursor:pointer;" onclick="showAccessDenied('@SharedLocalizer["Memberships"]')">
-                        <div class="mod-card mod-bg-warning" style="opacity:0.5;">
-                            <i class="bi bi-ticket-perforated-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Memberships"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Subscriptions"]</div>
                         </div>
                     </div>
                 </div>
@@ -217,31 +190,6 @@
                             <i class="bi bi-display mod-icon"></i>
                             <div class="mod-title">@SharedLocalizer["Devices"]</div>
                             <div class="mod-desc">@SharedLocalizer["Fingerprint scanners"]</div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            @if (canNotifications)
-            {
-                <div class="col-md-3 col-6">
-                    <a asp-controller="NotificationsMvc" asp-action="Index" class="text-decoration-none">
-                        <div class="mod-card mod-bg-red">
-                            <i class="bi bi-bell-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Notifications"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Messages"]</div>
-                        </div>
-                    </a>
-                </div>
-            }
-            else
-            {
-                <div class="col-md-3 col-6">
-                    <div class="text-decoration-none" style="cursor:pointer;" onclick="showAccessDenied('@SharedLocalizer["Notifications"]')">
-                        <div class="mod-card mod-bg-red" style="opacity:0.5;">
-                            <i class="bi bi-bell-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Notifications"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Messages"]</div>
                         </div>
                     </div>
                 </div>

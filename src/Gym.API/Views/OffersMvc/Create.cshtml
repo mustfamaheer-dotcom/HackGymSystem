@@ -16,10 +16,11 @@
                 {
                     <div class="alert alert-danger">@error</div>
                 }
+                <input type="hidden" asp-for="OfferType" value="FixedPrice" />
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label asp-for="OfferTitle" class="form-label">@SharedLocalizer["Offer Title"]</label>
-                        <input asp-for="OfferTitle" class="form-control" placeholder="@SharedLocalizer["e.g. 2+1 Free"]" />
+                        <input asp-for="OfferTitle" class="form-control" placeholder="@SharedLocalizer["e.g. 3 Months"]" />
                         <span asp-validation-for="OfferTitle" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
@@ -31,44 +32,24 @@
                                 <option value="@plan.Id">@($"{plan.Name} ({plan.Price:N2} {SharedLocalizer["EGP"]})")</option>
                             }
                         </select>
+                        <span class="text-muted small">@SharedLocalizer["Optional — leave empty for a standalone offer"]</span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="OfferType" class="form-label">@SharedLocalizer["Offer Type"]</label>
-                        <select asp-for="OfferType" class="form-select" id="offerTypeSelect" asp-items="Html.GetEnumSelectList<OfferType>()">
-                            <option value="">@SharedLocalizer["-- Select --"]</option>
-                        </select>
-                        <span asp-validation-for="OfferType" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-12" id="bonusFields" style="display:none;">
-                        <div class="section-title mt-2"><i class="bi bi-clock-history"></i> @SharedLocalizer["Bonus Duration"]</div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="BonusMonths" class="form-label">@SharedLocalizer["Bonus Months"]</label>
-                                <input asp-for="BonusMonths" type="number" min="1" class="form-control" placeholder="@SharedLocalizer["e.g. 1"]" />
-                                <span asp-validation-for="BonusMonths" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="BonusDays" class="form-label">@SharedLocalizer["Bonus Days"]</label>
-                                <input asp-for="BonusDays" type="number" min="1" class="form-control" placeholder="@SharedLocalizer["e.g. 15"]" />
-                                <span asp-validation-for="BonusDays" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6" id="priceField" style="display:none;">
                         <label asp-for="OfferPrice" class="form-label">@SharedLocalizer["Offer Price (EGP)"]</label>
-                        <input asp-for="OfferPrice" type="number" step="0.01" min="0" class="form-control" placeholder="@SharedLocalizer["e.g. 5000"]" />
+                        <input asp-for="OfferPrice" type="number" step="0.01" min="0.01" class="form-control" placeholder="@SharedLocalizer["e.g. 1500"]" />
                         <span asp-validation-for="OfferPrice" class="text-danger small"></span>
                     </div>
-
-                    <div class="col-md-6" id="freezeField" style="display:none;">
-                        <label asp-for="ExtraFreezeDays" class="form-label">@SharedLocalizer["Extra Freeze Days"]</label>
-                        <input asp-for="ExtraFreezeDays" type="number" min="1" class="form-control" placeholder="@SharedLocalizer["e.g. 30"]" />
-                        <span asp-validation-for="ExtraFreezeDays" class="text-danger small"></span>
+                    <div class="col-md-4">
+                        <label asp-for="BonusMonths" class="form-label">@SharedLocalizer["Duration Months"]</label>
+                        <input asp-for="BonusMonths" type="number" min="0" class="form-control" placeholder="@SharedLocalizer["e.g. 1"]" />
+                        <span class="text-muted small">@SharedLocalizer["Extra months added to subscription"]</span>
                     </div>
-
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label asp-for="BonusDays" class="form-label">@SharedLocalizer["Extra Days"]</label>
+                        <input asp-for="BonusDays" type="number" min="0" class="form-control" placeholder="@SharedLocalizer["e.g. 15"]" />
+                        <span class="text-muted small">@SharedLocalizer["Extra days added to subscription"]</span>
+                    </div>
+                    <div class="col-md-4">
                         <label asp-for="StartDate" class="form-label">@SharedLocalizer["Start Date"]</label>
                         <input asp-for="StartDate" type="date" class="form-control" />
                         <span asp-validation-for="StartDate" class="text-danger small"></span>
@@ -91,14 +72,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    function toggleOfferFields() {
-        var type = document.getElementById('offerTypeSelect').value;
-        document.getElementById('bonusFields').style.display = (type === 'BonusDuration') ? 'block' : 'none';
-        document.getElementById('priceField').style.display = (type === 'FixedPrice' || type === 'FreeRegistration') ? 'block' : 'none';
-        document.getElementById('freezeField').style.display = (type === 'ExtraFreeze') ? 'block' : 'none';
-    }
-    document.getElementById('offerTypeSelect').addEventListener('change', toggleOfferFields);
-    toggleOfferFields();
-</script>

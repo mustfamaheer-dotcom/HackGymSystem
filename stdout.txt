@@ -1,0 +1,9 @@
+Using launch settings from src\Gym.API\Properties\launchSettings.json...
+[16:12:39 WRN] Entity 'Member' has a global query filter defined and is the required end of a relationship with the entity 'Attendance'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[16:12:39 WRN] Entity 'Member' has a global query filter defined and is the required end of a relationship with the entity 'Attendance'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[16:12:39 WRN] Entity 'Member' has a global query filter defined and is the required end of a relationship with the entity 'Subscription'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[16:12:39 WRN] Entity 'Member' has a global query filter defined and is the required end of a relationship with the entity 'Subscription'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[16:12:41 INF] Database migration completed successfully
+[16:12:41 INF] Database migration completed successfully
+[16:12:41 INF] Starting Gym Management API
+[16:12:41 INF] Starting Gym Management API

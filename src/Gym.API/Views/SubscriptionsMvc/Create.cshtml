@@ -23,9 +23,6 @@
                         <label class="form-label">@SharedLocalizer["Member"] <span class="text-danger">*</span></label>
                         <div class="member-search-wrapper">
                             <input type="text" id="memberSearch" class="form-control" placeholder="@SharedLocalizer["Search for a member..."]" autocomplete="off" />
-                            <select asp-for="MemberId" class="form-select" id="memberSelect" hidden>
-                                <option value="">@SharedLocalizer["Select a member"]</option>
-                            </select>
                             <div id="memberResults" class="member-results" style="display:none;"></div>
                             <input type="hidden" asp-for="MemberId" id="memberIdHidden" />
                             <span asp-validation-for="MemberId" class="text-danger small"></span>
@@ -44,8 +41,12 @@
                     @* Offer *@
                     <div class="col-md-6">
                         <label asp-for="OfferId" class="form-label">@SharedLocalizer["Offer"]</label>
-                        <select asp-for="OfferId" asp-items="ViewBag.Offers" class="form-select" id="offerSelect">
+                        <select asp-for="OfferId" class="form-select" id="offerSelect">
                             <option value="">@SharedLocalizer["No offer"]</option>
+                            @foreach (var offer in ViewBag.OfferList as List<dynamic> ?? new())
+                            {
+                                <option value="@offer.Id">@offer.Display</option>
+                            }
                         </select>
                         <span asp-validation-for="OfferId" class="text-danger small"></span>
                     </div>
@@ -99,20 +100,20 @@
 .member-search-wrapper { position: relative; }
 .member-results {
     position: absolute; top: 100%; left: 0; right: 0; z-index: 1050;
-    background: #fff; border: 1px solid #dee2e6; border-radius: 6px;
-    max-height: 220px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    background: #fff; border: 1px solid #c0c6cc; border-radius: 6px;
+    max-height: 220px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }
 .member-results .member-item {
-    padding: 8px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #f1f1f1; transition: background 0.15s;
+    padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e5e7eb; transition: background 0.15s;
 }
 .member-results .member-item:last-child { border-bottom: none; }
 .member-results .member-item:hover,
-.member-results .member-item.active { background: #eef2ff; }
-.member-results .member-item .m-name { font-weight: 600; font-size: 0.9rem; }
-.member-results .member-item .m-phone { font-size: 0.8rem; color: #6c757d; }
-.member-results .member-item .m-badge { font-size: 0.75rem; background: #e9ecef; padding: 2px 8px; border-radius: 10px; }
-.member-no-results { padding: 14px; text-align: center; color: #6c757d; font-size: 0.85rem; }
+.member-results .member-item.active { background: #dbeafe; }
+.member-results .member-item .m-name { font-weight: 600; font-size: 0.9rem; color: #1e293b; }
+.member-results .member-item .m-phone { font-size: 0.8rem; color: #6b7280; }
+.member-results .member-item .m-badge { font-size: 0.7rem; background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.member-no-results { padding: 14px; text-align: center; color: #6b7280; font-size: 0.85rem; }
 </style>
 
 <script>
@@ -120,11 +121,12 @@
     const searchInput = document.getElementById('memberSearch');
     const resultsDiv = document.getElementById('memberResults');
     const hiddenInput = document.getElementById('memberIdHidden');
+    const planSelect = document.getElementById('planSelect');
+    const offerSelect = document.getElementById('offerSelect');
     let members = [];
     let selectedId = null;
     let activeIndex = -1;
 
-    // Load all members from the page data
     @{
         var membersJson = System.Text.Json.JsonSerializer.Serialize(
             ((System.Collections.IEnumerable)((SelectList)ViewBag.Members).Items)
@@ -134,40 +136,88 @@
                     name = (string)m.FullName
                 }).ToList()
         );
+        var offersJson = System.Text.Json.JsonSerializer.Serialize(
+            ((System.Collections.IEnumerable)ViewBag.OfferList)
+                .Cast<dynamic>()
+                .Select(o => new {
+                    id = ((object)o.Id).ToString(),
+                    linkedPackageId = o.LinkedPackageId?.ToString(),
+                    offerType = (string)o.OfferType
+                }).ToList()
+        );
     }
     members = @Html.Raw(membersJson);
+    var offers = @Html.Raw(offersJson);
 
+    // --- Offer filtering by plan ---
+    function filterOffersByPlan() {
+        var planId = planSelect.value;
+        var currentOffer = offerSelect.value;
+
+        // Show all offers, highlight incompatible ones using option disabled
+        Array.from(offerSelect.options).forEach(function(opt) {
+            if (!opt.value) return; // skip "No offer"
+            var offerData = offers.find(function(o) { return o.id === opt.value; });
+            if (offerData && offerData.linkedPackageId && planId && offerData.linkedPackageId !== planId) {
+                opt.disabled = true;
+                opt.style.color = '#ccc';
+                // If this incompatible offer is currently selected, clear it
+                if (offerSelect.value === opt.value) offerSelect.value = '';
+            } else {
+                opt.disabled = false;
+                opt.style.color = '';
+            }
+        });
+    }
+
+    // --- Auto-select plan when an offer with linked package is chosen ---
+    function onOfferChange() {
+        if (!offerSelect.value) return;
+        var offerData = offers.find(function(o) { return o.id === offerSelect.value; });
+        if (offerData && offerData.linkedPackageId) {
+            // Check if the linked plan exists in the plan dropdown
+            var planOpt = Array.from(planSelect.options).find(function(opt) {
+                return opt.value === offerData.linkedPackageId;
+            });
+            if (planOpt) {
+                planSelect.value = offerData.linkedPackageId;
+            }
+        }
+        filterOffersByPlan();
+    }
+
+    planSelect.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+        if (this.value) document.getElementById('offerSelect').classList.remove('is-invalid');
+        filterOffersByPlan();
+    });
+
+    offerSelect.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+        if (this.value) document.getElementById('planSelect').classList.remove('is-invalid');
+        onOfferChange();
+    });
+
+    // --- Member search ---
     function filterMembers(query) {
-        const q = query.toLowerCase().trim();
+        var q = query.toLowerCase().trim();
         if (!q) return members.slice(0, 50);
-        return members.filter(m =>
-            m.name.toLowerCase().includes(q)
-        ).slice(0, 50);
+        return members.filter(function(m) { return m.name.toLowerCase().includes(q); }).slice(0, 50);
     }
 
     function renderResults(query) {
-        const filtered = filterMembers(query);
+        var filtered = filterMembers(query);
         activeIndex = -1;
-        if (filtered.length === 0 || !query) {
-            resultsDiv.style.display = 'none';
-            return;
-        }
+        if (filtered.length === 0 || !query) { resultsDiv.style.display = 'none'; return; }
         resultsDiv.style.display = 'block';
-        resultsDiv.innerHTML = filtered.map((m, i) =>
-            `<div class="member-item" data-index="${i}" data-id="${m.id}" data-name="${m.name}">
-                <div>
-                    <div class="m-name">${m.name}</div>
-                </div>
-                <div class="m-badge">${m.id.slice(0,8)}</div>
-            </div>`
-        ).join('');
+        resultsDiv.innerHTML = filtered.map(function(m, i) {
+            return '<div class="member-item" data-index="' + i + '" data-id="' + m.id + '" data-name="' + m.name + '"><div><div class="m-name">' + m.name + '</div></div><div class="m-badge">' + m.id.slice(0,8) + '</div></div>';
+        }).join('');
 
-        resultsDiv.querySelectorAll('.member-item').forEach(el => {
-            el.addEventListener('click', function() {
-                selectMember(this.dataset.id, this.dataset.name);
-            });
+        resultsDiv.querySelectorAll('.member-item').forEach(function(el) {
+            el.addEventListener('click', function() { selectMember(this.dataset.id, this.dataset.name); });
             el.addEventListener('mouseenter', function() {
-                resultsDiv.querySelectorAll('.member-item').forEach(e => e.classList.remove('active'));
+                resultsDiv.querySelectorAll('.member-item').forEach(function(e) { e.classList.remove('active'); });
                 this.classList.add('active');
                 activeIndex = parseInt(this.dataset.index);
             });
@@ -184,7 +234,7 @@
     }
 
     searchInput.addEventListener('input', function() {
-        if (this.value && selectedId && !members.find(m => m.id === selectedId && m.name === this.value)) {
+        if (this.value && selectedId && !members.find(function(m) { return m.id === selectedId && m.name === this.value; })) {
             selectedId = null;
             hiddenInput.value = '';
             searchInput.classList.remove('is-valid');
@@ -192,60 +242,23 @@
         renderResults(this.value);
     });
 
-    searchInput.addEventListener('focus', function() {
-        if (this.value.length > 0) renderResults(this.value);
-    });
-
+    searchInput.addEventListener('focus', function() { if (this.value.length > 0) renderResults(this.value); });
     searchInput.addEventListener('keydown', function(e) {
-        const items = resultsDiv.querySelectorAll('.member-item');
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            activeIndex = Math.min(activeIndex + 1, items.length - 1);
-            items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
-            if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            activeIndex = Math.max(activeIndex - 1, -1);
-            items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
-            if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
-        } else if (e.key === 'Enter' && activeIndex >= 0 && items[activeIndex]) {
-            e.preventDefault();
-            items[activeIndex].click();
-        } else if (e.key === 'Escape') {
-            resultsDiv.style.display = 'none';
-        }
+        var items = resultsDiv.querySelectorAll('.member-item');
+        if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, items.length - 1); items.forEach(function(el, i) { el.classList.toggle('active', i === activeIndex); }); if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' }); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, -1); items.forEach(function(el, i) { el.classList.toggle('active', i === activeIndex); }); }
+        else if (e.key === 'Enter' && activeIndex >= 0 && items[activeIndex]) { e.preventDefault(); items[activeIndex].click(); }
+        else if (e.key === 'Escape') { resultsDiv.style.display = 'none'; }
     });
-
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.member-search-wrapper')) {
-            resultsDiv.style.display = 'none';
-        }
-    });
+    document.addEventListener('click', function(e) { if (!e.target.closest('.member-search-wrapper')) resultsDiv.style.display = 'none'; });
 
     // Form validation
     document.querySelector('form').addEventListener('submit', function(e) {
-        if (!hiddenInput.value) {
-            e.preventDefault();
-            searchInput.classList.add('is-invalid');
-            searchInput.focus();
-        }
-        var planVal = document.getElementById('planSelect').value;
-        var offerVal = document.getElementById('offerSelect').value;
-        if (!planVal && !offerVal) {
-            e.preventDefault();
-            document.getElementById('planSelect').classList.add('is-invalid');
-            document.getElementById('offerSelect').classList.add('is-invalid');
-        }
+        if (!hiddenInput.value) { e.preventDefault(); searchInput.classList.add('is-invalid'); searchInput.focus(); }
+        if (!planSelect.value && !offerSelect.value) { e.preventDefault(); planSelect.classList.add('is-invalid'); offerSelect.classList.add('is-invalid'); }
     });
 
-    // Clear validation on change
-    document.getElementById('planSelect').addEventListener('change', function() {
-        this.classList.remove('is-invalid');
-        if (this.value) document.getElementById('offerSelect').classList.remove('is-invalid');
-    });
-    document.getElementById('offerSelect').addEventListener('change', function() {
-        this.classList.remove('is-invalid');
-        if (this.value) document.getElementById('planSelect').classList.remove('is-invalid');
-    });
+    // Initial filter
+    filterOffersByPlan();
 })();
 </script>

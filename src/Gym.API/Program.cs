@@ -154,6 +154,17 @@ app.UseRequestLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Root redirect — catches / before routing middleware
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/Account/Login");
+        return;
+    }
+    await next();
+});
+
 app.UseStaticFiles();
 
 app.MapControllers();

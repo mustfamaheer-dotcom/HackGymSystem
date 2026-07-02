@@ -75,32 +75,16 @@ public class OfferService : IOfferService
         if (dto.EndDate <= dto.StartDate)
             errors.Add("End date must be after start date");
 
-        if (dto.OfferType == OfferType.BonusDuration)
-        {
-            if ((dto.BonusMonths == null || dto.BonusMonths == 0) && (dto.BonusDays == null || dto.BonusDays == 0))
-                errors.Add("Bonus months or bonus days must be provided");
-            if (dto.OfferPrice.HasValue)
-                errors.Add("Offer price must be null for bonus duration offers");
-        }
-
-        if (dto.OfferType == OfferType.FixedPrice)
-        {
-            if (dto.OfferPrice == null || dto.OfferPrice <= 0)
-                errors.Add("Offer price is required and must be positive");
-            if (dto.BonusMonths.HasValue || dto.BonusDays.HasValue)
-                errors.Add("Bonus months/days must be null for fixed price offers");
-        }
-
-        if (dto.OfferType == OfferType.ExtraFreeze && (dto.ExtraFreezeDays == null || dto.ExtraFreezeDays <= 0))
-            errors.Add("Extra freeze days is required and must be positive");
+        if (dto.OfferPrice == null || dto.OfferPrice <= 0)
+            errors.Add("Offer price is required and must be positive");
 
         if (errors.Count > 0)
             return Result<Guid>.Failure(errors.ToArray());
 
         var offer = new Offer(
-            dto.OfferTitle, dto.OfferType, dto.StartDate, dto.EndDate,
+            dto.OfferTitle, OfferType.FixedPrice, dto.StartDate, dto.EndDate,
             dto.LinkedPackageId, dto.BonusMonths, dto.BonusDays,
-            dto.OfferPrice, dto.ExtraFreezeDays, dto.Description);
+            dto.OfferPrice, null, dto.Description);
 
         await _offerRepository.AddAsync(offer, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -115,9 +99,9 @@ public class OfferService : IOfferService
             return Result.Failure("Offer not found");
 
         offer.Update(
-            dto.OfferTitle, dto.OfferType, dto.StartDate, dto.EndDate,
+            dto.OfferTitle, OfferType.FixedPrice, dto.StartDate, dto.EndDate,
             dto.LinkedPackageId, dto.BonusMonths, dto.BonusDays,
-            dto.OfferPrice, dto.ExtraFreezeDays, dto.Description);
+            dto.OfferPrice, null, dto.Description);
 
         _offerRepository.Update(offer);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

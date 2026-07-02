@@ -6,11 +6,10 @@ public class CreateOfferDto
 {
     public string OfferTitle { get; set; } = string.Empty;
     public Guid? LinkedPackageId { get; set; }
-    public OfferType OfferType { get; set; }
+    public OfferType OfferType { get; set; } = OfferType.FixedPrice;
+    public decimal? OfferPrice { get; set; }
     public int? BonusMonths { get; set; }
     public int? BonusDays { get; set; }
-    public decimal? OfferPrice { get; set; }
-    public int? ExtraFreezeDays { get; set; }
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
