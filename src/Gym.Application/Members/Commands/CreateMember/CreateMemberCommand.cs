@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -100,15 +102,18 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 
 public class CreateMemberCommandValidator : AbstractValidator<CreateMemberCommand>
 {
-    public CreateMemberCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateMemberCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.FullName)
-            .NotEmpty().WithMessage("Full name is required")
-            .MaximumLength(200).WithMessage("Full name must not exceed 200 characters");
+            .NotEmpty().WithMessage(_localizer["Full name is required"])
+            .MaximumLength(200).WithMessage(_localizer["Full name must not exceed 200 characters"]);
 
         RuleFor(v => v.PhoneNumber)
-            .NotEmpty().WithMessage("Phone number is required")
-            .Length(11).WithMessage("Phone number must be exactly 11 digits")
-            .Matches(@"^\d{11}$").WithMessage("Phone number must be 11 digits");
+            .NotEmpty().WithMessage(_localizer["Phone number is required"])
+            .Length(11).WithMessage(_localizer["Phone number must be exactly 11 digits"])
+            .Matches(@"^\d{11}$").WithMessage(_localizer["Phone number must be 11 digits"]);
     }
 }

@@ -51,7 +51,7 @@
                     }
                 }
             </select>
-            <a id="whatsappBtn" class="btn btn-success btn-sm rounded-pill" data-phone="@(Model.Member?.PhoneNumber)" data-member="@(Model.Member?.FullName)" data-receipt="@Model.ReceiptNumber" data-expiration="@Model.ExpirationDate.ToString("dd/MM/yyyy")" data-remaining="@Model.RemainingBalance.ToString("N2")" data-daysremaining="@((Model.ExpirationDate - DateTime.UtcNow).Days)" href="#" target="_blank">
+            <a id="whatsappBtn" class="btn btn-success btn-sm rounded-pill" data-phone="@(Model.Member?.PhoneNumber)" data-member="@(Model.Member?.FullName)" data-receipt="@Model.ReceiptNumber" data-expiration="@Model.ExpirationDate.ToString("dd/MM/yyyy")" data-offers="@(Model.Offer?.OfferTitle ?? "")" data-remaining="@Model.RemainingBalance.ToString("N2")" data-daysremaining="@((Model.ExpirationDate - DateTime.UtcNow).Days)" href="#" target="_blank">
                 <i class="bi bi-whatsapp"></i>
             </a>
         </div>
@@ -314,7 +314,7 @@
 @section Scripts {
     <script>
         (function() {
-            var templateData = @Html.Raw(Json.Serialize(ViewBag.WhatsAppTemplateData ?? new List<object>()));
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
             var templateMap = {};
             templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
 
@@ -328,14 +328,15 @@
                     .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
                     .replace(/\{ExpirationDate\}/g, btn.dataset.expiration || '')
                     .replace(/\{DaysRemaining\}/g, btn.dataset.daysremaining || '')
-                    .replace(/\{Offers\}/g, '');
+                    .replace(/\{Offers\}/g, btn.dataset.offers || '');
             }
 
             select.addEventListener('change', function() {
                 var tid = this.value;
                 if (tid) {
                     var msg = renderMessage(tid);
-                    var phone = btn.dataset.phone || '';
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
                     btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
                     btn.classList.remove('disabled');
                 } else {

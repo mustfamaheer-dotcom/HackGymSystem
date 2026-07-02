@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -69,15 +71,18 @@ public class CreateMembershipCommandHandler : IRequestHandler<CreateMembershipCo
 
 public class CreateMembershipCommandValidator : AbstractValidator<CreateMembershipCommand>
 {
-    public CreateMembershipCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateMembershipCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.MemberId)
-            .NotEmpty().WithMessage("Member is required");
+            .NotEmpty().WithMessage(_localizer["Member is required"]);
 
         RuleFor(v => v.PlanId)
-            .NotEmpty().WithMessage("Plan is required");
+            .NotEmpty().WithMessage(_localizer["Plan is required"]);
 
         RuleFor(v => v.StartDate)
-            .NotEmpty().WithMessage("Start date is required");
+            .NotEmpty().WithMessage(_localizer["Start date is required"]);
     }
 }

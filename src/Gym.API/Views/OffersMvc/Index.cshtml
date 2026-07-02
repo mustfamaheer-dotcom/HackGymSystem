@@ -57,8 +57,8 @@
                             OfferType.BonusDuration => $"+{(offer.BonusMonths > 0 ? $"{offer.BonusMonths}{SharedLocalizer["m"]} " : "")}{(offer.BonusDays > 0 ? $"{offer.BonusDays}{SharedLocalizer["d"]}" : "")}",
                             OfferType.ExtraFreeze => $"+{offer.ExtraFreezeDays}{SharedLocalizer["d freeze"]}",
                             OfferType.FreeRegistration => SharedLocalizer["Free"],
-                            OfferType.Custom => "-",
-                            _ => "-"
+                            OfferType.Custom => SharedLocalizer["-"],
+                            _ => SharedLocalizer["-"]
                         };
                         <tr>
                             <td class="fw-semibold">@offer.OfferTitle</td>

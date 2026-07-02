@@ -60,7 +60,7 @@ public class NotificationsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Notification created successfully"];
+        TempData["Success"] = _localizer["Notification created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 

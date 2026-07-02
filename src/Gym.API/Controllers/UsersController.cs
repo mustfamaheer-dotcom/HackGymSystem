@@ -12,6 +12,8 @@ using Gym.Shared.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Gym.API.Resources;
 
 namespace Gym.API.Controllers;
 
@@ -19,10 +21,12 @@ namespace Gym.API.Controllers;
 public class UsersController : BaseController
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public UsersController(IMediator mediator)
+    public UsersController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -60,7 +64,7 @@ public class UsersController : BaseController
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message!));
 
-        return Ok(ApiResponse<Guid>.Ok(result.Data!, "User created successfully"));
+        return Ok(ApiResponse<Guid>.Ok(result.Data!, _localizer["User created successfully"]));
     }
 
     [HttpPut("{id}")]
@@ -68,7 +72,7 @@ public class UsersController : BaseController
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
-            return BadRequest(ApiResponse.Fail("Route ID and body ID do not match"));
+            return BadRequest(ApiResponse.Fail(_localizer["Route ID and body ID do not match"]));
 
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsFailure)

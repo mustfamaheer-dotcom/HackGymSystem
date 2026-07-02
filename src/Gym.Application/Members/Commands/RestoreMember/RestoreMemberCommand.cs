@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using MediatR;
@@ -32,11 +34,14 @@ public class RestoreMemberCommandHandler : IRequestHandler<RestoreMemberCommand,
     }
 }
 
-public class RestoreMemberCommandValidator : AbstractValidator<RestoreMemberCommand>
-{
-    public RestoreMemberCommandValidator()
+    public class RestoreMemberCommandValidator : AbstractValidator<RestoreMemberCommand>
     {
-        RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Member ID is required");
+        private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+        public RestoreMemberCommandValidator(IStringLocalizer<ApplicationResources> localizer)
+        {
+            _localizer = localizer;
+            RuleFor(v => v.Id)
+                .NotEmpty().WithMessage(_localizer["Member ID is required"]);
+        }
     }
-}

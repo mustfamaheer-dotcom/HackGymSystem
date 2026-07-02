@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -62,13 +64,16 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
 
 public class RecordSubscriptionPaymentCommandValidator : AbstractValidator<RecordSubscriptionPaymentCommand>
 {
-    public RecordSubscriptionPaymentCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public RecordSubscriptionPaymentCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.SubscriptionId)
-            .NotEmpty().WithMessage("Subscription ID is required");
+            .NotEmpty().WithMessage(_localizer["Subscription ID is required"]);
         RuleFor(v => v.Amount)
-            .GreaterThan(0).WithMessage("Amount must be greater than 0");
+            .GreaterThan(0).WithMessage(_localizer["Amount must be greater than 0"]);
         RuleFor(v => v.PaymentMethod)
-            .IsInEnum().WithMessage("Invalid payment method");
+            .IsInEnum().WithMessage(_localizer["Invalid payment method"]);
     }
 }

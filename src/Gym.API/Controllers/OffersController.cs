@@ -5,6 +5,8 @@ using Gym.Application.Offers.DTOs;
 using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Gym.API.Resources;
 
 namespace Gym.API.Controllers;
 
@@ -13,10 +15,12 @@ namespace Gym.API.Controllers;
 public class OffersController : BaseController
 {
     private readonly IOfferService _offerService;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public OffersController(IOfferService offerService)
+    public OffersController(IOfferService offerService, IStringLocalizer<SharedResources> localizer)
     {
         _offerService = offerService;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -25,7 +29,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve offers"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve offers"]));
 
         return Ok(ApiResponse<PaginatedResult<OfferDto>>.Ok(result.Data!));
     }
@@ -36,7 +40,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.GetByIdAsync(id, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Offer not found"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Offer not found"]));
 
         return Ok(ApiResponse<OfferDto>.Ok(result.Data!));
     }
@@ -47,7 +51,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.GetActiveOffersAsync(cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve active offers"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve active offers"]));
 
         return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
     }
@@ -58,7 +62,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.GetExpiredOffersAsync(cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve expired offers"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve expired offers"]));
 
         return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
     }
@@ -69,7 +73,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.GetOffersByPackageAsync(packageId, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve offers for package"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve offers for package"]));
 
         return Ok(ApiResponse<List<OfferDto>>.Ok(result.Data!));
     }
@@ -80,7 +84,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.CreateAsync(dto, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to create offer"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to create offer"]));
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
     }
@@ -92,7 +96,7 @@ public class OffersController : BaseController
         dto.Id = id;
         var result = await _offerService.UpdateAsync(dto, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to update offer"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to update offer"]));
 
         return Ok(ApiResponse.Ok());
     }
@@ -103,7 +107,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.DeleteAsync(id, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to delete offer"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to delete offer"]));
 
         return Ok(ApiResponse.Ok());
     }
@@ -114,7 +118,7 @@ public class OffersController : BaseController
     {
         var result = await _offerService.ApplyOfferAsync(dto.OfferId, dto.PackageId, dto.PackagePrice, dto.PackageDurationMonths, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to apply offer"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to apply offer"]));
 
         return Ok(ApiResponse<AppliedOfferDto>.Ok(result.Data!));
     }

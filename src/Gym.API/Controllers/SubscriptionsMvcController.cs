@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Gym.API.Filters;
 using Gym.API.Resources;
 using Gym.Application.Common.DTOs;
@@ -52,7 +53,7 @@ public class SubscriptionsMvcController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(GetAllSubscriptionsQuery query, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Subscriptions";
+        ViewData["Title"] = _localizer["Subscriptions"];
 
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
@@ -70,6 +71,7 @@ public class SubscriptionsMvcController : Controller
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         return View(result.Data);
     }
@@ -78,7 +80,7 @@ public class SubscriptionsMvcController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "New Subscription";
+        ViewData["Title"] = _localizer["New Subscription"];
         await PopulateDropdowns(cancellationToken);
         return View();
     }
@@ -110,7 +112,7 @@ public class SubscriptionsMvcController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Subscription Details";
+        ViewData["Title"] = _localizer["Subscription Details"];
 
         var result = await _mediator.Send(new GetSubscriptionByIdQuery(id), cancellationToken);
         if (result.IsFailure)
@@ -124,6 +126,7 @@ public class SubscriptionsMvcController : Controller
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         return View(result.Data);
     }
@@ -178,7 +181,7 @@ public class SubscriptionsMvcController : Controller
         command = command with { SubscriptionId = id };
         if (!ModelState.IsValid)
         {
-            TempData["Error"] = _localizer["Invalid payment data"];
+            TempData["Error"] = _localizer["Invalid payment data"].Value;
             return RedirectToAction(nameof(Details), new { id });
         }
         var result = await _mediator.Send(command, cancellationToken);

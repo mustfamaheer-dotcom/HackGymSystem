@@ -15,6 +15,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Gym.API.Resources;
 
 namespace Gym.API.Controllers;
 
@@ -24,12 +26,14 @@ public class DevicesController : BaseController
     private readonly IMediator _mediator;
     private readonly IRepository<DeviceLog> _deviceLogRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public DevicesController(IMediator mediator, IRepository<DeviceLog> deviceLogRepo, IUnitOfWork unitOfWork)
+    public DevicesController(IMediator mediator, IRepository<DeviceLog> deviceLogRepo, IUnitOfWork unitOfWork, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
         _deviceLogRepo = deviceLogRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -38,7 +42,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve devices"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve devices"]));
 
         return Ok(ApiResponse<PaginatedResult<DeviceDto>>.Ok(result.Data!));
     }
@@ -49,7 +53,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(new GetDeviceByIdQuery(id), cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Device not found"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Device not found"]));
 
         return Ok(ApiResponse<DeviceDto>.Ok(result.Data!));
     }
@@ -60,7 +64,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(new GetActiveDevicesQuery(), cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve active devices"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve active devices"]));
 
         return Ok(ApiResponse<List<DeviceDto>>.Ok(result.Data!));
     }
@@ -71,7 +75,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to create device"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to create device"]));
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
     }
@@ -86,7 +90,7 @@ public class DevicesController : BaseController
 
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to update device"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to update device"]));
 
         return Ok(ApiResponse.Ok());
     }
@@ -97,7 +101,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(new DeleteDeviceCommand(id), cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to delete device"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to delete device"]));
 
         return Ok(ApiResponse.Ok());
     }
@@ -109,12 +113,12 @@ public class DevicesController : BaseController
         var query = new GetDeviceByIdQuery(id);
         var device = await _mediator.Send(query, cancellationToken);
         if (device.IsFailure)
-            return NotFound(ApiResponse.Fail(device.Message ?? "Device not found"));
+            return NotFound(ApiResponse.Fail(device.Message ?? _localizer["Device not found"]));
 
-        await _deviceLogRepo.AddAsync(new DeviceLog(id, "Info", $"Sync initiated for device {device.Data!.Name}"), cancellationToken);
+        await _deviceLogRepo.AddAsync(new DeviceLog(id, "Info", _localizer["Sync initiated for device {0}", device.Data!.Name]), cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Ok(ApiResponse.Ok("Sync completed. Device firmware and templates are up to date."));
+        return Ok(ApiResponse.Ok(_localizer["Sync completed. Device firmware and templates are up to date."]));
     }
 
     [HttpGet("{id}/logs")]
@@ -146,12 +150,12 @@ public class DevicesController : BaseController
         var query = new GetDeviceByIdQuery(id);
         var device = await _mediator.Send(query, cancellationToken);
         if (device.IsFailure)
-            return NotFound(ApiResponse.Fail(device.Message ?? "Device not found"));
+            return NotFound(ApiResponse.Fail(device.Message ?? _localizer["Device not found"]));
 
         var dto = device.Data!;
 
         if (string.IsNullOrEmpty(dto.IPAddress))
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, "Device has no IP address configured")));
+            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Device has no IP address configured"])));
 
         try
         {
@@ -162,14 +166,14 @@ public class DevicesController : BaseController
                 if (client.Connected)
                 {
                     client.Close();
-                    return Ok(ApiResponse<ConnectionTestResult>.Ok(new(true, $"Connected to {dto.IPAddress}:{dto.Port} successfully")));
+                    return Ok(ApiResponse<ConnectionTestResult>.Ok(new(true, _localizer["Connected to {0}:{1} successfully", dto.IPAddress, dto.Port])));
                 }
             }
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, $"Connection to {dto.IPAddress}:{dto.Port} timed out")));
+            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Connection to {0}:{1} timed out", dto.IPAddress, dto.Port])));
         }
         catch (Exception ex)
         {
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, $"Connection failed: {ex.Message}")));
+            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Connection failed: {0}", ex.Message])));
         }
     }
 
@@ -179,7 +183,7 @@ public class DevicesController : BaseController
     {
         var result = await _mediator.Send(new ToggleDeviceStatusCommand(id, request.Status), cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to toggle device status"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to toggle device status"]));
 
         return Ok(ApiResponse.Ok());
     }

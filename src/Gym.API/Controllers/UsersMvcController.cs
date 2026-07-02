@@ -79,7 +79,7 @@ public class UsersMvcController : Controller
             return View(command);
         }
 
-        TempData["Success"] = _localizer["User created successfully"];
+        TempData["Success"] = _localizer["User created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -119,7 +119,7 @@ public class UsersMvcController : Controller
 
         if (id != command.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(command);
         }
 
@@ -134,7 +134,7 @@ public class UsersMvcController : Controller
             return View(command);
         }
 
-        TempData["Success"] = _localizer["User updated successfully"];
+        TempData["Success"] = _localizer["User updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -184,7 +184,7 @@ public class UsersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = _localizer["User deleted successfully"];
+        TempData["Success"] = _localizer["User deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

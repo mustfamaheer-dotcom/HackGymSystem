@@ -92,7 +92,7 @@ public class MembersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Member created successfully"];
+        TempData["Success"] = _localizer["Member created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -160,7 +160,7 @@ public class MembersMvcController : Controller
 
         if (id != dto.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(dto);
         }
 
@@ -175,7 +175,7 @@ public class MembersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Member updated successfully"];
+        TempData["Success"] = _localizer["Member updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -242,7 +242,7 @@ public class MembersMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = _localizer["Member deleted successfully"];
+        TempData["Success"] = _localizer["Member deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -303,13 +303,13 @@ public class MembersMvcController : Controller
 
         if (file is null || file.Length == 0)
         {
-            TempData["Error"] = _localizer["Please select a file to upload"];
+            TempData["Error"] = _localizer["Please select a file to upload"].Value;
             return View();
         }
 
         if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
         {
-            TempData["Error"] = _localizer["File must be an .xlsx file"];
+            TempData["Error"] = _localizer["File must be an .xlsx file"].Value;
             return View();
         }
 

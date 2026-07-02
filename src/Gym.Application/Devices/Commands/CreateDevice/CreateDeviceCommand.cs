@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -46,15 +48,18 @@ public class CreateDeviceCommandHandler : IRequestHandler<CreateDeviceCommand, R
 
 public class CreateDeviceCommandValidator : AbstractValidator<CreateDeviceCommand>
 {
-    public CreateDeviceCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateDeviceCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(100);
 
         RuleFor(x => x.IPAddress)
             .NotEmpty()
-            .Must(BeValidIpAddress).WithMessage("Invalid IP address format");
+            .Must(BeValidIpAddress).WithMessage(_localizer["Invalid IP address format"]);
 
         RuleFor(x => x.Port)
             .GreaterThan(0);

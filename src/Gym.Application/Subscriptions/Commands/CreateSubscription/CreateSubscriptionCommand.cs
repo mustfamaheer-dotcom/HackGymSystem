@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -177,21 +179,24 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
 
 public class CreateSubscriptionCommandValidator : AbstractValidator<CreateSubscriptionCommand>
 {
-    public CreateSubscriptionCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateSubscriptionCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.MemberId)
-            .NotEmpty().WithMessage("Member is required");
+            .NotEmpty().WithMessage(_localizer["Member is required"]);
         RuleFor(v => v.PlanId)
             .NotEmpty().When(v => v.OfferId == null)
-            .WithMessage("Plan is required when no offer is selected");
+            .WithMessage(_localizer["Plan is required when no offer is selected"]);
         RuleFor(v => v.OfferId)
             .NotEmpty().When(v => v.PlanId == null)
-            .WithMessage("Offer is required when no plan is selected");
+            .WithMessage(_localizer["Offer is required when no plan is selected"]);
         RuleFor(v => v.StartDate)
-            .NotEmpty().WithMessage("Start date is required");
+            .NotEmpty().WithMessage(_localizer["Start date is required"]);
         RuleFor(v => v.AmountPaid)
-            .GreaterThanOrEqualTo(0).WithMessage("Amount paid must be 0 or greater");
+            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Amount paid must be 0 or greater"]);
         RuleFor(v => v.PaymentMethod)
-            .IsInEnum().WithMessage("Invalid payment method");
+            .IsInEnum().WithMessage(_localizer["Invalid payment method"]);
     }
 }

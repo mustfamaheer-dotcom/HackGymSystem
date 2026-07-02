@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -46,47 +48,50 @@ public class CreateOfferCommandHandler : IRequestHandler<CreateOfferCommand, Res
 
 public class CreateOfferCommandValidator : AbstractValidator<CreateOfferCommand>
 {
-    public CreateOfferCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateOfferCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(x => x.OfferTitle)
-            .NotEmpty().WithMessage("Offer title is required")
+            .NotEmpty().WithMessage(_localizer["Offer title is required"])
             .MaximumLength(200);
 
         RuleFor(x => x.OfferType).IsInEnum();
 
         RuleFor(x => x.EndDate)
-            .GreaterThan(x => x.StartDate).WithMessage("End date must be after start date");
+            .GreaterThan(x => x.StartDate).WithMessage(_localizer["End date must be after start date"]);
 
         When(x => x.OfferType == OfferType.BonusDuration, () =>
         {
             RuleFor(x => x.BonusMonths)
                 .GreaterThan(0).When(x => x.BonusDays == null || x.BonusDays == 0)
-                .WithMessage("Bonus months or bonus days must be provided");
+                .WithMessage(_localizer["Bonus months or bonus days must be provided"]);
             RuleFor(x => x.BonusDays)
                 .GreaterThan(0).When(x => x.BonusMonths == null || x.BonusMonths == 0)
-                .WithMessage("Bonus months or bonus days must be provided");
-            RuleFor(x => x.OfferPrice).Null().WithMessage("Offer price must be null for bonus duration offers");
+                .WithMessage(_localizer["Bonus months or bonus days must be provided"]);
+            RuleFor(x => x.OfferPrice).Null().WithMessage(_localizer["Offer price must be null for bonus duration offers"]);
         });
 
         When(x => x.OfferType == OfferType.FixedPrice, () =>
         {
             RuleFor(x => x.OfferPrice)
-                .NotNull().WithMessage("Offer price is required")
-                .GreaterThan(0).WithMessage("Offer price must be positive");
-            RuleFor(x => x.BonusMonths).Null().WithMessage("Bonus months must be null for fixed price offers");
-            RuleFor(x => x.BonusDays).Null().WithMessage("Bonus days must be null for fixed price offers");
+                .NotNull().WithMessage(_localizer["Offer price is required"])
+                .GreaterThan(0).WithMessage(_localizer["Offer price must be positive"]);
+            RuleFor(x => x.BonusMonths).Null().WithMessage(_localizer["Bonus months must be null for fixed price offers"]);
+            RuleFor(x => x.BonusDays).Null().WithMessage(_localizer["Bonus days must be null for fixed price offers"]);
         });
 
         When(x => x.OfferType == OfferType.ExtraFreeze, () =>
         {
             RuleFor(x => x.ExtraFreezeDays)
-                .NotNull().WithMessage("Extra freeze days is required")
-                .GreaterThan(0).WithMessage("Extra freeze days must be positive");
+                .NotNull().WithMessage(_localizer["Extra freeze days is required"])
+                .GreaterThan(0).WithMessage(_localizer["Extra freeze days must be positive"]);
         });
 
         When(x => x.OfferType == OfferType.FreeRegistration, () =>
         {
-            RuleFor(x => x.OfferPrice).Null().WithMessage("Offer price must be null for free registration");
+            RuleFor(x => x.OfferPrice).Null().WithMessage(_localizer["Offer price must be null for free registration"]);
         });
     }
 }

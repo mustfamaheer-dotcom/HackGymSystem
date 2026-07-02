@@ -25,14 +25,14 @@ public class AccountController : Controller
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "HomeMvc");
 
-        ViewData["Title"] = "Login";
+        ViewData["Title"] = _localizer["Login"];
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> Login(string username, string password, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Login";
+        ViewData["Title"] = _localizer["Login"];
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {

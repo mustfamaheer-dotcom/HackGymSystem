@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -50,28 +52,31 @@ public class UpdateDeviceCommandHandler : IRequestHandler<UpdateDeviceCommand, R
     }
 }
 
-public class UpdateDeviceCommandValidator : AbstractValidator<UpdateDeviceCommand>
-{
-    public UpdateDeviceCommandValidator()
+    public class UpdateDeviceCommandValidator : AbstractValidator<UpdateDeviceCommand>
     {
-        RuleFor(x => x.Id)
-            .NotEmpty();
+        private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .MaximumLength(100);
+        public UpdateDeviceCommandValidator(IStringLocalizer<ApplicationResources> localizer)
+        {
+            _localizer = localizer;
+            RuleFor(x => x.Id)
+                .NotEmpty();
 
-        RuleFor(x => x.IPAddress)
-            .NotEmpty()
-            .Must(BeValidIpAddress).WithMessage("Invalid IP address format");
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .MaximumLength(100);
 
-        RuleFor(x => x.Port)
-            .GreaterThan(0);
+            RuleFor(x => x.IPAddress)
+                .NotEmpty()
+                .Must(BeValidIpAddress).WithMessage(_localizer["Invalid IP address format"]);
+
+            RuleFor(x => x.Port)
+                .GreaterThan(0);
+        }
+
+        private static bool BeValidIpAddress(string ipAddress)
+        {
+            return Regex.IsMatch(ipAddress,
+                @"^(\d{1,3}\.){3}\d{1,3}$");
+        }
     }
-
-    private static bool BeValidIpAddress(string ipAddress)
-    {
-        return Regex.IsMatch(ipAddress,
-            @"^(\d{1,3}\.){3}\d{1,3}$");
-    }
-}

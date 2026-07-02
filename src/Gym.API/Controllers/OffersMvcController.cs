@@ -76,7 +76,7 @@ public class OffersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Offer created successfully"];
+        TempData["Success"] = _localizer["Offer created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -128,7 +128,7 @@ public class OffersMvcController : Controller
 
         if (id != dto.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(dto);
         }
 
@@ -142,7 +142,7 @@ public class OffersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Offer updated successfully"];
+        TempData["Success"] = _localizer["Offer updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -184,7 +184,7 @@ public class OffersMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = _localizer["Offer deleted successfully"];
+        TempData["Success"] = _localizer["Offer deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

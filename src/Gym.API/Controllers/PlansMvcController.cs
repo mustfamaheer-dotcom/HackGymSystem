@@ -63,7 +63,7 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Plan created successfully"];
+        TempData["Success"] = _localizer["Plan created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -90,7 +90,7 @@ public class PlansMvcController : Controller
         ViewData["Title"] = _localizer["Edit Plan"];
         if (id != command.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(command);
         }
         if (!ModelState.IsValid)
@@ -101,7 +101,7 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Plan updated successfully"];
+        TempData["Success"] = _localizer["Plan updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -143,7 +143,7 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = _localizer["Plan deleted successfully"];
+        TempData["Success"] = _localizer["Plan deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

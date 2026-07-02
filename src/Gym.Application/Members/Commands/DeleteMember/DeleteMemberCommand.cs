@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -33,11 +35,14 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, R
     }
 }
 
-public class DeleteMemberCommandValidator : AbstractValidator<DeleteMemberCommand>
-{
-    public DeleteMemberCommandValidator()
+    public class DeleteMemberCommandValidator : AbstractValidator<DeleteMemberCommand>
     {
-        RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Member ID is required");
+        private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+        public DeleteMemberCommandValidator(IStringLocalizer<ApplicationResources> localizer)
+        {
+            _localizer = localizer;
+            RuleFor(v => v.Id)
+                .NotEmpty().WithMessage(_localizer["Member ID is required"]);
+        }
     }
-}

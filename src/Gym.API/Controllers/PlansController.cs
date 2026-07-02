@@ -11,6 +11,8 @@ using Gym.Application.MembershipPlans.Queries.GetPlanById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Gym.API.Resources;
 
 namespace Gym.API.Controllers;
 
@@ -18,10 +20,12 @@ namespace Gym.API.Controllers;
 public class PlansController : BaseController
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public PlansController(IMediator mediator)
+    public PlansController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -31,7 +35,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve plans"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve plans"]));
 
         return Ok(ApiResponse<PaginatedResult<PlanDto>>.Ok(result.Data!));
     }
@@ -44,7 +48,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Plan not found"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Plan not found"]));
 
         return Ok(ApiResponse<PlanDto>.Ok(result.Data!));
     }
@@ -57,7 +61,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to retrieve active plans"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve active plans"]));
 
         return Ok(ApiResponse<List<PlanDto>>.Ok(result.Data!));
     }
@@ -69,7 +73,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? "Failed to create plan"));
+            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to create plan"]));
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
     }
@@ -79,12 +83,12 @@ public class PlansController : BaseController
     public async Task<IActionResult> UpdatePlan(Guid id, [FromBody] UpdatePlanCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
-            return BadRequest(ApiResponse.Fail("Route ID and body ID do not match"));
+            return BadRequest(ApiResponse.Fail(_localizer["Route ID and body ID do not match"]));
 
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to update plan"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to update plan"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }
@@ -97,7 +101,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to delete plan"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to delete plan"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }
@@ -110,7 +114,7 @@ public class PlansController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(ApiResponse.Fail(result.Message ?? "Failed to toggle plan status"));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to toggle plan status"]));
 
         return Ok(ApiResponse.Ok(result.Message));
     }

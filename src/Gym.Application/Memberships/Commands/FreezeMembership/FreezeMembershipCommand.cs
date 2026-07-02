@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -41,13 +43,16 @@ public class FreezeMembershipCommandHandler : IRequestHandler<FreezeMembershipCo
 
 public class FreezeMembershipCommandValidator : AbstractValidator<FreezeMembershipCommand>
 {
-    public FreezeMembershipCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public FreezeMembershipCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Membership ID is required");
+            .NotEmpty().WithMessage(_localizer["Membership ID is required"]);
 
         RuleFor(v => v.FreezeDays)
-            .GreaterThan(0).WithMessage("Freeze days must be greater than zero")
-            .LessThanOrEqualTo(90).WithMessage("Freeze days must not exceed 90");
+            .GreaterThan(0).WithMessage(_localizer["Freeze days must be greater than zero"])
+            .LessThanOrEqualTo(90).WithMessage(_localizer["Freeze days must not exceed 90"]);
     }
 }

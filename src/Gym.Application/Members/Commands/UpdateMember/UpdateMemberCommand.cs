@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -94,37 +96,39 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
 
 public class UpdateMemberCommandValidator : AbstractValidator<UpdateMemberCommand>
 {
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
     private static readonly string[] ValidReferralSources = ["Social Media", "Friend", "Walk-in", "Advertisement", "Other"];
 
-    public UpdateMemberCommandValidator()
+    public UpdateMemberCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Member ID is required");
+            .NotEmpty().WithMessage(_localizer["Member ID is required"]);
 
         RuleFor(v => v.FullName)
-            .NotEmpty().WithMessage("Full name is required")
-            .MaximumLength(200).WithMessage("Full name must not exceed 200 characters");
+            .NotEmpty().WithMessage(_localizer["Full name is required"])
+            .MaximumLength(200).WithMessage(_localizer["Full name must not exceed 200 characters"]);
 
         RuleFor(v => v.PhoneNumber)
-            .NotEmpty().WithMessage("Phone number is required")
-            .Length(11).WithMessage("Phone number must be exactly 11 digits")
-            .Matches(@"^\d{11}$").WithMessage("Phone number must be 11 digits");
+            .NotEmpty().WithMessage(_localizer["Phone number is required"])
+            .Length(11).WithMessage(_localizer["Phone number must be exactly 11 digits"])
+            .Matches(@"^\d{11}$").WithMessage(_localizer["Phone number must be 11 digits"]);
 
         RuleFor(v => v.Nationality)
-            .NotEmpty().WithMessage("Nationality is required")
-            .MaximumLength(100).WithMessage("Nationality must not exceed 100 characters");
+            .NotEmpty().WithMessage(_localizer["Nationality is required"])
+            .MaximumLength(100).WithMessage(_localizer["Nationality must not exceed 100 characters"]);
 
         RuleFor(v => v.NationalId)
-            .NotEmpty().WithMessage("National ID is required")
-            .Length(14).WithMessage("National ID must be exactly 14 digits")
-            .Matches(@"^\d{14}$").WithMessage("National ID must be 14 digits");
+            .NotEmpty().WithMessage(_localizer["National ID is required"])
+            .Length(14).WithMessage(_localizer["National ID must be exactly 14 digits"])
+            .Matches(@"^\d{14}$").WithMessage(_localizer["National ID must be 14 digits"]);
 
         RuleFor(v => v.ReferralSource)
             .Must(v => string.IsNullOrEmpty(v) || ValidReferralSources.Contains(v))
-            .WithMessage("Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other");
+            .WithMessage(_localizer["Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other"]);
 
         RuleFor(v => v.DiseaseType)
             .NotEmpty().When(v => v.HasDisease)
-            .WithMessage("Disease type is required when HasDisease is true");
+            .WithMessage(_localizer["Disease type is required when HasDisease is true"]);
     }
 }

@@ -6,6 +6,7 @@ public class DetailedDashboardDto
     public MembershipsStatsDto Memberships { get; set; } = new();
     public AttendanceStatsDto Attendance { get; set; } = new();
     public SubscriptionStatsDto Subscriptions { get; set; } = new();
+    public TopPackageDto TopRevenuePackage { get; set; } = new();
     public List<PlanDistributionDto> MembershipByPlan { get; set; } = new();
     public List<SubscriptionRevenueByPlanDto> SubscriptionRevenueByPlan { get; set; } = new();
     public List<RecentActivityDto> RecentActivities { get; set; } = new();
@@ -14,6 +15,79 @@ public class DetailedDashboardDto
     public List<SubscriptionDailyRevenueDto> DailySubscriptionRevenue { get; set; } = new();
     public List<SubscriptionMonthlyRevenueDto> MonthlySubscriptionRevenue { get; set; } = new();
     public List<RecentActivityDto> RecentSubscriptionActivity { get; set; } = new();
+    public List<AovTrendDto> AovTrend { get; set; } = new();
+    public List<RenewalRateByPlanDto> RenewalRateByPlan { get; set; } = new();
+    public List<TopSpenderDto> TopSpenders { get; set; } = new();
+    public List<OverduePaymentDto> OverduePayments { get; set; } = new();
+    public PaymentDelayStatsDto PaymentDelay { get; set; } = new();
+    public List<FreezeImpactDto> FreezeImpact { get; set; } = new();
+    public double OverallRenewalRate { get; set; }
+}
+
+public class TopPackageDto
+{
+    public string PlanName { get; set; } = string.Empty;
+    public decimal TotalPaid { get; set; }
+    public int SubCount { get; set; }
+    public double PercentOfRevenue { get; set; }
+}
+
+public class AovTrendDto
+{
+    public string Label { get; set; } = string.Empty;
+    public decimal Aov { get; set; }
+    public int SubCount { get; set; }
+    public decimal Revenue { get; set; }
+}
+
+public class RenewalRateByPlanDto
+{
+    public string PlanName { get; set; } = string.Empty;
+    public int TotalSubscriptions { get; set; }
+    public int RenewedCount { get; set; }
+    public double RenewalRate { get; set; }
+    public int ActiveCount { get; set; }
+}
+
+public class TopSpenderDto
+{
+    public string MemberName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public decimal TotalPaid { get; set; }
+    public string TopPlan { get; set; } = string.Empty;
+    public int SubscriptionCount { get; set; }
+}
+
+public class OverduePaymentDto
+{
+    public string MemberName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string ReceiptNumber { get; set; } = string.Empty;
+    public decimal RemainingBalance { get; set; }
+    public decimal TotalValue { get; set; }
+    public DateTime ExpirationDate { get; set; }
+    public string PlanName { get; set; } = string.Empty;
+}
+
+public class PaymentDelayStatsDto
+{
+    public double AverageDelayDays { get; set; }
+    public List<PaymentDelayTrendDto> MonthlyTrend { get; set; } = new();
+}
+
+public class PaymentDelayTrendDto
+{
+    public string Label { get; set; } = string.Empty;
+    public double AvgDays { get; set; }
+    public int PaymentCount { get; set; }
+}
+
+public class FreezeImpactDto
+{
+    public string Label { get; set; } = string.Empty;
+    public int FreezeCount { get; set; }
+    public decimal Revenue { get; set; }
+    public int ExpectedSubscriptions { get; set; }
 }
 
 public class MembersStatsDto

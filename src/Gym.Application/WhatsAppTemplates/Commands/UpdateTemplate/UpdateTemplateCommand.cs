@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -12,10 +14,12 @@ public record UpdateTemplateCommand(Guid Id, string Name, string MessageBody, bo
 public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateCommand, Result<Unit>>
 {
     private readonly IRepository<WhatsAppTemplate> _repo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo)
+    public UpdateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Unit>> Handle(UpdateTemplateCommand request, CancellationToken cancellationToken)
@@ -30,6 +34,7 @@ public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateComman
 
         template.Update(request.Name, request.MessageBody, request.IsActive, request.TriggerType);
         _repo.Update(template);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Unit>.Success(Unit.Value, "Template updated successfully");
     }
@@ -37,15 +42,18 @@ public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateComman
 
 public class UpdateTemplateCommandValidator : AbstractValidator<UpdateTemplateCommand>
 {
-    public UpdateTemplateCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public UpdateTemplateCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Id is required");
+            .NotEmpty().WithMessage(_localizer["Id is required"]);
         RuleFor(v => v.Name)
-            .NotEmpty().WithMessage("Name is required")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters");
+            .NotEmpty().WithMessage(_localizer["Name is required"])
+            .MaximumLength(200).WithMessage(_localizer["Name must not exceed 200 characters"]);
         RuleFor(v => v.MessageBody)
-            .NotEmpty().WithMessage("Message body is required")
-            .MaximumLength(2000).WithMessage("Message body must not exceed 2000 characters");
+            .NotEmpty().WithMessage(_localizer["Message body is required"])
+            .MaximumLength(2000).WithMessage(_localizer["Message body must not exceed 2000 characters"]);
     }
 }

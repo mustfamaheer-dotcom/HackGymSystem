@@ -136,10 +136,15 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             Value = monthlyMembersData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0
         }).ToList();
 
-        // --- Subscription Stats ---
+        // --- Subscription base queries ---
         var subWithPlan = subscriptionQuery
             .Include(s => s.Plan)
-            .Include(s => s.Offer);
+            .Include(s => s.Offer)
+            .Include(s => s.Member);
+
+        var subWithPlanAndMember = subscriptionQuery
+            .Include(s => s.Plan)
+            .Include(s => s.Member);
 
         var totalSubs = await subWithPlan.CountAsync(cancellationToken);
         var activeSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
@@ -224,6 +229,164 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             NewSubscriptions = monthlySubCounts.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0
         }).ToList();
 
+        // --- (1) Top Revenue Package ---
+        var topPackage = revenueByPlan.OrderByDescending(r => r.TotalPaid).FirstOrDefault();
+        var topPackageDto = new TopPackageDto();
+        if (topPackage != null)
+        {
+            topPackageDto.PlanName = topPackage.PlanName;
+            topPackageDto.TotalPaid = topPackage.TotalPaid;
+            topPackageDto.SubCount = topPackage.Count;
+            topPackageDto.PercentOfRevenue = totalPaidAllPlans > 0
+                ? Math.Round((double)(topPackage.TotalPaid / totalPaidAllPlans) * 100, 1)
+                : 0;
+        }
+
+        // --- (2) AOV Trend (Average Order Value per month) ---
+        var aovTrend = last6Months.Select(d =>
+        {
+            var monthData = monthlyPaymentData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month);
+            var subData = monthlySubCounts.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month);
+            var subCount = subData?.Count ?? 0;
+            var rev = monthData?.Revenue ?? 0;
+            return new AovTrendDto
+            {
+                Label = d.ToString("MMM"),
+                Revenue = rev,
+                SubCount = subCount,
+                Aov = subCount > 0 ? Math.Round(rev / subCount, 2) : 0
+            };
+        }).ToList();
+
+        // --- (3) Renewal Rate by Plan ---
+        var renewalByPlan = await subWithPlanAndMember
+            .GroupBy(s => new { s.PlanId, s.Plan.Name })
+            .Select(g => new RenewalRateByPlanDto
+            {
+                PlanName = g.Key.Name,
+                TotalSubscriptions = g.Count(),
+                RenewedCount = g.Count(s => s.Status == SubscriptionStatus.Renewed),
+                ActiveCount = g.Count(s => s.Status == SubscriptionStatus.Active)
+            })
+            .ToListAsync(cancellationToken);
+
+        var totalRenewable = renewalByPlan.Sum(r => r.TotalSubscriptions);
+        var totalRenewed = renewalByPlan.Sum(r => r.RenewedCount);
+        var overallRenewalRate = totalRenewable > 0 ? Math.Round((double)totalRenewed / totalRenewable * 100, 1) : 0;
+
+        foreach (var r in renewalByPlan)
+            r.RenewalRate = r.TotalSubscriptions > 0 ? Math.Round((double)r.RenewedCount / r.TotalSubscriptions * 100, 1) : 0;
+
+        // --- (4) Top Spenders (top 10% by total paid) ---
+        var memberPayments = await paymentQuery
+            .Join(subscriptionQuery.Include(s => s.Plan), p => p.SubscriptionId, s => s.Id, (p, s) => new { p, s })
+            .Join(_memberRepo.Query(), ps => ps.s.MemberId, m => m.Id, (ps, m) => new { ps.p, ps.s, m })
+            .GroupBy(x => new { x.m.Id, x.m.FullName, x.m.PhoneNumber })
+            .Select(g => new
+            {
+                MemberId = g.Key.Id,
+                g.Key.FullName,
+                Phone = g.Key.PhoneNumber,
+                TotalPaid = g.Sum(x => x.p.Amount),
+                SubscriptionCount = g.Select(x => x.p.SubscriptionId).Distinct().Count(),
+                TopPlan = g.Select(x => x.s.Plan.Name).FirstOrDefault()
+            })
+            .OrderByDescending(x => x.TotalPaid)
+            .ToListAsync(cancellationToken);
+
+        var topSpenderCount = Math.Max(1, (int)Math.Ceiling(memberPayments.Count * 0.1));
+        var topSpenders = memberPayments.Take(topSpenderCount).Select(x => new TopSpenderDto
+        {
+            MemberName = x.FullName,
+            Phone = x.Phone,
+            TotalPaid = x.TotalPaid,
+            SubscriptionCount = x.SubscriptionCount,
+            TopPlan = x.TopPlan ?? ""
+        }).ToList();
+
+        // --- (5) Overdue Payments ---
+        var overduePaymentsData = await subWithPlanAndMember
+            .Where(s => s.RemainingBalance > 0 && s.Status == SubscriptionStatus.Active)
+            .OrderByDescending(s => s.RemainingBalance)
+            .Take(20)
+            .Select(s => new OverduePaymentDto
+            {
+                MemberName = s.Member.FullName,
+                Phone = s.Member.PhoneNumber,
+                ReceiptNumber = s.ReceiptNumber,
+                RemainingBalance = s.RemainingBalance,
+                TotalValue = s.TotalSubscriptionValue,
+                ExpirationDate = s.ExpirationDate,
+                PlanName = s.Plan.Name
+            })
+            .ToListAsync(cancellationToken);
+
+        // --- (6) Payment Delay ---
+        var paymentDelays = await paymentQuery
+            .Include(p => p.Subscription)
+            .Where(p => p.CreatedAt >= sixMonthsAgo)
+            .Select(p => new
+            {
+                PaymentDate = p.CreatedAt,
+                SubStart = p.Subscription.CreatedAt,
+                Year = p.CreatedAt.Year,
+                Month = p.CreatedAt.Month
+            })
+            .ToListAsync(cancellationToken);
+
+        var delayDays = paymentDelays
+            .Where(p => p.PaymentDate >= p.SubStart)
+            .Select(p => (p.PaymentDate - p.SubStart).TotalDays)
+            .ToList();
+
+        var avgDelayDays = delayDays.Count > 0 ? Math.Round(delayDays.Average(), 1) : 0;
+
+        var delayMonthly = paymentDelays
+            .Where(p => p.PaymentDate >= p.SubStart)
+            .GroupBy(p => new { p.Year, p.Month })
+            .Select(g => new
+            {
+                g.Key.Year,
+                g.Key.Month,
+                AvgDays = Math.Round(g.Average(x => (x.PaymentDate - x.SubStart).TotalDays), 1),
+                PaymentCount = g.Count()
+            })
+            .ToList();
+
+        var delayTrend = last6Months.Select(d => new PaymentDelayTrendDto
+        {
+            Label = d.ToString("MMM"),
+            AvgDays = delayMonthly.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.AvgDays ?? 0,
+            PaymentCount = delayMonthly.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.PaymentCount ?? 0
+        }).ToList();
+
+        var paymentDelay = new PaymentDelayStatsDto
+        {
+            AverageDelayDays = avgDelayDays,
+            MonthlyTrend = delayTrend
+        };
+
+        // --- (7) Freeze Impact ---
+        var freezeMonthly = await freezeQuery
+            .Where(f => f.CreatedAt >= sixMonthsAgo)
+            .GroupBy(f => new { f.CreatedAt.Year, f.CreatedAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var freezeImpact = last6Months.Select(d =>
+        {
+            var freezeData = freezeMonthly.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month);
+            var revData = monthlyPaymentData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month);
+            var subData = monthlySubCounts.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month);
+            return new FreezeImpactDto
+            {
+                Label = d.ToString("MMM"),
+                FreezeCount = freezeData?.Count ?? 0,
+                Revenue = revData?.Revenue ?? 0,
+                ExpectedSubscriptions = subData?.Count ?? 0
+            };
+        }).ToList();
+
         // Recent subscription activity
         var recentSubscriptionActivity = await subscriptionQuery
             .Include(s => s.Member)
@@ -284,6 +447,7 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
                 SubscriptionsWithOffers = subsWithOffers,
                 FreezesThisMonth = freezesThisMonth
             },
+            TopRevenuePackage = topPackageDto,
             MembershipByPlan = membershipByPlan,
             SubscriptionRevenueByPlan = revenueByPlan,
             RecentActivities = recentActivities,
@@ -291,7 +455,14 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             MonthlyNewMembersTrend = monthlyNewMembersTrend,
             DailySubscriptionRevenue = dailySubscriptionRevenue,
             MonthlySubscriptionRevenue = monthlySubscriptionRevenue,
-            RecentSubscriptionActivity = recentSubscriptionActivity
+            RecentSubscriptionActivity = recentSubscriptionActivity,
+            AovTrend = aovTrend,
+            RenewalRateByPlan = renewalByPlan,
+            TopSpenders = topSpenders,
+            OverduePayments = overduePaymentsData,
+            PaymentDelay = paymentDelay,
+            FreezeImpact = freezeImpact,
+            OverallRenewalRate = overallRenewalRate
         };
 
         return Result<DetailedDashboardDto>.Success(dashboard);

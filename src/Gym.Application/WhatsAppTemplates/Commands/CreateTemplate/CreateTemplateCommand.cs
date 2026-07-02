@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -12,10 +14,12 @@ public record CreateTemplateCommand(string Name, string MessageBody, Notificatio
 public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateCommand, Result<Guid>>
 {
     private readonly IRepository<WhatsAppTemplate> _repo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo)
+    public CreateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Guid>> Handle(CreateTemplateCommand request, CancellationToken cancellationToken)
@@ -26,6 +30,7 @@ public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateComman
 
         var template = new WhatsAppTemplate(request.Name, request.MessageBody, request.TriggerType);
         await _repo.AddAsync(template, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(template.Id, "Template created successfully");
     }
@@ -33,13 +38,16 @@ public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateComman
 
 public class CreateTemplateCommandValidator : AbstractValidator<CreateTemplateCommand>
 {
-    public CreateTemplateCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public CreateTemplateCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Name)
-            .NotEmpty().WithMessage("Name is required")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters");
+            .NotEmpty().WithMessage(_localizer["Name is required"])
+            .MaximumLength(200).WithMessage(_localizer["Name must not exceed 200 characters"]);
         RuleFor(v => v.MessageBody)
-            .NotEmpty().WithMessage("Message body is required")
-            .MaximumLength(2000).WithMessage("Message body must not exceed 2000 characters");
+            .NotEmpty().WithMessage(_localizer["Message body is required"])
+            .MaximumLength(2000).WithMessage(_localizer["Message body must not exceed 2000 characters"]);
     }
 }

@@ -62,7 +62,7 @@ public class SettingsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Setting created successfully"];
+        TempData["Success"] = _localizer["Setting created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -91,7 +91,7 @@ public class SettingsMvcController : Controller
         ViewData["Title"] = _localizer["Edit Setting"];
         if (id != command.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(command);
         }
         if (!ModelState.IsValid)
@@ -102,7 +102,7 @@ public class SettingsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Setting updated successfully"];
+        TempData["Success"] = _localizer["Setting updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

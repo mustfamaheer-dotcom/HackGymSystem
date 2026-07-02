@@ -63,7 +63,7 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Device created successfully"];
+        TempData["Success"] = _localizer["Device created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -90,7 +90,7 @@ public class DevicesMvcController : Controller
         ViewData["Title"] = _localizer["Edit Device"];
         if (id != command.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(command);
         }
         if (!ModelState.IsValid)
@@ -101,7 +101,7 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Device updated successfully"];
+        TempData["Success"] = _localizer["Device updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -143,7 +143,7 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = _localizer["Device deleted successfully"];
+        TempData["Success"] = _localizer["Device deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

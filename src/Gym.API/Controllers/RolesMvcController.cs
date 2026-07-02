@@ -63,7 +63,7 @@ public class RolesMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Role created successfully"];
+        TempData["Success"] = _localizer["Role created successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -102,7 +102,7 @@ public class RolesMvcController : Controller
         ViewData["Title"] = _localizer["Edit Role"];
         if (id != dto.Id)
         {
-            TempData["Error"] = _localizer["Route ID and form ID do not match"];
+            TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(dto);
         }
 
@@ -119,7 +119,7 @@ public class RolesMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Role updated successfully"];
+        TempData["Success"] = _localizer["Role updated successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -165,7 +165,7 @@ public class RolesMvcController : Controller
             TempData["Error"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
-        TempData["Success"] = _localizer["Role deleted successfully"];
+        TempData["Success"] = _localizer["Role deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
     }
 

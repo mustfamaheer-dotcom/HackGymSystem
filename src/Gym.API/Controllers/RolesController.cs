@@ -3,6 +3,8 @@ using Gym.Application.Common.DTOs;
 using Gym.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Gym.API.Resources;
 
 namespace Gym.API.Controllers;
 
@@ -10,10 +12,12 @@ namespace Gym.API.Controllers;
 public class RolesController : BaseController
 {
     private readonly IRolePermissionService _roleService;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public RolesController(IRolePermissionService roleService)
+    public RolesController(IRolePermissionService roleService, IStringLocalizer<SharedResources> localizer)
     {
         _roleService = roleService;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -61,7 +65,7 @@ public class RolesController : BaseController
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoleDto dto, CancellationToken cancellationToken)
     {
         if (id != dto.Id)
-            return BadRequest(ApiResponse.Fail("Route ID and body ID do not match."));
+            return BadRequest(ApiResponse.Fail(_localizer["Route ID and body ID do not match."]));
         var result = await _roleService.UpdateRoleAsync(dto, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message!));

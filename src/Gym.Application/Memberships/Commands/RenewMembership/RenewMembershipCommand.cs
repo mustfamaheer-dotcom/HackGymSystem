@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -48,20 +50,23 @@ public class RenewMembershipCommandHandler : IRequestHandler<RenewMembershipComm
 
 public class RenewMembershipCommandValidator : AbstractValidator<RenewMembershipCommand>
 {
-    public RenewMembershipCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public RenewMembershipCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Membership ID is required");
+            .NotEmpty().WithMessage(_localizer["Membership ID is required"]);
 
         RuleFor(v => v.NewEndDate)
-            .NotEmpty().WithMessage("New end date is required")
-            .GreaterThan(DateTime.UtcNow).WithMessage("New end date must be in the future");
+            .NotEmpty().WithMessage(_localizer["New end date is required"])
+            .GreaterThan(DateTime.UtcNow).WithMessage(_localizer["New end date must be in the future"]);
 
         RuleFor(v => v.AdditionalDays)
-            .GreaterThan(0).WithMessage("Additional days must be greater than zero");
+            .GreaterThan(0).WithMessage(_localizer["Additional days must be greater than zero"]);
 
         RuleFor(v => v.AdditionalVisits)
             .GreaterThanOrEqualTo(0).When(v => v.AdditionalVisits.HasValue)
-            .WithMessage("Additional visits must be zero or greater");
+            .WithMessage(_localizer["Additional visits must be zero or greater"]);
     }
 }

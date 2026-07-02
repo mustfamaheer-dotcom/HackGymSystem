@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -138,15 +140,18 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
 
 public class RenewSubscriptionCommandValidator : AbstractValidator<RenewSubscriptionCommand>
 {
-    public RenewSubscriptionCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public RenewSubscriptionCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.PreviousSubscriptionId)
-            .NotEmpty().WithMessage("Previous subscription ID is required");
+            .NotEmpty().WithMessage(_localizer["Previous subscription ID is required"]);
         RuleFor(v => v.AmountPaid)
-            .GreaterThanOrEqualTo(0).WithMessage("Amount paid must be 0 or greater");
+            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Amount paid must be 0 or greater"]);
         RuleFor(v => v.StartDate)
-            .NotEmpty().WithMessage("Start date is required");
+            .NotEmpty().WithMessage(_localizer["Start date is required"]);
         RuleFor(v => v.PaymentMethod)
-            .IsInEnum().WithMessage("Invalid payment method");
+            .IsInEnum().WithMessage(_localizer["Invalid payment method"]);
     }
 }

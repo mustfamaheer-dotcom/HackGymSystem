@@ -27,7 +27,7 @@ public class WhatsAppTemplatesMvcController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "WhatsApp Templates";
+        ViewData["Title"] = _localizer["WhatsApp Templates"];
         var result = await _mediator.Send(new GetAllTemplatesQuery(), cancellationToken);
         return View(result.IsSuccess ? result.Data : new());
     }
@@ -36,7 +36,7 @@ public class WhatsAppTemplatesMvcController : Controller
     [HttpGet("create")]
     public IActionResult Create()
     {
-        ViewData["Title"] = "New Template";
+        ViewData["Title"] = _localizer["New Template"];
         return View();
     }
 
@@ -63,12 +63,12 @@ public class WhatsAppTemplatesMvcController : Controller
     [HttpGet("{id}/edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "Edit Template";
+        ViewData["Title"] = _localizer["Edit Template"];
         var result = await _mediator.Send(new GetAllTemplatesQuery(), cancellationToken);
         var template = result.Data?.FirstOrDefault(t => t.Id == id);
         if (template == null)
         {
-            TempData["Error"] = _localizer["Template not found"];
+            TempData["Error"] = _localizer["Template not found"].Value;
             return RedirectToAction(nameof(Index));
         }
         return View(template);

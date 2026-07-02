@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -67,11 +69,14 @@ public class FreezeSubscriptionCommandHandler : IRequestHandler<FreezeSubscripti
 
 public class FreezeSubscriptionCommandValidator : AbstractValidator<FreezeSubscriptionCommand>
 {
-    public FreezeSubscriptionCommandValidator()
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
+
+    public FreezeSubscriptionCommandValidator(IStringLocalizer<ApplicationResources> localizer)
     {
+        _localizer = localizer;
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Subscription ID is required");
+            .NotEmpty().WithMessage(_localizer["Subscription ID is required"]);
         RuleFor(v => v.FreezeDays)
-            .GreaterThan(0).WithMessage("Freeze days must be greater than 0");
+            .GreaterThan(0).WithMessage(_localizer["Freeze days must be greater than 0"]);
     }
 }

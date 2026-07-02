@@ -567,7 +567,7 @@
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <div class="brand-icon">HG</div>
+            <div class="brand-icon">@SharedLocalizer["HG"]</div>
             <h5>@SharedLocalizer["Hack Gym"]</h5>
         </div>
         <nav class="sidebar-nav">
@@ -701,7 +701,7 @@
                     @{
                         var currentCulture = CultureInfo.CurrentUICulture.Name;
                         var targetCulture = currentCulture.StartsWith("ar") ? "en" : "ar";
-                        var targetLabel = currentCulture.StartsWith("ar") ? "EN" : "AR";
+                        var targetLabel = currentCulture.StartsWith("ar") ? SharedLocalizer["EN"] : SharedLocalizer["AR"];
                     }
                     <input type="hidden" name="culture" value="@targetCulture" />
                     <input type="hidden" name="returnUrl" value="@Context.Request.Path" />

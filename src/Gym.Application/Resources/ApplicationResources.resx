@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Additional days must be greater than zero" xml:space="preserve">
+    <value>Additional days must be greater than zero</value>
+  </data>
+  <data name="Additional visits must be zero or greater" xml:space="preserve">
+    <value>Additional visits must be zero or greater</value>
+  </data>
+  <data name="Amount must be greater than 0" xml:space="preserve">
+    <value>Amount must be greater than 0</value>
+  </data>
+  <data name="Amount paid must be 0 or greater" xml:space="preserve">
+    <value>Amount paid must be 0 or greater</value>
+  </data>
+  <data name="Bonus days must be null for fixed price offers" xml:space="preserve">
+    <value>Bonus days must be null for fixed price offers</value>
+  </data>
+  <data name="Bonus months must be null for fixed price offers" xml:space="preserve">
+    <value>Bonus months must be null for fixed price offers</value>
+  </data>
+  <data name="Bonus months or bonus days must be provided" xml:space="preserve">
+    <value>Bonus months or bonus days must be provided</value>
+  </data>
+  <data name="Disease type is required when HasDisease is true" xml:space="preserve">
+    <value>Disease type is required when HasDisease is true</value>
+  </data>
+  <data name="Email is not valid" xml:space="preserve">
+    <value>Email is not valid</value>
+  </data>
+  <data name="Email must not exceed 200 characters" xml:space="preserve">
+    <value>Email must not exceed 200 characters</value>
+  </data>
+  <data name="End date must be after start date" xml:space="preserve">
+    <value>End date must be after start date</value>
+  </data>
+  <data name="Extra freeze days is required" xml:space="preserve">
+    <value>Extra freeze days is required</value>
+  </data>
+  <data name="Extra freeze days must be positive" xml:space="preserve">
+    <value>Extra freeze days must be positive</value>
+  </data>
+  <data name="Free months must be 0 or greater" xml:space="preserve">
+    <value>Free months must be 0 or greater</value>
+  </data>
+  <data name="Freeze days must be 0 or greater" xml:space="preserve">
+    <value>Freeze days must be 0 or greater</value>
+  </data>
+  <data name="Freeze days must be greater than 0" xml:space="preserve">
+    <value>Freeze days must be greater than 0</value>
+  </data>
+  <data name="Freeze days must be greater than zero" xml:space="preserve">
+    <value>Freeze days must be greater than zero</value>
+  </data>
+  <data name="Freeze days must not exceed 90" xml:space="preserve">
+    <value>Freeze days must not exceed 90</value>
+  </data>
+  <data name="Full name is required" xml:space="preserve">
+    <value>Full name is required</value>
+  </data>
+  <data name="Full name must not exceed 200 characters" xml:space="preserve">
+    <value>Full name must not exceed 200 characters</value>
+  </data>
+  <data name="Gender must be 'Male' or 'Female'" xml:space="preserve">
+    <value>Gender must be 'Male' or 'Female'</value>
+  </data>
+  <data name="Id is required" xml:space="preserve">
+    <value>Id is required</value>
+  </data>
+  <data name="Invalid IP address format" xml:space="preserve">
+    <value>Invalid IP address format</value>
+  </data>
+  <data name="Invalid payment method" xml:space="preserve">
+    <value>Invalid payment method</value>
+  </data>
+  <data name="Member ID is required" xml:space="preserve">
+    <value>Member ID is required</value>
+  </data>
+  <data name="Member is required" xml:space="preserve">
+    <value>Member is required</value>
+  </data>
+  <data name="Membership ID is required" xml:space="preserve">
+    <value>Membership ID is required</value>
+  </data>
+  <data name="Message body is required" xml:space="preserve">
+    <value>Message body is required</value>
+  </data>
+  <data name="Message body must not exceed 2000 characters" xml:space="preserve">
+    <value>Message body must not exceed 2000 characters</value>
+  </data>
+  <data name="Name is required" xml:space="preserve">
+    <value>Name is required</value>
+  </data>
+  <data name="Name must not exceed 200 characters" xml:space="preserve">
+    <value>Name must not exceed 200 characters</value>
+  </data>
+  <data name="National ID is required" xml:space="preserve">
+    <value>National ID is required</value>
+  </data>
+  <data name="National ID must be 14 digits" xml:space="preserve">
+    <value>National ID must be 14 digits</value>
+  </data>
+  <data name="National ID must be exactly 14 digits" xml:space="preserve">
+    <value>National ID must be exactly 14 digits</value>
+  </data>
+  <data name="Nationality is required" xml:space="preserve">
+    <value>Nationality is required</value>
+  </data>
+  <data name="Nationality must not exceed 100 characters" xml:space="preserve">
+    <value>Nationality must not exceed 100 characters</value>
+  </data>
+  <data name="New end date is required" xml:space="preserve">
+    <value>New end date is required</value>
+  </data>
+  <data name="New end date must be in the future" xml:space="preserve">
+    <value>New end date must be in the future</value>
+  </data>
+  <data name="Offer is required when no plan is selected" xml:space="preserve">
+    <value>Offer is required when no plan is selected</value>
+  </data>
+  <data name="Offer price is required" xml:space="preserve">
+    <value>Offer price is required</value>
+  </data>
+  <data name="Offer price must be null for bonus duration offers" xml:space="preserve">
+    <value>Offer price must be null for bonus duration offers</value>
+  </data>
+  <data name="Offer price must be null for free registration" xml:space="preserve">
+    <value>Offer price must be null for free registration</value>
+  </data>
+  <data name="Offer price must be positive" xml:space="preserve">
+    <value>Offer price must be positive</value>
+  </data>
+  <data name="Offer title is required" xml:space="preserve">
+    <value>Offer title is required</value>
+  </data>
+  <data name="Paid amount cannot exceed subscription price" xml:space="preserve">
+    <value>Paid amount cannot exceed subscription price</value>
+  </data>
+  <data name="Paid amount must be 0 or greater" xml:space="preserve">
+    <value>Paid amount must be 0 or greater</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
+  <data name="Phone number must be 11 digits" xml:space="preserve">
+    <value>Phone number must be 11 digits</value>
+  </data>
+  <data name="Phone number must be exactly 11 digits" xml:space="preserve">
+    <value>Phone number must be exactly 11 digits</value>
+  </data>
+  <data name="Plan is required" xml:space="preserve">
+    <value>Plan is required</value>
+  </data>
+  <data name="Plan is required when no offer is selected" xml:space="preserve">
+    <value>Plan is required when no offer is selected</value>
+  </data>
+  <data name="Previous subscription ID is required" xml:space="preserve">
+    <value>Previous subscription ID is required</value>
+  </data>
+  <data name="Referral source must be one of: " xml:space="preserve">
+    <value>Referral source must be one of: </value>
+  </data>
+  <data name="Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other" xml:space="preserve">
+    <value>Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other</value>
+  </data>
+  <data name="Start date is required" xml:space="preserve">
+    <value>Start date is required</value>
+  </data>
+  <data name="Subscription duration must be greater than 0 months" xml:space="preserve">
+    <value>Subscription duration must be greater than 0 months</value>
+  </data>
+  <data name="Subscription ID is required" xml:space="preserve">
+    <value>Subscription ID is required</value>
+  </data>
+  <data name="Subscription price must be 0 or greater" xml:space="preserve">
+    <value>Subscription price must be 0 or greater</value>
+  </data>
+  <data name="Subscription start date is required" xml:space="preserve">
+    <value>Subscription start date is required</value>
+  </data>
+</root>

@@ -33,7 +33,7 @@
         <div class="receipt-body">
             @foreach (var group in groups!)
             {
-                var groupKey = group ?? "General";
+                var groupKey = group ?? SharedLocalizer["General"];
                 var icon = groupIcons.GetValueOrDefault(groupKey, "bi-folder");
                 var color = groupColors.GetValueOrDefault(groupKey, "#6366F1");
                 var items = Model.Where(s => s.Group == group).ToList();
