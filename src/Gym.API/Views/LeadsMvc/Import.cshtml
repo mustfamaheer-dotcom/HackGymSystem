@@ -1,0 +1,59 @@
+@{
+    var error = TempData["Error"] as string;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-file-earmark-arrow-up"></i> @SharedLocalizer["Import Leads"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["Excel"]</span>
+            </div>
+
+            <div class="receipt-body">
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    @SharedLocalizer["Upload an <strong>.xlsx</strong> file with the following columns:"]
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@SharedLocalizer["#"]</th>
+                                <th>@SharedLocalizer["Column"]</th>
+                                <th>@SharedLocalizer["Required"]</th>
+                                <th>@SharedLocalizer["Notes"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>@SharedLocalizer["Full Name"]</td><td><span class="badge-status badge-active">@SharedLocalizer["Yes"]</span></td><td></td></tr>
+                            <tr><td>2</td><td>@SharedLocalizer["Phone"]</td><td><span class="badge-status badge-active">@SharedLocalizer["Yes"]</span></td><td>@SharedLocalizer["11 digits"]</td></tr>
+                            <tr><td>3</td><td>@SharedLocalizer["Email"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                            <tr><td>4</td><td>@SharedLocalizer["Gender"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Male or Female"]</td></tr>
+                            <tr><td>5</td><td>@SharedLocalizer["Source"]</td><td><span class="badge-status badge-active">@SharedLocalizer["Yes"]</span></td><td>@SharedLocalizer["SocialMedia, Referral, WalkIn, Other"]</td></tr>
+                            <tr><td>6</td><td>@SharedLocalizer["Package"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td>@SharedLocalizer["Must match an active plan name"]</td></tr>
+                            <tr><td>7</td><td>@SharedLocalizer["Notes"]</td><td><span class="badge-status badge-expired">@SharedLocalizer["No"]</span></td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <form asp-action="Import" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">@SharedLocalizer["Select Excel File"]</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx" required />
+                    </div>
+                    <div class="receipt-footer px-0 pb-0">
+                        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> @SharedLocalizer["Upload & Import"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

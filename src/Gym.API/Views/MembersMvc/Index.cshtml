@@ -45,17 +45,13 @@
             </div>
             <div class="col-md-2">
                 <select name="pageSize" class="form-select" onchange="this.form.submit()">
-                    @{
-                        var ps1 = Model?.PageSize == 10 ? "selected" : "";
-                        var ps2 = Model?.PageSize == 20 ? "selected" : "";
-                        var ps3 = Model?.PageSize == 50 ? "selected" : "";
-                    }
-                    <option value="10" selected="@ps1">@SharedLocalizer["10 per page"]</option>
-                    <option value="20" selected="@ps2">@SharedLocalizer["20 per page"]</option>
-                    <option value="50" selected="@ps3">@SharedLocalizer["50 per page"]</option>
+                    <option value="10" selected="@(Model?.PageSize == 10)">@SharedLocalizer["10 per page"]</option>
+                    <option value="20" selected="@(Model?.PageSize == 20)">@SharedLocalizer["20 per page"]</option>
+                    <option value="50" selected="@(Model?.PageSize == 50)">@SharedLocalizer["50 per page"]</option>
                 </select>
             </div>
             <div class="col-md-6 text-end">
+                <a asp-action="ExportExcel" class="btn btn-outline-success btn-sm rounded-pill"><i class="bi bi-download"></i> @SharedLocalizer["Export Excel"]</a>
                 <a asp-action="Import" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-upload"></i> @SharedLocalizer["Import Excel"]</a>
                 <a asp-action="Search" class="btn btn-outline-gold btn-sm rounded-pill"><i class="bi bi-search"></i> @SharedLocalizer["Advanced Search"]</a>
             </div>
@@ -74,7 +70,7 @@
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">
-            <i class="bi bi-people" style="font-size: 3rem;"></i>
+            <i class="bi bi-people-fill" style="font-size: 3rem;"></i>
             <p class="mt-2">@SharedLocalizer["No members found."]</p>
         </div>
     }
@@ -118,45 +114,13 @@
                                     <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
                                     <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
                                     <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
-                                       data-phone="@member.PhoneNumber"
-                                       data-member="@member.FullName"
-                                       data-receipt="@member.ReceiptNumber"
-                                       data-pdflink="@Url.Action("DownloadReceiptPdf", "Members", new { id = member.Id }, Context.Request.Scheme)"><i class="bi bi-whatsapp"></i></a>
-</div>
-
-@section Scripts {
-    <script>
-        (function() {
-            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
-            var templateMap = {};
-            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
-
-            var select = document.getElementById('whatsappTemplate');
-
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('.wa-btn');
-                if (!btn) return;
-                e.preventDefault();
-
-                var tid = select ? select.value : '';
-                if (!tid) {
-                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
-                    return;
-                }
-
-                var body = templateMap[tid] || '';
-                var msg = body
-                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
-                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
-                    .replace(/\{PdfLink\}/g, btn.dataset.pdflink || '');
-
-                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
-                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-            });
-        })();
-    </script>
-}
+                                        data-phone="@member.PhoneNumber"
+                                        data-member="@member.FullName"
+                                        data-receipt="@member.ReceiptNumber"
+                                        data-code="@member.Code"
+                                        data-joindate="@member.RegistrationDate.ToString("dd/MM/yyyy")"
+                                        data-pdflink="@Url.Action("DownloadReceiptPdf", "Members", new { id = member.Id }, Context.Request.Scheme)"><i class="bi bi-whatsapp"></i></a>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -191,3 +155,78 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            function formatOffer(o) {
+                var lines = ['▸ ' + o.OfferTitle];
+                var details = [];
+                if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                if (o.OfferType === 'FixedPrice') {
+                    details.push('Type: Fixed Price');
+                } else if (o.OfferType === 'BonusDuration') {
+                    var bonus = [];
+                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
+                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
+                    if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
+                    details.push('Type: Bonus Duration');
+                } else if (o.OfferType === 'FreeRegistration') {
+                    details.push('Type: Free Registration');
+                } else if (o.OfferType === 'ExtraFreeze') {
+                    if (o.ExtraFreezeDays) details.push('Extra Freeze: +' + o.ExtraFreezeDays + ' day' + (o.ExtraFreezeDays > 1 ? 's' : ''));
+                    details.push('Type: Extra Freeze');
+                } else if (o.OfferType === 'Custom') {
+                    details.push('Type: Custom');
+                }
+                if (details.length) lines.push('  ' + details.join(' | '));
+                return lines.join('\n');
+            }
+            var offersText = activeOffers.length > 0
+                ? activeOffers.map(formatOffer).join('\n\n')
+                : '';
+
+            var select = document.getElementById('whatsappTemplate');
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+
+                var tid = select ? select.value : '';
+                if (!tid) {
+                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    return;
+                }
+
+                var body = templateMap[tid] || '';
+                var msg = body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, btn.dataset.code || '')
+                    .replace(/\{JoinDate\}/g, btn.dataset.joindate || '')
+                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{StartDate\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{SubscriptionStatus\}/g, '')
+                    .replace(/\{TotalPaid\}/g, '')
+                    .replace(/\{RemainingBalance\}/g, '')
+                    .replace(/\{LastPaymentDate\}/g, '')
+                    .replace(/\{LastPaymentAmount\}/g, '')
+                    .replace(/\{PaymentMethod\}/g, '')
+                    .replace(/\{Offers\}/g, offersText)
+                    .replace(/\{OfferName\}/g, '')
+                    .replace(/\{PdfLink\}/g, btn.dataset.pdflink || '');
+
+                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+            });
+        })();
+    </script>
+}

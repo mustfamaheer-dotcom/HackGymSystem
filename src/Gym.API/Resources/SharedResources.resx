@@ -1893,4 +1893,46 @@
   </data>
   <data name="Search by name, phone or email..." xml:space="preserve">
     <value>Search by name, phone or email...</value>
+  </data>
+  <data name="Import Leads" xml:space="preserve">
+    <value>Import Leads</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Back to Leads" xml:space="preserve">
+    <value>Back to Leads</value>
+  </data>
+  <data name="Male or Female" xml:space="preserve">
+    <value>Male or Female</value>
+  </data>
+  <data name="SocialMedia, Referral, WalkIn, Other" xml:space="preserve">
+    <value>SocialMedia, Referral, WalkIn, Other</value>
+  </data>
+  <data name="Leads exported to {0}" xml:space="preserve">
+    <value>Leads exported to {0}</value>
+  </data>
+  <data name="Members exported to {0}" xml:space="preserve">
+    <value>Members exported to {0}</value>
+  </data>
+  <data name="Search by name, phone, email or notes..." xml:space="preserve">
+    <value>Search by name, phone, email or notes...</value>
+  </data>
+  <data name="Has Follow Up" xml:space="preserve">
+    <value>Has Follow Up</value>
+  </data>
+  <data name="Next Follow Up From" xml:space="preserve">
+    <value>Next Follow Up From</value>
+  </data>
+  <data name="Next Follow Up To" xml:space="preserve">
+    <value>Next Follow Up To</value>
+  </data>
+  <data name="Newest First" xml:space="preserve">
+    <value>Newest First</value>
+  </data>
+  <data name="Descending" xml:space="preserve">
+    <value>Descending</value>
   </data></root>

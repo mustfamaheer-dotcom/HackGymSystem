@@ -17,6 +17,7 @@ public record CreateSubscriptionCommand(
     decimal AmountPaid,
     PaymentMethod PaymentMethod,
     DateTime StartDate,
+    int? DurationMonths,
     string? AdminSignature,
     string? Notes) : IRequest<Result<Guid>>;
 
@@ -180,8 +181,10 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         if (request.AmountPaid > totalValue)
             return Result<Guid>.Failure(_localizer["Amount paid cannot exceed total subscription value"]);
 
-        // Calculate expiration: plan duration + offer bonuses
-        var durationDays = plan.DurationDays;
+        // Calculate expiration: custom or plan duration + offer bonuses
+        var durationDays = request.DurationMonths.HasValue
+            ? request.DurationMonths.Value * 30
+            : plan.DurationDays;
         var bonusMonths = offer?.BonusMonths ?? 0;
         var bonusDays = offer?.BonusDays ?? 0;
 
@@ -273,5 +276,8 @@ public class CreateSubscriptionCommandValidator : AbstractValidator<CreateSubscr
             .GreaterThanOrEqualTo(0).WithMessage(_localizer["Amount paid must be 0 or greater"]);
         RuleFor(v => v.PaymentMethod)
             .IsInEnum().WithMessage(_localizer["Invalid payment method"]);
+        RuleFor(v => v.DurationMonths)
+            .GreaterThan(0).When(v => v.DurationMonths.HasValue)
+            .WithMessage(_localizer["Duration must be greater than 0"]);
     }
 }

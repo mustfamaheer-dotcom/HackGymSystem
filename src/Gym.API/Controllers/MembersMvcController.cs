@@ -31,6 +31,7 @@ public class MembersMvcController : Controller
     private readonly ReceiptPdfService _pdfService;
     private readonly IRepository<WhatsAppTemplate> _templateRepo;
     private readonly IRepository<Offer> _offerRepo;
+    private readonly IRepository<Subscription> _subscriptionRepo;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
         IRepository<MembershipPlan> planRepository,
@@ -39,7 +40,8 @@ public class MembersMvcController : Controller
         IWebHostEnvironment env,
         ReceiptPdfService pdfService,
         IRepository<WhatsAppTemplate> templateRepo,
-        IRepository<Offer> offerRepo)
+        IRepository<Offer> offerRepo,
+        IRepository<Subscription> subscriptionRepo)
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
@@ -50,6 +52,7 @@ public class MembersMvcController : Controller
         _pdfService = pdfService;
         _templateRepo = templateRepo;
         _offerRepo = offerRepo;
+        _subscriptionRepo = subscriptionRepo;
     }
 
     [RequirePermission("Members.View")]
@@ -70,6 +73,9 @@ public class MembersMvcController : Controller
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
         ViewBag.SearchTerm = searchTerm;
         ViewBag.SortBy = sortBy;
         ViewBag.SortDescending = sortDescending;
@@ -86,7 +92,11 @@ public class MembersMvcController : Controller
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
-        return View(new CreateMemberDto());
+        await PopulateOffers(cancellationToken);
+        return View(new CreateMemberDto
+        {
+            AdminSignature = $"{User.Identity?.Name} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+        });
     }
 
     [RequirePermission("Members.Create")]
@@ -98,6 +108,7 @@ public class MembersMvcController : Controller
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
+        await PopulateOffers(cancellationToken);
 
         if (!ModelState.IsValid)
             return View(dto);
@@ -134,6 +145,7 @@ public class MembersMvcController : Controller
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
+        await PopulateOffers(cancellationToken);
 
         var result = await _memberService.GetByIdAsync(id, cancellationToken);
 
@@ -164,9 +176,24 @@ public class MembersMvcController : Controller
             PackageId = member.PackageId,
             FingerprintDeviceId = member.FingerprintDeviceId,
             MemberSignature = member.MemberSignature,
-            AdminSignature = member.AdminSignature,
+            AdminSignature = member.AdminSignature ?? $"{User.Identity?.Name} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
             ImagePath = member.ImagePath
         };
+
+        var activeSub = await _subscriptionRepo.Query()
+            .Where(s => s.MemberId == id && s.Status == SubscriptionStatus.Active)
+            .OrderByDescending(s => s.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (activeSub is not null)
+        {
+            dto.OfferId = activeSub.OfferId;
+            dto.SubscriptionPrice = activeSub.TotalSubscriptionValue;
+            dto.PaidAmount = activeSub.AmountPaid;
+            dto.DurationMonths = (int)Math.Ceiling((activeSub.ExpirationDate - activeSub.StartDate).TotalDays / 30);
+            dto.StartDate = activeSub.StartDate;
+            dto.PaymentMethod = activeSub.PaymentMethod.ToString();
+        }
 
         return View(dto);
     }
@@ -180,6 +207,7 @@ public class MembersMvcController : Controller
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
+        await PopulateOffers(cancellationToken);
 
         if (id != dto.Id)
         {
@@ -360,6 +388,144 @@ public class MembersMvcController : Controller
         var result = await _excelImportService.ImportMembersAsync(stream, file.FileName, cancellationToken);
 
         return View("ImportResult", result);
+    }
+
+    [RequirePermission("Members.View")]
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportExcel(CancellationToken cancellationToken)
+    {
+        var result = await _memberService.GetAllMembersForExportAsync(cancellationToken);
+        if (result.IsFailure)
+        {
+            TempData["Error"] = result.Message;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var members = result.Data;
+
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Members");
+
+        var headers = new (int Col, string Label)[]
+        {
+            (1,  "Code"),
+            (2,  "Receipt Number"),
+            (3,  "Full Name"),
+            (4,  "Nationality"),
+            (5,  "National ID"),
+            (6,  "Phone Number"),
+            (7,  "Email"),
+            (8,  "Date of Birth"),
+            (9,  "Gender"),
+            (10, "Company"),
+            (11, "Address"),
+            (12, "Referral Source"),
+            (13, "Registration Date"),
+            (14, "Weight (kg)"),
+            (15, "Has Disease"),
+            (16, "Disease Type"),
+            (17, "Notes"),
+            (18, "Fingerprint Device ID"),
+            (19, "Member Signature"),
+            (20, "Admin Signature"),
+            (21, "Plan Name"),
+            (22, "Subscription Receipt"),
+            (23, "Total Value"),
+            (24, "Amount Paid"),
+            (25, "Remaining Balance"),
+            (26, "Payment Method"),
+            (27, "Start Date"),
+            (28, "Expiration Date"),
+            (29, "Subscription Status"),
+            (30, "Freeze Start"),
+            (31, "Freeze End"),
+            (32, "Total Freeze Days"),
+            (33, "Subscription Notes"),
+        };
+
+        foreach (var (col, label) in headers)
+        {
+            sheet.Cell(1, col).Value = label;
+        }
+
+        var headerRow = sheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#F0AD4E");
+        headerRow.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+        var row = 2;
+        foreach (var m in members)
+        {
+            sheet.Cell(row, 1).Value = m.Code;
+            sheet.Cell(row, 2).Value = m.ReceiptNumber;
+            sheet.Cell(row, 3).Value = m.FullName;
+            sheet.Cell(row, 4).Value = m.Nationality;
+            sheet.Cell(row, 5).Value = m.NationalId;
+            sheet.Cell(row, 6).Value = m.PhoneNumber;
+            sheet.Cell(row, 7).Value = m.Email;
+            sheet.Cell(row, 8).Value = m.DateOfBirth?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 9).Value = m.Gender;
+            sheet.Cell(row, 10).Value = m.Company;
+            sheet.Cell(row, 11).Value = m.Address;
+            sheet.Cell(row, 12).Value = m.ReferralSource;
+            sheet.Cell(row, 13).Value = m.RegistrationDate.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 14).Value = m.Weight?.ToString("F1");
+            sheet.Cell(row, 15).Value = m.HasDisease ? "Yes" : "No";
+            sheet.Cell(row, 16).Value = m.DiseaseType;
+            sheet.Cell(row, 17).Value = m.Notes;
+            sheet.Cell(row, 18).Value = m.FingerprintDeviceId;
+            sheet.Cell(row, 19).Value = m.MemberSignature;
+            sheet.Cell(row, 20).Value = m.AdminSignature;
+            sheet.Cell(row, 21).Value = m.PlanName;
+            sheet.Cell(row, 22).Value = m.SubReceiptNumber;
+            sheet.Cell(row, 23).Value = m.TotalSubscriptionValue?.ToString("F2");
+            sheet.Cell(row, 24).Value = m.AmountPaid?.ToString("F2");
+            sheet.Cell(row, 25).Value = m.RemainingBalance?.ToString("F2");
+            sheet.Cell(row, 26).Value = m.PaymentMethod;
+            sheet.Cell(row, 27).Value = m.StartDate?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 28).Value = m.ExpirationDate?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 29).Value = m.SubStatus;
+            sheet.Cell(row, 30).Value = m.FreezeStart?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 31).Value = m.FreezeEnd?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 32).Value = m.TotalFreezeDays;
+            sheet.Cell(row, 33).Value = m.SubNotes;
+            row++;
+        }
+
+        sheet.Columns().AdjustToContents();
+
+        var fileName = $"Members_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
+        var exportDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Exported Excel Sheets";
+        Directory.CreateDirectory(exportDir);
+        var filePath = Path.Combine(exportDir, fileName);
+        workbook.SaveAs(filePath);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        TempData["Success"] = string.Format(_localizer["Members exported to {0}"].Value, filePath);
+
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
+    }
+
+    private async Task PopulateOffers(CancellationToken cancellationToken)
+    {
+        var offers = await _offerRepo.Query()
+            .Where(o => o.IsActive)
+            .OrderBy(o => o.OfferTitle)
+            .Select(o => new { o.Id, o.OfferTitle, o.OfferPrice, o.BonusMonths, o.BonusDays, o.LinkedPackageId, o.OfferType })
+            .ToListAsync(cancellationToken);
+        ViewBag.Offers = new SelectList(offers, "Id", "OfferTitle");
+        ViewBag.OfferList = offers.Select(o =>
+        {
+            var parts = new List<string>();
+            if (o.OfferPrice.HasValue) parts.Add($"{o.OfferPrice:N2} EGP");
+            if (o.BonusMonths > 0) parts.Add($"+{o.BonusMonths}m");
+            if (o.BonusDays > 0) parts.Add($"+{o.BonusDays}d");
+            return new { o.Id, Display = $"{o.OfferTitle} ({string.Join(" ", parts)})", o.LinkedPackageId, o.OfferType, o.OfferPrice };
+        }).ToList();
     }
 
     private async Task<string> SaveMemberImageAsync(Guid memberId, IFormFile imageFile)

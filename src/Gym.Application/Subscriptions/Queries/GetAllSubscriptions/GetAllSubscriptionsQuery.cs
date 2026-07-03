@@ -17,6 +17,7 @@ public record GetAllSubscriptionsQuery : PaginationRequest, IRequest<Result<Pagi
     public DateTime? DateFrom { get; init; }
     public DateTime? DateTo { get; init; }
     public int? ExpiresWithinDays { get; init; }
+    public bool? HasOutstandingBalance { get; init; }
     public string? SortBy { get; init; }
     public bool SortDescending { get; init; }
 }
@@ -38,6 +39,7 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
             .Include(s => s.Member)
             .Include(s => s.Plan)
             .Include(s => s.Offer)
+            .Include(s => s.Payments)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -64,6 +66,9 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
             query = query.Where(s => s.ExpirationDate <= cutoff && s.ExpirationDate >= DateTime.UtcNow);
         }
 
+        if (request.HasOutstandingBalance.HasValue && request.HasOutstandingBalance.Value)
+            query = query.Where(s => s.RemainingBalance > 0);
+
         query = (request.SortBy?.ToLower()) switch
         {
             "startdate" => request.SortDescending ? query.OrderByDescending(s => s.StartDate) : query.OrderBy(s => s.StartDate),
@@ -81,6 +86,16 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
             .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<SubscriptionDto>>(items);
+        foreach (var dto in dtos)
+        {
+            var sub = items.FirstOrDefault(s => s.Id == dto.Id);
+            if (sub?.Payments.Count > 0)
+            {
+                var lastPmt = sub.Payments.OrderByDescending(p => p.CreatedAt).First();
+                dto.LastPaymentAmount = lastPmt.Amount;
+                dto.LastPaymentDate = lastPmt.CreatedAt;
+            }
+        }
 
         return Result<PaginatedResult<SubscriptionDto>>.Success(
             new PaginatedResult<SubscriptionDto>

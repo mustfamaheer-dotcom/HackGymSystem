@@ -16,14 +16,16 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .IsRequired();
 
         builder.HasIndex(x => x.Code)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.Property(x => x.ReceiptNumber)
             .IsRequired()
             .HasMaxLength(50);
 
         builder.HasIndex(x => x.ReceiptNumber)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.Property(x => x.FullName)
             .IsRequired()
@@ -38,7 +40,8 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasMaxLength(14);
 
         builder.HasIndex(x => x.NationalId)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.Property(x => x.PhoneNumber)
             .IsRequired()

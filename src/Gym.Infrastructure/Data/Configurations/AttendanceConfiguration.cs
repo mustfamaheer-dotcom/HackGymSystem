@@ -25,7 +25,7 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
         builder.HasOne(a => a.Member)
             .WithMany(m => m.Attendances)
             .HasForeignKey(a => a.MemberId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(a => a.Device)
             .WithMany(d => d.Attendances)

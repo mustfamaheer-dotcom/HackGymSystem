@@ -29,8 +29,7 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, R
         if (member is null)
             return Result.Failure(_localizer["Member not found"]);
 
-        member.SoftDelete();
-        _repository.Update(member);
+        _repository.Delete(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(_localizer["Member deleted successfully"]);

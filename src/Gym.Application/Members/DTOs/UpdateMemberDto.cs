@@ -4,8 +4,8 @@ public class UpdateMemberDto
 {
     public Guid Id { get; set; }
     public string FullName { get; set; }
-    public string Nationality { get; set; } = string.Empty;
-    public string NationalId { get; set; } = string.Empty;
+    public string? Nationality { get; set; }
+    public string? NationalId { get; set; }
     public string PhoneNumber { get; set; }
     public string? Email { get; set; }
     public DateTime? DateOfBirth { get; set; }
@@ -19,7 +19,15 @@ public class UpdateMemberDto
     public string? ReferralSource { get; set; }
     public string? ImagePath { get; set; }
     public Guid? PackageId { get; set; }
+    public Guid? OfferId { get; set; }
     public Guid? FingerprintDeviceId { get; set; }
     public string? MemberSignature { get; set; }
     public string? AdminSignature { get; set; }
+    public decimal? SubscriptionPrice { get; set; }
+    public decimal? PaidAmount { get; set; }
+    public int? DurationMonths { get; set; }
+    public int? FreeMonths { get; set; }
+    public int? FreezeDays { get; set; }
+    public DateTime? StartDate { get; set; }
+    public string? PaymentMethod { get; set; }
 }

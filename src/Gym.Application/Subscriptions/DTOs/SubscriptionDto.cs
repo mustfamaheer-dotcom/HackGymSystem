@@ -12,6 +12,8 @@ public class SubscriptionDto : IMapFrom<Domain.Entities.Subscription>
     public Guid MemberId { get; set; }
     public string MemberName { get; set; } = string.Empty;
     public string MemberPhone { get; set; } = string.Empty;
+    public int MemberCode { get; set; }
+    public DateTime MemberRegistrationDate { get; set; }
     public Guid PlanId { get; set; }
     public string PlanName { get; set; } = string.Empty;
     public Guid? OfferId { get; set; }
@@ -23,6 +25,8 @@ public class SubscriptionDto : IMapFrom<Domain.Entities.Subscription>
     public DateTime StartDate { get; set; }
     public DateTime ExpirationDate { get; set; }
     public SubscriptionStatus Status { get; set; }
+    public decimal? LastPaymentAmount { get; set; }
+    public DateTime? LastPaymentDate { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
@@ -31,6 +35,8 @@ public class SubscriptionDto : IMapFrom<Domain.Entities.Subscription>
         profile.CreateMap<Domain.Entities.Subscription, SubscriptionDto>()
             .ForMember(d => d.MemberName, opt => opt.MapFrom(s => s.Member.FullName))
             .ForMember(d => d.MemberPhone, opt => opt.MapFrom(s => s.Member.PhoneNumber))
+            .ForMember(d => d.MemberCode, opt => opt.MapFrom(s => s.Member.Code))
+            .ForMember(d => d.MemberRegistrationDate, opt => opt.MapFrom(s => s.Member.RegistrationDate))
             .ForMember(d => d.PlanName, opt => opt.MapFrom(s => s.Plan.Name))
             .ForMember(d => d.OfferTitle, opt => opt.MapFrom(s => s.Offer != null ? s.Offer.OfferTitle : null));
     }

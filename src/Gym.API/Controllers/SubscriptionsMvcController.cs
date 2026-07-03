@@ -67,11 +67,15 @@ public class SubscriptionsMvcController : Controller
         ViewBag.DateFrom = query.DateFrom?.ToString("yyyy-MM-dd");
         ViewBag.DateTo = query.DateTo?.ToString("yyyy-MM-dd");
         ViewBag.ExpiresWithinDays = query.ExpiresWithinDays;
+        ViewBag.HasOutstandingBalance = query.HasOutstandingBalance;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
         ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         return View(result.Data);
     }
@@ -127,6 +131,9 @@ public class SubscriptionsMvcController : Controller
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
         ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         return View(result.Data);
     }
@@ -234,9 +241,10 @@ public class SubscriptionsMvcController : Controller
         var plans = await _planRepo.Query()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
-            .Select(p => new { p.Id, p.Name, p.Price, p.FreezeDays })
+            .Select(p => new { p.Id, p.Name, p.Price, p.FreezeDays, p.DurationDays })
             .ToListAsync(cancellationToken);
         ViewBag.Plans = new SelectList(plans, "Id", "Name");
+        ViewBag.PlanList = plans.Select(p => new { p.Id, Name = p.Name ?? "", p.DurationDays }).ToList();
 
         var offers = await _offerRepo.Query()
             .Where(o => o.IsActive)

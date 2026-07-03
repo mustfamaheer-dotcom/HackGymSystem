@@ -1,4 +1,7 @@
 @model CreateMemberDto
+@{
+    var error = TempData["Error"] as string;
+}
 
 <div class="receipt-card">
     <div class="receipt-header">
@@ -8,6 +11,10 @@
 
     <form asp-action="Create" method="post" enctype="multipart/form-data" class="receipt-body">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
 
         <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
         <div class="row g-3">
@@ -55,7 +62,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Nationality" class="form-label"></label>
+                        <label asp-for="Nationality" class="form-label">@SharedLocalizer["Nationality"] <small class="text-muted">(@SharedLocalizer["optional"])</small></label>
                         <select asp-for="Nationality" class="form-select">
                             <option value="">@SharedLocalizer["Select nationality"]</option>
                             <option value="Egyptian">@SharedLocalizer["Egyptian"]</option>
@@ -81,7 +88,7 @@
                         <span asp-validation-for="Nationality" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="NationalId" class="form-label">@SharedLocalizer["National ID"]</label>
+                        <label asp-for="NationalId" class="form-label">@SharedLocalizer["National ID"] <small class="text-muted">(@SharedLocalizer["optional"])</small></label>
                         <input asp-for="NationalId" class="form-control" placeholder="@SharedLocalizer["14-digit ID"]" maxlength="14" />
                         <span asp-validation-for="NationalId" class="text-danger small"></span>
                     </div>
@@ -115,9 +122,9 @@
         <div class="section-divider"><span>@SharedLocalizer["Subscription"]</span></div>
         <div class="section-title"><i class="bi bi-calendar-check"></i> @SharedLocalizer["Subscription Information"]</div>
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label asp-for="PackageId" class="form-label">@SharedLocalizer["Membership Plan"]</label>
-                <select asp-for="PackageId" class="form-select">
+                <select asp-for="PackageId" class="form-select" id="planSelect">
                     <option value="">@SharedLocalizer["-- Select Plan --"]</option>
                     @if (ViewBag.Plans is not null)
                     {
@@ -126,10 +133,59 @@
                         {
                             foreach (var plan in plans)
                             {
-                                <option value="@plan.Id">@SharedLocalizer["{0} ({1} EGP)", plan.Name, plan.Price.ToString("N2")]</option>
+                                <option value="@plan.Id" data-price="@plan.Price.ToString("F2")" data-duration="@plan.DurationDays">@SharedLocalizer["{0} ({1} EGP)", plan.Name, plan.Price.ToString("N2")]</option>
                             }
                         }
                     }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="OfferId" class="form-label">@SharedLocalizer["Offer"]</label>
+                <select asp-for="OfferId" class="form-select" id="offerSelect">
+                    <option value="">@SharedLocalizer["No offer"]</option>
+                    @if (ViewBag.OfferList != null)
+                    {
+                        foreach (var offer in ViewBag.OfferList)
+                        {
+                            <option value="@offer.Id">@offer.Display</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="SubscriptionPrice" class="form-label">@SharedLocalizer["Subscription Price (EGP)"]</label>
+                <input asp-for="SubscriptionPrice" class="form-control" type="number" step="0.01" min="0" id="subscriptionPrice" readonly placeholder="@SharedLocalizer["0.00"]" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="PaidAmount" class="form-label">@SharedLocalizer["Paid Amount (EGP)"]</label>
+                <input asp-for="PaidAmount" class="form-control" type="number" step="0.01" min="0" id="paidAmount" placeholder="@SharedLocalizer["0.00"]" />
+                <span asp-validation-for="PaidAmount" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DurationMonths" class="form-label">@SharedLocalizer["Duration (Months)"]</label>
+                <input asp-for="DurationMonths" class="form-control" type="number" min="1" id="durationMonths" value="1" readonly />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="FreeMonths" class="form-label">@SharedLocalizer["Free Months"]</label>
+                <input asp-for="FreeMonths" class="form-control" type="number" min="0" value="0" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="FreezeDays" class="form-label">@SharedLocalizer["Freeze Days"]</label>
+                <input asp-for="FreezeDays" class="form-control" type="number" min="0" value="0" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="StartDate" class="form-label">@SharedLocalizer["Start Date"]</label>
+                <input asp-for="StartDate" class="form-control" type="date" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="PaymentMethod" class="form-label">@SharedLocalizer["Payment Method"]</label>
+                <select asp-for="PaymentMethod" class="form-select">
+                    <option value="">@SharedLocalizer["-- Select Payment --"]</option>
+                    <option value="Cash">@SharedLocalizer["Cash"]</option>
+                    <option value="Visa">@SharedLocalizer["Visa"]</option>
+                    <option value="Instapay">@SharedLocalizer["Instapay"]</option>
+                    <option value="Wallet">@SharedLocalizer["Wallet"]</option>
+                    <option value="VodafoneCash">@SharedLocalizer["Vodafone Cash"]</option>
                 </select>
             </div>
         </div>
@@ -239,6 +295,136 @@
                 preview.style.display = 'none';
                 dropzone.classList.remove('has-image');
             });
+
+            const planSelect = document.getElementById('planSelect');
+            const offerSelect = document.getElementById('offerSelect');
+            const priceInput = document.getElementById('subscriptionPrice');
+            const paidInput = document.getElementById('paidAmount');
+            const durationInput = document.getElementById('durationMonths');
+
+            @{
+                var plansJson = System.Text.Json.JsonSerializer.Serialize(
+                    ((IEnumerable<Gym.Domain.Entities.MembershipPlan>)ViewBag.Plans)
+                        .Select(p => new {
+                            id = p.Id.ToString(),
+                            price = p.Price,
+                            durationDays = p.DurationDays
+                        }).ToList()
+                );
+                var offersJson = System.Text.Json.JsonSerializer.Serialize(
+                    ((IEnumerable<dynamic>)ViewBag.OfferList)
+                        .Select(o => new {
+                            id = ((object)o.Id).ToString(),
+                            linkedPackageId = o.LinkedPackageId?.ToString(),
+                            offerType = o.OfferType.ToString(),
+                            offerPrice = o.OfferPrice != null ? (decimal?)o.OfferPrice : null
+                        }).ToList()
+                );
+            }
+            var plans = @Html.Raw(plansJson);
+            var offers = @Html.Raw(offersJson);
+
+            function getPlanData(planId) {
+                return plans.find(function(p) { return p.id === planId; });
+            }
+
+            function getOfferData(offerId) {
+                return offers.find(function(o) { return o.id === offerId; });
+            }
+
+            function getPriceFromPlanOrOffer() {
+                if (offerSelect && offerSelect.value) {
+                    var od = getOfferData(offerSelect.value);
+                    var planId = planSelect ? planSelect.value : '';
+                    var pd = planId ? getPlanData(planId) : null;
+                    if (!pd) return 0;
+                    if (od) {
+                        if (od.offerType === 'FixedPrice') return od.offerPrice != null ? od.offerPrice : pd.price;
+                        if (od.offerType === 'FreeRegistration') return 0;
+                        return pd.price;
+                    }
+                    return pd.price;
+                }
+                if (planSelect && planSelect.value) {
+                    var pd = getPlanData(planSelect.value);
+                    return pd ? pd.price : 0;
+                }
+                return 0;
+            }
+
+            function getDurationFromPlanOrOffer() {
+                var planId = null;
+                if (offerSelect && offerSelect.value) {
+                    var od = getOfferData(offerSelect.value);
+                    if (od && od.linkedPackageId) planId = od.linkedPackageId;
+                }
+                if (!planId && planSelect && planSelect.value) planId = planSelect.value;
+                if (planId) {
+                    var pd = getPlanData(planId);
+                    if (pd) {
+                        var months = Math.round(pd.durationDays / 30);
+                        return months || 1;
+                    }
+                }
+                return 1;
+            }
+
+            function updatePriceAndDuration() {
+                var price = getPriceFromPlanOrOffer();
+                priceInput.value = price.toFixed(2);
+                paidInput.value = price.toFixed(2);
+                durationInput.value = getDurationFromPlanOrOffer();
+            }
+
+            function enablePlan(val) {
+                if (planSelect) {
+                    planSelect.disabled = !val;
+                    if (!val) planSelect.value = '';
+                }
+            }
+
+            function enableOffer(val) {
+                if (offerSelect) {
+                    offerSelect.disabled = !val;
+                    if (!val) offerSelect.value = '';
+                }
+            }
+
+            function onPlanChange() {
+                if (planSelect && planSelect.value) {
+                    enableOffer(false);
+                } else {
+                    enableOffer(true);
+                }
+                updatePriceAndDuration();
+            }
+
+            function onOfferChange() {
+                if (offerSelect && offerSelect.value) {
+                    enablePlan(false);
+                    var od = getOfferData(offerSelect.value);
+                    if (od && od.linkedPackageId && planSelect) {
+                        planSelect.value = od.linkedPackageId;
+                    }
+                } else {
+                    enablePlan(true);
+                }
+                updatePriceAndDuration();
+            }
+
+            if (planSelect) {
+                planSelect.addEventListener('change', function() {
+                    onPlanChange();
+                });
+            }
+
+            if (offerSelect) {
+                offerSelect.addEventListener('change', function() {
+                    onOfferChange();
+                });
+            }
+
+            updatePriceAndDuration();
         });
     </script>
 }

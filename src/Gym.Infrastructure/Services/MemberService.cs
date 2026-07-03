@@ -85,6 +85,30 @@ public class MemberService : IMemberService
         return Result<MemberDto>.Success(dto);
     }
 
+    public async Task<Result<List<MemberExportDto>>> GetAllMembersForExportAsync(CancellationToken cancellationToken = default)
+    {
+        var members = await _memberRepository.Query()
+            .Include(m => m.Package)
+            .Include(m => m.Subscriptions)
+                .ThenInclude(s => s.Plan)
+            .OrderBy(m => m.FullName)
+            .ToListAsync(cancellationToken);
+
+        var dtos = members.Select(MemberExportDto.FromMember).ToList();
+        return Result<List<MemberExportDto>>.Success(dtos);
+    }
+
+    public async Task<Result<List<MemberDto>>> GetAllMembersAsync(CancellationToken cancellationToken = default)
+    {
+        var members = await _memberRepository.Query()
+            .Include(m => m.Package)
+            .OrderBy(m => m.FullName)
+            .ToListAsync(cancellationToken);
+
+        var dtos = _mapper.Map<List<MemberDto>>(members);
+        return Result<List<MemberDto>>.Success(dtos);
+    }
+
     public async Task<Result<List<MemberDto>>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
     {
         IQueryable<Member> query = _memberRepository.Query()
@@ -177,9 +201,12 @@ public class MemberService : IMemberService
         if (dto.HasDisease && string.IsNullOrWhiteSpace(dto.DiseaseType))
             return Result<Guid>.Failure(_localizer["Disease type is required when HasDisease is true"]);
 
-        var nationalIdExists = await _memberRepository.AnyAsync(m => m.NationalId == dto.NationalId, cancellationToken);
-        if (nationalIdExists)
-            return Result<Guid>.Failure(_localizer["National ID is already registered to another member"]);
+        if (!string.IsNullOrEmpty(dto.NationalId))
+        {
+            var nationalIdExists = await _memberRepository.AnyAsync(m => m.NationalId == dto.NationalId, cancellationToken);
+            if (nationalIdExists)
+                return Result<Guid>.Failure(_localizer["National ID is already registered to another member"]);
+        }
 
         var phoneExists = await _memberRepository.AnyAsync(m => m.PhoneNumber == dto.PhoneNumber, cancellationToken);
         if (phoneExists)
@@ -196,8 +223,8 @@ public class MemberService : IMemberService
         )
         {
             Code = lastCode + 1,
-            Nationality = dto.Nationality,
-            NationalId = dto.NationalId,
+            Nationality = dto.Nationality ?? string.Empty,
+            NationalId = dto.NationalId ?? string.Empty,
             Email = dto.Email,
             DateOfBirth = dto.DateOfBirth,
             Gender = string.IsNullOrEmpty(dto.Gender) ? null : Enum.Parse<Gender>(dto.Gender, true),
@@ -216,6 +243,60 @@ public class MemberService : IMemberService
         };
 
         await _memberRepository.AddAsync(member, cancellationToken);
+
+        // Resolve plan: if offer has a linked package, use that instead
+        Domain.Entities.Offer? resolvedOffer = null;
+        Guid resolvedPlanId;
+
+        if (dto.OfferId.HasValue)
+        {
+            resolvedOffer = await _unitOfWork.Repository<Domain.Entities.Offer>()
+                .GetByIdAsync(dto.OfferId.Value, cancellationToken);
+            if (resolvedOffer != null && resolvedOffer.LinkedPackageId.HasValue)
+                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
+            else if (dto.PackageId.HasValue)
+                resolvedPlanId = dto.PackageId.Value;
+            else
+                resolvedPlanId = default;
+        }
+        else
+        {
+            resolvedPlanId = dto.PackageId ?? default;
+        }
+
+        if (resolvedPlanId != default && dto.SubscriptionPrice.HasValue && dto.SubscriptionPrice > 0)
+        {
+            var startDate = dto.StartDate ?? DateTime.UtcNow;
+            var durationMonths = dto.DurationMonths ?? 1;
+            var bonusMonths = resolvedOffer?.BonusMonths ?? 0;
+            var bonusDays = resolvedOffer?.BonusDays ?? 0;
+            var expirationDate = startDate
+                .AddMonths(durationMonths + (dto.FreeMonths ?? 0))
+                .AddMonths(bonusMonths)
+                .AddDays(bonusDays);
+            var paidAmount = dto.PaidAmount ?? 0;
+            var paymentMethod = string.IsNullOrEmpty(dto.PaymentMethod)
+                ? PaymentMethod.Cash
+                : Enum.Parse<PaymentMethod>(dto.PaymentMethod, true);
+
+            var subscription = new Subscription(
+                receiptNumber,
+                member.Id,
+                resolvedPlanId,
+                dto.SubscriptionPrice.Value,
+                paidAmount,
+                paymentMethod,
+                startDate,
+                expirationDate,
+                dto.OfferId
+            );
+
+            if (dto.FreezeDays.GetValueOrDefault() > 0)
+                subscription.TotalFreezeDays = dto.FreezeDays.Value;
+
+            member.Subscriptions.Add(subscription);
+        }
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
@@ -237,12 +318,7 @@ public class MemberService : IMemberService
         else if (dto.PhoneNumber.Length != 11 || !dto.PhoneNumber.All(char.IsDigit))
             errors.Add(_localizer["Phone number must be exactly 11 digits"]);
 
-        if (string.IsNullOrWhiteSpace(dto.Nationality))
-            errors.Add(_localizer["Nationality is required"]);
-
-        if (string.IsNullOrWhiteSpace(dto.NationalId))
-            errors.Add(_localizer["National ID is required"]);
-        else if (dto.NationalId.Length != 14 || !dto.NationalId.All(char.IsDigit))
+        if (!string.IsNullOrEmpty(dto.NationalId) && (dto.NationalId.Length != 14 || !dto.NationalId.All(char.IsDigit)))
             errors.Add(_localizer["National ID must be exactly 14 digits"]);
 
         if (dto.HasDisease && string.IsNullOrWhiteSpace(dto.DiseaseType))
@@ -251,7 +327,7 @@ public class MemberService : IMemberService
         if (errors.Count > 0)
             return Result.Failure(string.Join("; ", errors));
 
-        if (dto.NationalId != member.NationalId)
+        if (!string.IsNullOrEmpty(dto.NationalId) && dto.NationalId != member.NationalId)
         {
             var nationalIdExists = await _memberRepository.AnyAsync(m => m.NationalId == dto.NationalId && m.Id != dto.Id, cancellationToken);
             if (nationalIdExists)
@@ -267,8 +343,8 @@ public class MemberService : IMemberService
 
         member.UpdateBasicInfo(
             dto.FullName,
-            dto.Nationality,
-            dto.NationalId,
+            dto.Nationality ?? string.Empty,
+            dto.NationalId ?? string.Empty,
             dto.PhoneNumber,
             dto.Company,
             dto.Address,
@@ -283,8 +359,65 @@ public class MemberService : IMemberService
         member.Gender = string.IsNullOrEmpty(dto.Gender) ? null : Enum.Parse<Gender>(dto.Gender, true);
         member.Notes = dto.Notes;
         member.ImagePath = dto.ImagePath;
+        member.PackageId = dto.PackageId;
+        member.FingerprintDeviceId = dto.FingerprintDeviceId;
+        member.MemberSignature = dto.MemberSignature;
+        member.AdminSignature = dto.AdminSignature;
 
-        _memberRepository.Update(member);
+        // Resolve plan: if offer has a linked package, use that instead
+        Domain.Entities.Offer? resolvedOffer = null;
+        Guid resolvedPlanId;
+
+        if (dto.OfferId.HasValue)
+        {
+            resolvedOffer = await _unitOfWork.Repository<Domain.Entities.Offer>()
+                .GetByIdAsync(dto.OfferId.Value, cancellationToken);
+            if (resolvedOffer != null && resolvedOffer.LinkedPackageId.HasValue)
+                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
+            else if (dto.PackageId.HasValue)
+                resolvedPlanId = dto.PackageId.Value;
+            else
+                resolvedPlanId = default;
+        }
+        else
+        {
+            resolvedPlanId = dto.PackageId ?? default;
+        }
+
+        if (resolvedPlanId != default && dto.SubscriptionPrice.HasValue && dto.SubscriptionPrice > 0)
+        {
+            var startDate = dto.StartDate ?? DateTime.UtcNow;
+            var durationMonths = dto.DurationMonths ?? 1;
+            var bonusMonths = resolvedOffer?.BonusMonths ?? 0;
+            var bonusDays = resolvedOffer?.BonusDays ?? 0;
+            var expirationDate = startDate
+                .AddMonths(durationMonths + (dto.FreeMonths ?? 0))
+                .AddMonths(bonusMonths)
+                .AddDays(bonusDays);
+            var paidAmount = dto.PaidAmount ?? 0;
+            var paymentMethod = string.IsNullOrEmpty(dto.PaymentMethod)
+                ? PaymentMethod.Cash
+                : Enum.Parse<PaymentMethod>(dto.PaymentMethod, true);
+
+            var subscription = new Subscription(
+                GenerateReceiptNumber(),
+                member.Id,
+                resolvedPlanId,
+                dto.SubscriptionPrice.Value,
+                paidAmount,
+                paymentMethod,
+                startDate,
+                expirationDate,
+                dto.OfferId
+            );
+
+            if (dto.FreezeDays.GetValueOrDefault() > 0)
+                subscription.TotalFreezeDays = dto.FreezeDays.Value;
+
+            member.Subscriptions.Add(subscription);
+            await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+        }
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(_localizer["Member updated successfully"]);
@@ -310,8 +443,7 @@ public class MemberService : IMemberService
         if (member is null)
             return Result.Failure(_localizer["Member not found"]);
 
-        member.SoftDelete();
-        _memberRepository.Update(member);
+        _memberRepository.Delete(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(_localizer["Member deleted successfully"]);

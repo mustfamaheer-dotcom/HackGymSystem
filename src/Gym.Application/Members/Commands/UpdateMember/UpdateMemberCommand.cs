@@ -30,7 +30,14 @@ public record UpdateMemberCommand(
     Guid? FingerprintDeviceId = null,
     string? MemberSignature = null,
     string? AdminSignature = null,
-    string? ImagePath = null
+    string? ImagePath = null,
+    decimal? SubscriptionPrice = null,
+    decimal? PaidAmount = null,
+    int? DurationMonths = null,
+    int? FreeMonths = null,
+    int? FreezeDays = null,
+    DateTime? StartDate = null,
+    string? PaymentMethod = null
 ) : IRequest<Result>;
 
 public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, Result>
@@ -70,6 +77,39 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
         member.Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true);
         member.Notes = request.Notes;
         member.ImagePath = request.ImagePath;
+        member.PackageId = request.PackageId;
+        member.FingerprintDeviceId = request.FingerprintDeviceId;
+        member.MemberSignature = request.MemberSignature;
+        member.AdminSignature = request.AdminSignature;
+
+        if (request.PackageId.HasValue && request.SubscriptionPrice.HasValue && request.SubscriptionPrice > 0)
+        {
+            var startDate = request.StartDate ?? DateTime.UtcNow;
+            var durationMonths = request.DurationMonths ?? 1;
+            var expirationDate = startDate.AddMonths(durationMonths + (request.FreeMonths ?? 0));
+            var paidAmount = request.PaidAmount ?? 0;
+            var paymentMethod = string.IsNullOrEmpty(request.PaymentMethod)
+                ? PaymentMethod.Cash
+                : Enum.Parse<PaymentMethod>(request.PaymentMethod, true);
+
+            var receiptNumber = member.ReceiptNumber;
+
+            var subscription = new Subscription(
+                receiptNumber,
+                member.Id,
+                request.PackageId.Value,
+                request.SubscriptionPrice.Value,
+                paidAmount,
+                paymentMethod,
+                startDate,
+                expirationDate
+            );
+
+            if (request.FreezeDays.GetValueOrDefault() > 0)
+                subscription.TotalFreezeDays = request.FreezeDays.Value;
+
+            await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+        }
 
         _repository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

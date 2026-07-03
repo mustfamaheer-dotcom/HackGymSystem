@@ -1,5 +1,7 @@
 using System.Text.Json;
+using ClosedXML.Excel;
 using Gym.API.Filters;
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Leads.Commands.AddFollowUp;
 using Gym.Application.Leads.Commands.ConvertToMember;
 using Gym.Application.Leads.Commands.CreateLead;
@@ -18,6 +20,7 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -31,20 +34,26 @@ public class LeadsMvcController : Controller
 {
     private readonly IMediator _mediator;
     private readonly IStringLocalizer<SharedResources> _localizer;
+    private readonly IExcelImportService _excelImportService;
+    private readonly IRepository<Lead> _leadRepository;
     private readonly IRepository<WhatsAppTemplate> _templateRepo;
     private readonly IRepository<Offer> _offerRepo;
+    private readonly IWebHostEnvironment _env;
 
-    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo)
+    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IExcelImportService excelImportService, IRepository<Lead> leadRepository, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo, IWebHostEnvironment env)
     {
         _mediator = mediator;
         _localizer = localizer;
+        _excelImportService = excelImportService;
+        _leadRepository = leadRepository;
         _templateRepo = templateRepo;
         _offerRepo = offerRepo;
+        _env = env;
     }
 
     [HttpGet]
     [RequirePermission("Leads.View")]
-    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, string? genderFilter = null, string? sourceFilter = null, Guid? packageFilter = null, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, string? genderFilter = null, string? sourceFilter = null, Guid? packageFilter = null, DateTime? dateFrom = null, DateTime? dateTo = null, DateTime? nextFollowUpFrom = null, DateTime? nextFollowUpTo = null, bool? hasFollowUp = null, string? sortBy = null, bool sortDescending = false, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Leads"];
         ViewBag.SearchTerm = searchTerm;
@@ -52,6 +61,13 @@ public class LeadsMvcController : Controller
         ViewBag.GenderFilter = genderFilter;
         ViewBag.SourceFilter = sourceFilter;
         ViewBag.PackageFilter = packageFilter;
+        ViewBag.DateFrom = dateFrom;
+        ViewBag.DateTo = dateTo;
+        ViewBag.NextFollowUpFrom = nextFollowUpFrom;
+        ViewBag.NextFollowUpTo = nextFollowUpTo;
+        ViewBag.HasFollowUp = hasFollowUp;
+        ViewBag.SortBy = sortBy;
+        ViewBag.SortDescending = sortDescending;
 
         LeadStatus? parsedStatus = null;
         if (Enum.TryParse<LeadStatus>(statusFilter, true, out var s))
@@ -65,7 +81,7 @@ public class LeadsMvcController : Controller
         if (Enum.TryParse<LeadSource>(sourceFilter, true, out var src))
             parsedSource = src;
 
-        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, parsedGender, parsedSource, packageFilter, null, null, page, pageSize);
+        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, parsedGender, parsedSource, packageFilter, dateFrom, dateTo, nextFollowUpFrom, nextFollowUpTo, hasFollowUp, sortBy, sortDescending, page, pageSize);
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
@@ -254,6 +270,111 @@ public class LeadsMvcController : Controller
         }
         TempData["Success"] = _localizer["Lead converted to member successfully"].Value;
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [RequirePermission("Leads.View")]
+    [HttpGet("import")]
+    public IActionResult Import()
+    {
+        ViewData["Title"] = _localizer["Import Leads"];
+        return View();
+    }
+
+    [RequirePermission("Leads.View")]
+    [HttpPost("import")]
+    public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
+    {
+        ViewData["Title"] = _localizer["Import Leads"];
+
+        if (file is null || file.Length == 0)
+        {
+            TempData["Error"] = _localizer["Please select a file to upload"].Value;
+            return View();
+        }
+
+        if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["Error"] = _localizer["File must be an .xlsx file"].Value;
+            return View();
+        }
+
+        using var stream = new MemoryStream();
+        await file.CopyToAsync(stream, cancellationToken);
+        stream.Position = 0;
+
+        var result = await _excelImportService.ImportLeadsAsync(stream, file.FileName, cancellationToken);
+
+        return View("ImportResult", result);
+    }
+
+    [RequirePermission("Leads.View")]
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportExcel(CancellationToken cancellationToken)
+    {
+        var leads = await _leadRepository.Query()
+            .Include(l => l.InterestedPackage)
+            .IgnoreQueryFilters()
+            .OrderByDescending(l => l.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Leads");
+
+        var headers = new (int Col, string Label)[]
+        {
+            (1,  "Name"),
+            (2,  "Phone"),
+            (3,  "Email"),
+            (4,  "Gender"),
+            (5,  "Source"),
+            (6,  "Status"),
+            (7,  "Package"),
+            (8,  "Notes"),
+            (9,  "Next Follow Up"),
+            (10, "Created At"),
+        };
+
+        foreach (var (col, label) in headers)
+        {
+            sheet.Cell(1, col).Value = label;
+        }
+
+        var headerRow = sheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = XLColor.FromHtml("#F0AD4E");
+        headerRow.Style.Font.FontColor = XLColor.White;
+
+        var row = 2;
+        foreach (var l in leads)
+        {
+            sheet.Cell(row, 1).Value = l.Name;
+            sheet.Cell(row, 2).Value = l.Phone;
+            sheet.Cell(row, 3).Value = l.Email;
+            sheet.Cell(row, 4).Value = l.Gender?.ToString();
+            sheet.Cell(row, 5).Value = l.Source.ToString();
+            sheet.Cell(row, 6).Value = l.Status.ToString();
+            sheet.Cell(row, 7).Value = l.InterestedPackage?.Name;
+            sheet.Cell(row, 8).Value = l.Notes;
+            sheet.Cell(row, 9).Value = l.NextFollowUpDate?.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 10).Value = l.CreatedAt.ToString("yyyy-MM-dd HH:mm");
+            row++;
+        }
+
+        sheet.Columns().AdjustToContents();
+
+        var fileName = $"Leads_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
+        var exportDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Exported Excel Sheets";
+        Directory.CreateDirectory(exportDir);
+        var filePath = Path.Combine(exportDir, fileName);
+        workbook.SaveAs(filePath);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        TempData["Success"] = string.Format(_localizer["Leads exported to {0}"].Value, filePath);
+
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
     [HttpPost("add-follow-up/{leadId}")]

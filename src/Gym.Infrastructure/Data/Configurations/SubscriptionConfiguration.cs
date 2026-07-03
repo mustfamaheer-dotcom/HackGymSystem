@@ -13,7 +13,7 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.ReceiptNumber)
-            .HasMaxLength(20)
+            .HasMaxLength(50)
             .IsRequired();
 
         builder.Property(x => x.TotalSubscriptionValue)
@@ -46,7 +46,7 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.HasOne(x => x.Member)
             .WithMany(m => m.Subscriptions)
             .HasForeignKey(x => x.MemberId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Plan)
             .WithMany()

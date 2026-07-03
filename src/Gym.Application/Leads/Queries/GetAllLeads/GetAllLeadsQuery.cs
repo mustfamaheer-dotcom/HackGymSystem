@@ -1,10 +1,9 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Gym.Application.Common.DTOs;
 using Gym.Application.Leads.DTOs;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
-using Gym.Shared.Common;
-using Gym.Application.Common.DTOs;
 using Gym.Shared.Common;
 using Gym.Shared.Enums;
 using MediatR;
@@ -20,6 +19,11 @@ public record GetAllLeadsQuery(
     Guid? PackageFilter,
     DateTime? DateFrom,
     DateTime? DateTo,
+    DateTime? NextFollowUpFrom,
+    DateTime? NextFollowUpTo,
+    bool? HasFollowUp,
+    string? SortBy,
+    bool SortDescending,
     int Page = 1,
     int PageSize = 20) : IRequest<Result<PaginatedResult<LeadDto>>>;
 
@@ -44,7 +48,7 @@ public class GetAllLeadsQueryHandler : IRequestHandler<GetAllLeadsQuery, Result<
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var s = request.SearchTerm.ToLower();
-            query = query.Where(l => l.Name.ToLower().Contains(s) || l.Phone.Contains(s) || (l.Email != null && l.Email.ToLower().Contains(s)));
+            query = query.Where(l => l.Name.ToLower().Contains(s) || l.Phone.Contains(s) || (l.Email != null && l.Email.ToLower().Contains(s)) || (l.Notes != null && l.Notes.ToLower().Contains(s)));
         }
 
         if (request.StatusFilter.HasValue)
@@ -65,7 +69,45 @@ public class GetAllLeadsQueryHandler : IRequestHandler<GetAllLeadsQuery, Result<
         if (request.DateTo.HasValue)
             query = query.Where(l => l.CreatedAt <= request.DateTo.Value);
 
-        query = query.OrderByDescending(l => l.CreatedAt);
+        if (request.NextFollowUpFrom.HasValue)
+            query = query.Where(l => l.NextFollowUpDate >= request.NextFollowUpFrom.Value);
+
+        if (request.NextFollowUpTo.HasValue)
+            query = query.Where(l => l.NextFollowUpDate <= request.NextFollowUpTo.Value);
+
+        if (request.HasFollowUp.HasValue)
+        {
+            if (request.HasFollowUp.Value)
+                query = query.Where(l => l.FollowUps.Any());
+            else
+                query = query.Where(l => !l.FollowUps.Any());
+        }
+
+        query = (request.SortBy?.ToLower()) switch
+        {
+            "name" => request.SortDescending
+                ? query.OrderByDescending(l => l.Name)
+                : query.OrderBy(l => l.Name),
+            "phone" => request.SortDescending
+                ? query.OrderByDescending(l => l.Phone)
+                : query.OrderBy(l => l.Phone),
+            "status" => request.SortDescending
+                ? query.OrderByDescending(l => l.Status)
+                : query.OrderBy(l => l.Status),
+            "source" => request.SortDescending
+                ? query.OrderByDescending(l => l.Source)
+                : query.OrderBy(l => l.Source),
+            "gender" => request.SortDescending
+                ? query.OrderByDescending(l => l.Gender)
+                : query.OrderBy(l => l.Gender),
+            "nextfollowupdate" => request.SortDescending
+                ? query.OrderByDescending(l => l.NextFollowUpDate)
+                : query.OrderBy(l => l.NextFollowUpDate),
+            "createdat" => request.SortDescending
+                ? query.OrderByDescending(l => l.CreatedAt)
+                : query.OrderBy(l => l.CreatedAt),
+            _ => query.OrderByDescending(l => l.CreatedAt)
+        };
 
         var totalCount = await query.CountAsync(cancellationToken);
 

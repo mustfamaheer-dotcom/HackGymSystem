@@ -1,6 +1,7 @@
 using System.Threading;
 using ClosedXML.Excel;
 using Gym.Application.Common.Interfaces;
+using Gym.Application.Leads.Import;
 using Gym.Application.Members.Import;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
@@ -16,6 +17,7 @@ public class ExcelImportService : IExcelImportService
     private readonly IMemberRepository _memberRepository;
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Subscription> _subscriptionRepository;
+    private readonly IRepository<Lead> _leadRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStringLocalizer<ApplicationResources> _localizer;
 
@@ -23,12 +25,14 @@ public class ExcelImportService : IExcelImportService
         IMemberRepository memberRepository,
         IRepository<MembershipPlan> planRepository,
         IRepository<Subscription> subscriptionRepository,
+        IRepository<Lead> leadRepository,
         IUnitOfWork unitOfWork,
         IStringLocalizer<ApplicationResources> localizer)
     {
         _memberRepository = memberRepository;
         _planRepository = planRepository;
         _subscriptionRepository = subscriptionRepository;
+        _leadRepository = leadRepository;
         _unitOfWork = unitOfWork;
         _localizer = localizer;
     }
@@ -228,6 +232,124 @@ public class ExcelImportService : IExcelImportService
                 seenPhones.Add(phoneNumber!);
 
                 importRow.ReceiptNumber = receiptNumber;
+                result.Imported.Add(importRow);
+            }
+            catch (Exception ex)
+            {
+                importRow.FailureReason = string.Format(_localizer["Unexpected error: {0}"], ex.Message);
+                result.Failed.Add(importRow);
+            }
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return result;
+    }
+
+    public async Task<LeadImportResult> ImportLeadsAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
+    {
+        var result = new LeadImportResult();
+
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Failed.Add(new LeadImportRow
+            {
+                RowNumber = 0,
+                FailureReason = _localizer["File must be an .xlsx file"]
+            });
+            return result;
+        }
+
+        var plans = await _planRepository.Query()
+            .Where(p => p.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var existingPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var allLeads = await _leadRepository.Query().IgnoreQueryFilters().ToListAsync(cancellationToken);
+        foreach (var l in allLeads)
+        {
+            if (!string.IsNullOrEmpty(l.Phone))
+                existingPhones.Add(l.Phone);
+        }
+
+        var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using var workbook = new XLWorkbook(fileStream);
+        var sheet = workbook.Worksheet(1);
+        var rows = sheet.RangeUsed().RowsUsed().Skip(1);
+
+        foreach (var row in rows)
+        {
+            var rowNumber = row.RowNumber();
+            var importRow = new LeadImportRow { RowNumber = rowNumber };
+
+            try
+            {
+                var name = GetCellString(row, 1);
+                var phone = GetCellString(row, 2);
+                var email = GetCellString(row, 3);
+                var genderStr = GetCellString(row, 4);
+                var sourceStr = GetCellString(row, 5);
+                var planName = GetCellString(row, 6);
+                var notes = GetCellString(row, 7);
+
+                var errors = new List<string>();
+
+                importRow.Name = name;
+                importRow.Phone = phone;
+
+                if (string.IsNullOrWhiteSpace(name))
+                    errors.Add(_localizer["Full name is required"]);
+
+                if (string.IsNullOrWhiteSpace(phone))
+                    errors.Add(_localizer["Phone number is required"]);
+                else if (phone.Length != 11 || !phone.All(char.IsDigit))
+                    errors.Add(_localizer["Phone number must be exactly 11 digits"]);
+
+                if (!string.IsNullOrEmpty(email) && !email.Contains('@'))
+                    errors.Add(_localizer["Email is not valid"]);
+
+                Gender? gender = null;
+                if (!string.IsNullOrWhiteSpace(genderStr))
+                {
+                    if (genderStr.Equals("Male", StringComparison.OrdinalIgnoreCase))
+                        gender = Gender.Male;
+                    else if (genderStr.Equals("Female", StringComparison.OrdinalIgnoreCase))
+                        gender = Gender.Female;
+                    else
+                        errors.Add(string.Format(_localizer["Gender must be 'Male' or 'Female'"]));
+                }
+
+                if (!Enum.TryParse<LeadSource>(sourceStr, true, out var source))
+                    errors.Add(string.Format(_localizer["Invalid lead source '{0}'. Use SocialMedia, Referral, WalkIn, or Other"], sourceStr));
+
+                Guid? packageId = null;
+                if (!string.IsNullOrWhiteSpace(planName))
+                {
+                    var plan = plans.FirstOrDefault(p =>
+                        p.Name.Equals(planName, StringComparison.OrdinalIgnoreCase));
+                    if (plan is null)
+                        errors.Add(string.Format(_localizer["Plan '{0}' not found"], planName));
+                    else
+                        packageId = plan.Id;
+                }
+
+                if (existingPhones.Contains(phone) || seenPhones.Contains(phone))
+                    errors.Add(string.Format(_localizer["Duplicate phone number '{0}' - already registered"], phone));
+
+                if (errors.Count > 0)
+                {
+                    importRow.FailureReason = string.Join("; ", errors);
+                    result.Failed.Add(importRow);
+                    continue;
+                }
+
+                var lead = new Lead(name!, phone!, source, packageId, notes, email, gender);
+                await _leadRepository.AddAsync(lead, cancellationToken);
+
+                existingPhones.Add(phone!);
+                seenPhones.Add(phone!);
+
                 result.Imported.Add(importRow);
             }
             catch (Exception ex)
