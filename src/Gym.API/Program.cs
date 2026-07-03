@@ -122,15 +122,24 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<GymDbContext>();
     try
     {
-        await db.Database.MigrateAsync();
-        Log.Information("Database migration completed successfully");
+        var pending = await db.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
+        {
+            await db.Database.MigrateAsync();
+            Log.Information("Applied {Count} pending migration(s)", pending.Count());
+        }
+        else
+        {
+            Log.Information("No pending migrations");
+        }
     }
     catch (Exception ex)
     {
         Log.Warning(ex, "Database migration failed, attempting to create database");
         try
         {
-            await db.Database.EnsureCreatedAsync();
+            if (!await db.Database.CanConnectAsync())
+                await db.Database.EnsureCreatedAsync();
         }
         catch (Exception createEx)
         {

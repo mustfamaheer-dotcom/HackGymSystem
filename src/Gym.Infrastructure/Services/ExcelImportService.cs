@@ -12,15 +12,18 @@ public class ExcelImportService : IExcelImportService
 {
     private readonly IMemberRepository _memberRepository;
     private readonly IRepository<MembershipPlan> _planRepository;
+    private readonly IRepository<Subscription> _subscriptionRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ExcelImportService(
         IMemberRepository memberRepository,
         IRepository<MembershipPlan> planRepository,
+        IRepository<Subscription> subscriptionRepository,
         IUnitOfWork unitOfWork)
     {
         _memberRepository = memberRepository;
         _planRepository = planRepository;
+        _subscriptionRepository = subscriptionRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -169,11 +172,6 @@ public class ExcelImportService : IExcelImportService
                     receiptNumber,
                     fullName!,
                     phoneNumber!,
-                    subscriptionPrice,
-                    paidAmount,
-                    durationMonths,
-                    startDate,
-                    paymentMethod,
                     DateTime.UtcNow
                 )
                 {
@@ -186,12 +184,33 @@ public class ExcelImportService : IExcelImportService
                     HasDisease = hasDisease,
                     DiseaseType = hasDisease ? diseaseType : null,
                     ReferralSource = referralSource,
-                    PackageId = packageId,
-                    FreeMonths = freeMonths,
-                    FreezeDays = freezeDays
+                    PackageId = packageId
                 };
 
                 await _memberRepository.AddAsync(member, cancellationToken);
+
+                if (packageId.HasValue && durationMonths > 0 && subscriptionPrice > 0)
+                {
+                    var expirationDate = startDate.AddMonths(durationMonths + freeMonths);
+
+                    var subscription = new Subscription(
+                        receiptNumber,
+                        member.Id,
+                        packageId.Value,
+                        subscriptionPrice,
+                        paidAmount,
+                        paymentMethod,
+                        startDate,
+                        expirationDate
+                    );
+
+                    if (freezeDays > 0)
+                    {
+                        subscription.TotalFreezeDays = freezeDays;
+                    }
+
+                    await _subscriptionRepository.AddAsync(subscription, cancellationToken);
+                }
 
                 if (!string.IsNullOrEmpty(nationalId))
                 {

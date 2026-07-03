@@ -9,7 +9,7 @@
 <div class="receipt-card">
     <div class="receipt-header">
         <h4><i class="bi bi-people-fill"></i> @SharedLocalizer["Members"]</h4>
-        <a asp-action="Create" class="btn btn-gold btn-sm rounded-pill"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add Member"]</a>
+        <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add Member"]</a>
     </div>
     <div class="p-3 border-bottom bg-light">
         <form asp-action="Index" method="get" class="row g-2 align-items-center">
@@ -60,32 +60,34 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th>@SharedLocalizer["Image"]</th>
                         <th>@SharedLocalizer["Member ID"]</th>
                         <th>@SharedLocalizer["Receipt ID"]</th>
                         <th>@SharedLocalizer["Name"]</th>
                         <th>@SharedLocalizer["Phone"]</th>
                         <th>@SharedLocalizer["Plan"]</th>
-                        <th>@SharedLocalizer["End Date"]</th>
-                        <th>@SharedLocalizer["Status"]</th>
-                        <th>@SharedLocalizer["Paid"]</th>
                         <th>@SharedLocalizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var member in Model.Items)
                     {
-                        var isExpired = member.SubscriptionEndDate <= DateTime.UtcNow;
-                        var status = isExpired ? SharedLocalizer["Expired"] : (member.IsDeleted ? SharedLocalizer["Deleted"] : SharedLocalizer["Active"]);
-                        var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
                         <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(member.ImagePath))
+                                {
+                                    <img src="~/@member.ImagePath" alt="" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <span class="d-inline-block rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 16px;">@member.FullName[0]</span>
+                                }
+                            </td>
                             <td><span class="fw-semibold">@member.Code</span></td>
                             <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
                             <td>@member.FullName</td>
                             <td>@member.PhoneNumber</td>
                             <td>@(member.PackageName ?? "-")</td>
-                            <td>@member.SubscriptionEndDate.ToString("dd/MM/yyyy")</td>
-                            <td><span class="badge-status @badgeClass">@status</span></td>
-                            <td>@SharedLocalizer["{0} EGP", member.PaidAmount.ToString("N2")]</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>

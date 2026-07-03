@@ -134,37 +134,6 @@ public class MemberService : IMemberService
         if (packageId.HasValue)
             query = query.Where(m => m.PackageId == packageId.Value);
 
-        if (!string.IsNullOrWhiteSpace(subscriptionStatus))
-        {
-            var now = DateTime.UtcNow;
-            query = subscriptionStatus.ToLower() switch
-            {
-                "active" => query.Where(m => !m.IsDeleted && m.SubscriptionEndDate > now),
-                "expired" => query.Where(m => !m.IsDeleted && m.SubscriptionEndDate <= now),
-                "deleted" => query.Where(m => m.IsDeleted),
-                _ => query
-            };
-        }
-
-        if (!string.IsNullOrWhiteSpace(paymentStatus))
-        {
-            query = paymentStatus.ToLower() switch
-            {
-                "paid" => query.Where(m => m.RemainingAmount == 0),
-                "outstanding" => query.Where(m => m.RemainingAmount > 0),
-                _ => query
-            };
-        }
-
-        if (expiringSoon)
-        {
-            var cutoff = DateTime.UtcNow.AddDays(expiringWithinDays);
-            query = query.Where(m => !m.IsDeleted && m.SubscriptionEndDate <= cutoff && m.SubscriptionEndDate >= DateTime.UtcNow);
-        }
-
-        if (outstandingBalance)
-            query = query.Where(m => m.RemainingAmount > 0);
-
         var totalCount = await query.CountAsync(cancellationToken);
 
         query = query.OrderBy(m => m.FullName);
@@ -233,16 +202,6 @@ public class MemberService : IMemberService
         if (phoneExists)
             return Result<Guid>.Failure("Phone number is already registered to another member");
 
-        var paidAmount = dto.PaidAmount;
-        var subscriptionPrice = dto.SubscriptionPrice;
-        if (paidAmount > subscriptionPrice)
-            return Result<Guid>.Failure("Paid amount cannot exceed subscription price");
-
-        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod)
-            ? PaymentMethod.Cash
-            : Enum.Parse<PaymentMethod>(dto.PaymentMethod, true);
-        var startDate = dto.SubscriptionStartDate == default ? DateTime.UtcNow : dto.SubscriptionStartDate;
-        var duration = dto.SubscriptionDurationMonths > 0 ? dto.SubscriptionDurationMonths : 1;
         var lastCode = await _memberRepository.Query().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
         var receiptNumber = GenerateReceiptNumber();
 
@@ -250,11 +209,6 @@ public class MemberService : IMemberService
             receiptNumber,
             dto.FullName,
             dto.PhoneNumber,
-            subscriptionPrice,
-            paidAmount,
-            duration,
-            startDate,
-            paymentMethod,
             DateTime.UtcNow
         )
         {
@@ -272,11 +226,10 @@ public class MemberService : IMemberService
             DiseaseType = dto.HasDisease ? dto.DiseaseType : null,
             ReferralSource = dto.ReferralSource,
             PackageId = dto.PackageId,
-            FreeMonths = dto.FreeMonths,
-            FreezeDays = dto.FreezeDays,
             FingerprintDeviceId = dto.FingerprintDeviceId,
             MemberSignature = dto.MemberSignature,
-            AdminSignature = dto.AdminSignature
+            AdminSignature = dto.AdminSignature,
+            ImagePath = dto.ImagePath
         };
 
         await _memberRepository.AddAsync(member, cancellationToken);
@@ -346,27 +299,26 @@ public class MemberService : IMemberService
         member.DateOfBirth = dto.DateOfBirth;
         member.Gender = string.IsNullOrEmpty(dto.Gender) ? null : Enum.Parse<Gender>(dto.Gender, true);
         member.Notes = dto.Notes;
-
-        if (dto.SubscriptionStartDate != default)
-        {
-            if (dto.PaidAmount > dto.SubscriptionPrice)
-                return Result.Failure("Paid amount cannot exceed subscription price");
-
-            member.UpdateSubscription(
-                dto.PackageId,
-                dto.SubscriptionPrice,
-                dto.PaidAmount,
-                dto.SubscriptionDurationMonths,
-                dto.FreeMonths,
-                dto.FreezeDays,
-                dto.SubscriptionStartDate
-            );
-        }
+        member.ImagePath = dto.ImagePath;
 
         _memberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success("Member updated successfully");
+    }
+
+    public async Task<Result> UpdateImagePathAsync(Guid memberId, string? imagePath, CancellationToken cancellationToken = default)
+    {
+        var member = await _memberRepository.GetByIdAsync(memberId, cancellationToken);
+        if (member is null)
+            return Result.Failure("Member not found");
+
+        member.ImagePath = imagePath;
+        member.MarkUpdated();
+        _memberRepository.Update(member);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

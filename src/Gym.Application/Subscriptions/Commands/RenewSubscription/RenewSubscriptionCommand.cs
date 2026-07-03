@@ -72,7 +72,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
                 .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
             if (offer == null)
                 return Result<Guid>.Failure("Offer not found");
-            if (!offer.IsActive || offer.StartDate > DateTime.UtcNow || offer.EndDate < DateTime.UtcNow)
+            if (!offer.IsActive)
                 return Result<Guid>.Failure("Offer is not valid");
 
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != planId)

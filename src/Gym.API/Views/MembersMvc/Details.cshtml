@@ -10,6 +10,12 @@
     <div class="receipt-body">
         <div class="row g-4">
             <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <div class="text-center mb-3">
+                        <img src="~/@Model.ImagePath" alt="@Model.FullName" class="rounded border" style="max-width: 200px; max-height: 200px; object-fit: cover;" />
+                    </div>
+                }
                 <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
                 <table class="table table-borderless table-sm">
                     <tr><td class="detail-label">@SharedLocalizer["Member ID"]</td><td class="detail-value"><strong>@Model.Code</strong></td></tr>
@@ -31,41 +37,9 @@
                 <div class="section-title"><i class="bi bi-calendar-check"></i> @SharedLocalizer["Subscription"]</div>
                 <table class="table table-borderless table-sm">
                     <tr><td class="detail-label">@SharedLocalizer["Membership Plan"]</td><td class="detail-value">@(Model.PackageName ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Start Date"]</td><td class="detail-value">@Model.SubscriptionStartDate.ToString("dd/MM/yyyy")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["End Date"]</td><td class="detail-value">@Model.SubscriptionEndDate.ToString("dd/MM/yyyy")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Duration"]</td><td class="detail-value">@SharedLocalizer["{0} months", Model.SubscriptionDurationMonths]</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Free Months"]</td><td class="detail-value">@Model.FreeMonths</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Freeze Days"]</td><td class="detail-value">@Model.FreezeDays</td></tr>
                     <tr><td class="detail-label">@SharedLocalizer["Registration Date"]</td><td class="detail-value">@Model.RegistrationDate.ToString("dd/MM/yyyy")</td></tr>
                 </table>
             </div>
-        </div>
-
-        <div class="section-divider"><span>@SharedLocalizer["Payment"]</span></div>
-        <div class="section-title"><i class="bi bi-credit-card"></i> @SharedLocalizer["Payment Summary"]</div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">@SharedLocalizer["Subscription Price"]</div>
-                    <div class="fs-4 fw-bold text-dark">@SharedLocalizer["{0} EGP", Model.SubscriptionPrice.ToString("N2")]</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">@SharedLocalizer["Paid Amount"]</div>
-                    <div class="fs-4 fw-bold text-success">@SharedLocalizer["{0} EGP", Model.PaidAmount.ToString("N2")]</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="border rounded-3 p-3 text-center">
-                    <div class="detail-label">@SharedLocalizer["Remaining"]</div>
-                    <div class="fs-4 fw-bold @(Model.RemainingAmount > 0 ? "text-danger" : "text-success")">@SharedLocalizer["{0} EGP", Model.RemainingAmount.ToString("N2")]</div>
-                </div>
-            </div>
-        </div>
-        <div class="mt-2">
-            <span class="detail-label">@SharedLocalizer["Payment Method:"]</span>
-            <span class="badge bg-info ms-2">@Model.PaymentMethod</span>
         </div>
 
         <div class="section-divider"><span>@SharedLocalizer["Medical"]</span></div>
@@ -123,10 +97,6 @@
                     @if (Model.IsDeleted)
                     {
                         <span class="badge-status badge-expired">@SharedLocalizer["Deleted"]</span>
-                    }
-                    else if (Model.SubscriptionEndDate <= DateTime.UtcNow)
-                    {
-                        <span class="badge-status badge-expired">@SharedLocalizer["Expired"]</span>
                     }
                     else
                     {

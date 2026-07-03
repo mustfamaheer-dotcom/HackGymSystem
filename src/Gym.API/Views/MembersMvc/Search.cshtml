@@ -47,39 +47,7 @@
                     }
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">@SharedLocalizer["Subscription Status"]</label>
-                <select asp-for="SubscriptionStatus" class="form-select">
-                    <option value="">@SharedLocalizer["-- All --"]</option>
-                    <option value="active">@SharedLocalizer["Active"]</option>
-                    <option value="expired">@SharedLocalizer["Expired"]</option>
-                    <option value="deleted">@SharedLocalizer["Deleted"]</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">@SharedLocalizer["Payment Status"]</label>
-                <select asp-for="PaymentStatus" class="form-select">
-                    <option value="">@SharedLocalizer["-- All --"]</option>
-                    <option value="paid">@SharedLocalizer["Paid (No Balance)"]</option>
-                    <option value="outstanding">@SharedLocalizer["Outstanding Balance"]</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">@SharedLocalizer["Expiring Soon"]</label>
-                <div class="d-flex align-items-center gap-2">
-                    <input asp-for="ExpiringSoon" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
-                    <span class="text-muted small">@SharedLocalizer["Within"]</span>
-                    <input asp-for="ExpiringWithinDays" class="form-control" type="number" min="1" style="width:80px;" />
-                    <span class="text-muted small">@SharedLocalizer["days"]</span>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">@SharedLocalizer["Outstanding Balance"]</label>
-                <div class="d-flex align-items-center gap-2 pt-1">
-                    <input asp-for="OutstandingBalance" class="form-check-input mt-0" style="width:1.25rem;height:1.25rem;" />
-                    <span class="text-muted small">@SharedLocalizer["Show only members with unpaid balance"]</span>
-                </div>
-            </div>
+
         </div>
 
         <input type="hidden" asp-for="Page" value="1" />
@@ -117,18 +85,12 @@
                                 <th>@SharedLocalizer["Phone"]</th>
                                 <th>@SharedLocalizer["National ID"]</th>
                                 <th>@SharedLocalizer["Plan"]</th>
-                                <th>@SharedLocalizer["End Date"]</th>
-                                <th>@SharedLocalizer["Remaining"]</th>
-                                <th>@SharedLocalizer["Status"]</th>
                                 <th>@SharedLocalizer["Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var member in Model.Results.Items)
                             {
-                                var isExpired = member.SubscriptionEndDate <= DateTime.UtcNow;
-                                var status = isExpired ? SharedLocalizer["Expired"] : (member.IsDeleted ? SharedLocalizer["Deleted"] : SharedLocalizer["Active"]);
-                                var badgeClass = isExpired ? "badge-expired" : (member.IsDeleted ? "badge-expired" : "badge-active");
                                 <tr>
                                     <td><span class="fw-semibold">@member.Code</span></td>
                                     <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@member.ReceiptNumber</code></td>
@@ -136,11 +98,6 @@
                                     <td>@member.PhoneNumber</td>
                                     <td>@(member.NationalId ?? "-")</td>
                                     <td>@(member.PackageName ?? "-")</td>
-                                    <td>@member.SubscriptionEndDate.ToString("dd/MM/yyyy")</td>
-                                    <td class="@(member.RemainingAmount > 0 ? "text-danger fw-semibold" : "")">
-                                        @member.RemainingAmount.ToString("N2")
-                                    </td>
-                                    <td><span class="badge-status @badgeClass">@status</span></td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
@@ -168,11 +125,6 @@
                                        asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
-                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
-                                       asp-route-PaymentStatus="@Model.PaymentStatus"
-                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
-                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
-                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
                                        asp-route-Page="@(Model.Results.Page - 1)"
                                        asp-route-PageSize="@Model.Results.PageSize">@SharedLocalizer["Previous"]</a>
                                 </li>
@@ -187,11 +139,6 @@
                                        asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
-                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
-                                       asp-route-PaymentStatus="@Model.PaymentStatus"
-                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
-                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
-                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
                                        asp-route-Page="@i"
                                        asp-route-PageSize="@Model.Results.PageSize">@i</a>
                                 </li>
@@ -206,11 +153,6 @@
                                        asp-route-Code="@Model.Code"
                                        asp-route-ReceiptNumber="@Model.ReceiptNumber"
                                        asp-route-PackageId="@Model.PackageId"
-                                       asp-route-SubscriptionStatus="@Model.SubscriptionStatus"
-                                       asp-route-PaymentStatus="@Model.PaymentStatus"
-                                       asp-route-ExpiringSoon="@Model.ExpiringSoon"
-                                       asp-route-ExpiringWithinDays="@Model.ExpiringWithinDays"
-                                       asp-route-OutstandingBalance="@Model.OutstandingBalance"
                                        asp-route-Page="@(Model.Results.Page + 1)"
                                        asp-route-PageSize="@Model.Results.PageSize">@SharedLocalizer["Next"]</a>
                                 </li>

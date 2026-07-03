@@ -6,6 +6,7 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Gym.API.Filters;
@@ -23,17 +24,20 @@ public class MembersMvcController : Controller
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IStringLocalizer<SharedResources> _localizer;
+    private readonly IWebHostEnvironment _env;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
         IRepository<MembershipPlan> planRepository,
         IRepository<Attendance> attendanceRepository,
-        IStringLocalizer<SharedResources> localizer)
+        IStringLocalizer<SharedResources> localizer,
+        IWebHostEnvironment env)
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
         _planRepository = planRepository;
         _attendanceRepository = attendanceRepository;
         _localizer = localizer;
+        _env = env;
     }
 
     [RequirePermission("Members.View")]
@@ -71,7 +75,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Create")]
     [HttpPost("create")]
-    public async Task<IActionResult> Create(CreateMemberDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateMemberDto dto, IFormFile? imageFile, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Member"];
         ViewBag.Plans = await _planRepository.Query()
@@ -88,6 +92,12 @@ public class MembersMvcController : Controller
         {
             TempData["Error"] = result.Message;
             return View(dto);
+        }
+
+        if (imageFile is not null && imageFile.Length > 0)
+        {
+            var path = await SaveMemberImageAsync(result.Data, imageFile);
+            await _memberService.UpdateImagePathAsync(result.Data, path, cancellationToken);
         }
 
         TempData["Success"] = _localizer["Member created successfully"].Value;
@@ -131,16 +141,10 @@ public class MembersMvcController : Controller
             DiseaseType = member.DiseaseType,
             ReferralSource = member.ReferralSource,
             PackageId = member.PackageId,
-            SubscriptionPrice = member.SubscriptionPrice,
-            PaidAmount = member.PaidAmount,
-            SubscriptionDurationMonths = member.SubscriptionDurationMonths,
-            FreeMonths = member.FreeMonths,
-            FreezeDays = member.FreezeDays,
-            SubscriptionStartDate = member.SubscriptionStartDate,
-            PaymentMethod = member.PaymentMethod.ToString(),
             FingerprintDeviceId = member.FingerprintDeviceId,
             MemberSignature = member.MemberSignature,
-            AdminSignature = member.AdminSignature
+            AdminSignature = member.AdminSignature,
+            ImagePath = member.ImagePath
         };
 
         return View(dto);
@@ -148,7 +152,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Edit")]
     [HttpPost("edit/{id}")]
-    public async Task<IActionResult> Edit(Guid id, UpdateMemberDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit(Guid id, UpdateMemberDto dto, IFormFile? imageFile, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Member"];
         ViewBag.Plans = await _planRepository.Query()
@@ -164,6 +168,12 @@ public class MembersMvcController : Controller
 
         if (!ModelState.IsValid)
             return View(dto);
+
+        if (imageFile is not null && imageFile.Length > 0)
+        {
+            DeleteExistingMemberImage(dto.Id);
+            dto.ImagePath = await SaveMemberImageAsync(dto.Id, imageFile);
+        }
 
         var result = await _memberService.UpdateAsync(dto, cancellationToken);
 
@@ -253,19 +263,15 @@ public class MembersMvcController : Controller
             || !string.IsNullOrWhiteSpace(model.PhoneNumber)
             || model.Code.HasValue
             || !string.IsNullOrWhiteSpace(model.ReceiptNumber)
-            || model.PackageId.HasValue
-            || !string.IsNullOrWhiteSpace(model.SubscriptionStatus)
-            || !string.IsNullOrWhiteSpace(model.PaymentStatus)
-            || model.ExpiringSoon
-            || model.OutstandingBalance;
+            || model.PackageId.HasValue;
 
         if (!hasFilters)
             return View(model);
 
         var result = await _memberService.AdvancedSearchAsync(
             model.Name, model.NationalId, model.PhoneNumber, model.Code, model.ReceiptNumber,
-            model.PackageId, model.SubscriptionStatus, model.PaymentStatus,
-            model.ExpiringSoon, model.ExpiringWithinDays, model.OutstandingBalance,
+            model.PackageId, null, null,
+            false, 7, false,
             model.Page, model.PageSize, cancellationToken);
 
         if (result.IsFailure)
@@ -311,5 +317,29 @@ public class MembersMvcController : Controller
         var result = await _excelImportService.ImportMembersAsync(stream, file.FileName, cancellationToken);
 
         return View("ImportResult", result);
+    }
+
+    private async Task<string> SaveMemberImageAsync(Guid memberId, IFormFile imageFile)
+    {
+        var uploadsDir = Path.Combine(_env.WebRootPath, "Media-images", memberId.ToString());
+        Directory.CreateDirectory(uploadsDir);
+
+        var ext = Path.GetExtension(imageFile.FileName);
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await imageFile.CopyToAsync(stream);
+
+        return $"Media-images/{memberId}/{fileName}";
+    }
+
+    private void DeleteExistingMemberImage(Guid memberId)
+    {
+        var dir = Path.Combine(_env.WebRootPath, "Media-images", memberId.ToString());
+        if (Directory.Exists(dir))
+        {
+            Directory.Delete(dir, recursive: true);
+        }
     }
 }

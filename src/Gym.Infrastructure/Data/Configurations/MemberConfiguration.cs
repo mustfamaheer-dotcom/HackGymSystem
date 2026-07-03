@@ -1,5 +1,4 @@
 using Gym.Domain.Entities;
-using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +13,7 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Code)
+            .ValueGeneratedOnAdd()
             .HasDefaultValue(0);
 
         builder.HasIndex(x => x.Code)
@@ -69,21 +69,11 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(x => x.DiseaseType)
             .HasMaxLength(500);
 
+        builder.Property(x => x.ImagePath)
+            .HasMaxLength(500);
+
         builder.Property(x => x.ReferralSource)
             .HasMaxLength(200);
-
-        builder.Property(x => x.SubscriptionPrice)
-            .HasPrecision(18, 2);
-
-        builder.Property(x => x.PaidAmount)
-            .HasPrecision(18, 2);
-
-        builder.Property(x => x.RemainingAmount)
-            .HasPrecision(18, 2);
-
-        builder.Property(x => x.PaymentMethod)
-            .HasConversion(v => v.ToString(), v => ConvertPaymentMethod(v))
-            .HasMaxLength(20);
 
         builder.Property(x => x.MemberSignature)
             .HasMaxLength(5000);
@@ -99,13 +89,13 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.HasMany(m => m.Attendances)
             .WithOne(a => a.Member)
             .HasForeignKey(a => a.MemberId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(m => m.Subscriptions)
+            .WithOne(s => s.Member)
+            .HasForeignKey(s => s.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
-    }
-
-    private static PaymentMethod ConvertPaymentMethod(string value)
-    {
-        return Enum.TryParse<PaymentMethod>(value, true, out var result) ? result : PaymentMethod.Cash;
     }
 }

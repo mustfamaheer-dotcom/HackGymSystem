@@ -5,6 +5,7 @@
     var canPlans = User.HasClaim("permission", "Plans.View");
     var canSubscriptions = User.HasClaim("permission", "Subscriptions.View");
     var canAttendance = User.HasClaim("permission", "Attendance.View");
+    var canLeads = User.HasClaim("permission", "Leads.View");
     var canOffers = User.HasClaim("permission", "Offers.View");
     var canDevices = User.HasClaim("permission", "Devices.View");
     var canWhatsApp = User.HasClaim("permission", "WhatsApp.Send");
@@ -140,6 +141,31 @@
                             <i class="bi bi-check-circle-fill mod-icon"></i>
                             <div class="mod-title">@SharedLocalizer["Attendance"]</div>
                             <div class="mod-desc">@SharedLocalizer["Check-ins"]</div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (canLeads)
+            {
+                <div class="col-md-3 col-6">
+                    <a asp-controller="LeadsMvc" asp-action="Index" class="text-decoration-none">
+                        <div class="mod-card mod-bg-warning">
+                            <i class="bi bi-person-up mod-icon"></i>
+                            <div class="mod-title">@SharedLocalizer["Leads"]</div>
+                            <div class="mod-desc">@SharedLocalizer["Manage prospects"]</div>
+                        </div>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-3 col-6">
+                    <div class="text-decoration-none" style="cursor:pointer;" onclick="showAccessDenied('@SharedLocalizer["Leads"]')">
+                        <div class="mod-card mod-bg-warning" style="opacity:0.5;">
+                            <i class="bi bi-person-up mod-icon"></i>
+                            <div class="mod-title">@SharedLocalizer["Leads"]</div>
+                            <div class="mod-desc">@SharedLocalizer["Manage prospects"]</div>
                         </div>
                     </div>
                 </div>

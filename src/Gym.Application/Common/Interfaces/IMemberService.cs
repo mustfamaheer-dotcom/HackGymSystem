@@ -16,4 +16,5 @@ public interface IMemberService
     Task<Result> UpdateAsync(UpdateMemberDto dto, CancellationToken cancellationToken = default);
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> RestoreAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result> UpdateImagePathAsync(Guid memberId, string? imagePath, CancellationToken cancellationToken = default);
 }

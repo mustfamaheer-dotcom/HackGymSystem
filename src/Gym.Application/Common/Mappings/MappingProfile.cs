@@ -1,5 +1,7 @@
 using System.Reflection;
 using AutoMapper;
+using Gym.Application.Leads.DTOs;
+using Gym.Domain.Entities;
 
 namespace Gym.Application.Common.Mappings;
 
@@ -8,6 +10,12 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
+
+        CreateMap<Lead, LeadDto>()
+            .ForMember(d => d.InterestedPackageName, o => o.MapFrom(s => s.InterestedPackage != null ? s.InterestedPackage.Name : null))
+            .ForMember(d => d.FollowUpCount, o => o.MapFrom(s => s.FollowUps.Count));
+
+        CreateMap<LeadFollowUp, LeadFollowUpDto>();
     }
 
     private void ApplyMappingsFromAssembly(Assembly assembly)

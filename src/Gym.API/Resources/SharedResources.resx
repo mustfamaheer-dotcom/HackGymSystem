@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1764,4 +1764,109 @@
   <data name="&amp;mdash; Analytics, reports &amp;amp; insights" xml:space="preserve">
     <value>&amp;mdash; Analytics, reports &amp;amp; insights</value>
   </data>
-</root>
+  <data name="Leads" xml:space="preserve">
+    <value>Leads</value>
+  </data>
+  <data name="New Lead" xml:space="preserve">
+    <value>New Lead</value>
+  </data>
+  <data name="Lead" xml:space="preserve">
+    <value>Lead</value>
+  </data>
+  <data name="Edit Lead" xml:space="preserve">
+    <value>Edit Lead</value>
+  </data>
+  <data name="Lead Details" xml:space="preserve">
+    <value>Lead Details</value>
+  </data>
+  <data name="Delete Lead" xml:space="preserve">
+    <value>Delete Lead</value>
+  </data>
+  <data name="Lead Information" xml:space="preserve">
+    <value>Lead Information</value>
+  </data>
+  <data name="Convert Lead to Member" xml:space="preserve">
+    <value>Convert Lead to Member</value>
+  </data>
+  <data name="No leads found." xml:space="preserve">
+    <value>No leads found.</value>
+  </data>
+  <data name="Lead created successfully" xml:space="preserve">
+    <value>Lead created successfully</value>
+  </data>
+  <data name="Lead updated successfully" xml:space="preserve">
+    <value>Lead updated successfully</value>
+  </data>
+  <data name="Lead deleted successfully" xml:space="preserve">
+    <value>Lead deleted successfully</value>
+  </data>
+  <data name="Lead converted to member successfully" xml:space="preserve">
+    <value>Lead converted to member successfully</value>
+  </data>
+  <data name="Follow-up added successfully" xml:space="preserve">
+    <value>Follow-up added successfully</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Follow Ups" xml:space="preserve">
+    <value>Follow Ups</value>
+  </data>
+  <data name="Follow Up Log" xml:space="preserve">
+    <value>Follow Up Log</value>
+  </data>
+  <data name="Next Follow Up" xml:space="preserve">
+    <value>Next Follow Up</value>
+  </data>
+  <data name="Add Follow Up" xml:space="preserve">
+    <value>Add Follow Up</value>
+  </data>
+  <data name="Enter follow-up notes..." xml:space="preserve">
+    <value>Enter follow-up notes...</value>
+  </data>
+  <data name="No follow-ups yet." xml:space="preserve">
+    <value>No follow-ups yet.</value>
+  </data>
+  <data name="Manage prospects" xml:space="preserve">
+    <value>Manage prospects</value>
+  </data>
+  <data name="Convert" xml:space="preserve">
+    <value>Convert</value>
+  </data>
+  <data name="Convert to Member" xml:space="preserve">
+    <value>Convert to Member</value>
+  </data>
+  <data name="Contacted" xml:space="preserve">
+    <value>Contacted</value>
+  </data>
+  <data name="Interested" xml:space="preserve">
+    <value>Interested</value>
+  </data>
+  <data name="Converted" xml:space="preserve">
+    <value>Converted</value>
+  </data>
+  <data name="Lost" xml:space="preserve">
+    <value>Lost</value>
+  </data>
+  <data name="SocialMedia" xml:space="preserve">
+    <value>Social Media</value>
+  </data>
+  <data name="Referral" xml:space="preserve">
+    <value>Referral</value>
+  </data>
+  <data name="WalkIn" xml:space="preserve">
+    <value>Walk-in</value>
+  </data>
+  <data name="leads" xml:space="preserve">
+    <value>leads</value>
+  </data>
+  <data name="Notes are required" xml:space="preserve">
+    <value>Notes are required</value>
+  </data>
+  <data name="Membership Plan" xml:space="preserve">
+    <value>Membership Plan</value>
+  </data>
+  <data name="Contacted" xml:space="preserve">
+    <value>Contacted</value>
+  </data>
+<data name="Member Image" xml:space="preserve"><value>Member Image</value></data></root>

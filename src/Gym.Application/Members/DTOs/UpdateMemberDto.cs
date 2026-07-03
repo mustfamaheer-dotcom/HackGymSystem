@@ -17,15 +17,9 @@ public class UpdateMemberDto
     public bool HasDisease { get; set; }
     public string? DiseaseType { get; set; }
     public string? ReferralSource { get; set; }
+    public string? ImagePath { get; set; }
     public Guid? PackageId { get; set; }
-    public decimal SubscriptionPrice { get; set; }
-    public decimal PaidAmount { get; set; }
-    public int SubscriptionDurationMonths { get; set; }
-    public int FreeMonths { get; set; }
-    public int FreezeDays { get; set; }
-    public DateTime SubscriptionStartDate { get; set; }
-    public string PaymentMethod { get; set; }
-    public int? FingerprintDeviceId { get; set; }
+    public Guid? FingerprintDeviceId { get; set; }
     public string? MemberSignature { get; set; }
     public string? AdminSignature { get; set; }
 }

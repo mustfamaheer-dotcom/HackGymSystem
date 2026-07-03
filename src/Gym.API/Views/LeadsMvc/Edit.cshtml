@@ -1,0 +1,71 @@
+@using Gym.Application.Leads.Commands.UpdateLead
+@model UpdateLeadCommand
+@{
+    var error = TempData["Error"] as string;
+    var plans = ViewBag.Plans as IReadOnlyList<PlanDto> ?? new List<PlanDto>();
+}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-pencil-square"></i> @SharedLocalizer["Edit Lead"]</h4>
+                <span class="receipt-badge">@Model.Name</span>
+            </div>
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
+                <input type="hidden" asp-for="Id" />
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Source" class="form-label">@SharedLocalizer["Source"]</label>
+                        <select asp-for="Source" class="form-select" asp-items="Html.GetEnumSelectList<LeadSource>()">
+                            <option value="">@SharedLocalizer["-- Select --"]</option>
+                        </select>
+                        <span asp-validation-for="Source" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label">@SharedLocalizer["Status"]</label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<LeadStatus>()">
+                            <option value="">@SharedLocalizer["-- Select --"]</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="NextFollowUpDate" class="form-label">@SharedLocalizer["Next Follow Up"]</label>
+                        <input asp-for="NextFollowUpDate" type="datetime-local" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="InterestedPackageId" class="form-label">@SharedLocalizer["Package"]</label>
+                        <select asp-for="InterestedPackageId" class="form-select">
+                            <option value="">@SharedLocalizer["-- Select --"]</option>
+                            @foreach (var plan in plans)
+                            {
+                                <option value="@plan.Id">@plan.Name - @plan.Price.ToString("N2") @SharedLocalizer["EGP"]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Update"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

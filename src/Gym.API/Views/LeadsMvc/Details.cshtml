@@ -1,0 +1,80 @@
+@using Gym.Application.Leads.DTOs
+@model LeadDto
+@{
+    var followUps = ViewBag.FollowUps as IReadOnlyList<LeadFollowUpDto> ?? new List<LeadFollowUpDto>();
+}
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-person-up"></i> @Model.Name</h4>
+        <span class="receipt-badge">@SharedLocalizer[Model.Status.ToString()]</span>
+    </div>
+    <div class="receipt-body">
+        <div class="section-title"><i class="bi bi-info-circle"></i> @SharedLocalizer["Lead Information"]</div>
+        <table class="table table-borderless table-sm">
+            <tr><td class="detail-label">@SharedLocalizer["Name"]</td><td class="detail-value">@Model.Name</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Phone"]</td><td class="detail-value">@Model.Phone</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Source"]</td><td class="detail-value">@SharedLocalizer[Model.Source.ToString()]</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Status"]</td><td class="detail-value">@SharedLocalizer[Model.Status.ToString()]</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Package"]</td><td class="detail-value">@(Model.InterestedPackageName ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Next Follow Up"]</td><td class="detail-value">@(Model.NextFollowUpDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Notes"]</td><td class="detail-value">@(Model.Notes ?? "-")</td></tr>
+        </table>
+
+        <div class="section-divider"><span>@SharedLocalizer["Follow Up Log"]</span></div>
+        @if (followUps.Count == 0)
+        {
+            <p class="text-muted text-center py-2">@SharedLocalizer["No follow-ups yet."]</p>
+        }
+        else
+        {
+            <div class="list-group mb-3">
+                @foreach (var fu in followUps.OrderByDescending(f => f.CreatedAt))
+                {
+                    <div class="list-group-item">
+                        <small class="text-muted">@fu.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        <p class="mb-0 mt-1">@fu.Notes</p>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (User.HasClaim("permission", "Leads.Edit"))
+        {
+            <div class="section-divider"><span>@SharedLocalizer["Add Follow Up"]</span></div>
+            <form asp-action="AddFollowUp" asp-route-leadId="@Model.Id" method="post" class="row g-2">
+                <input type="hidden" name="LeadId" value="@Model.Id" />
+                <div class="col-md-10">
+                    <input type="text" name="Notes" class="form-control" placeholder="@SharedLocalizer["Enter follow-up notes..."]" required />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add"]</button>
+                </div>
+            </form>
+        }
+
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
+        <div class="row g-3">
+            <div class="col-md-12">
+                <div class="border rounded-3 p-3 text-center">
+                    <div class="detail-label">@SharedLocalizer["Created At"]</div>
+                    <div class="fw-semibold mt-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="receipt-footer">
+        @if (User.HasClaim("permission", "Leads.Edit"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+        }
+        @if (User.HasClaim("permission", "Leads.Convert") && Model.Status != LeadStatus.Converted && Model.Status != LeadStatus.Lost)
+        {
+            <a asp-action="Convert" asp-route-id="@Model.Id" class="btn btn-success"><i class="bi bi-person-check"></i> @SharedLocalizer["Convert to Member"]</a>
+        }
+        @if (User.HasClaim("permission", "Leads.Delete"))
+        {
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash"></i> @SharedLocalizer["Delete"]</a>
+        }
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
+    </div>
+</div>

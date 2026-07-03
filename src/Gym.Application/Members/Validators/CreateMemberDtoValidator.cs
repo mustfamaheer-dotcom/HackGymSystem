@@ -47,37 +47,6 @@ public class CreateMemberDtoValidator : AbstractValidator<CreateMemberDto>
         RuleFor(x => x.DiseaseType)
             .NotEmpty().When(x => x.HasDisease)
             .WithMessage(_localizer["Disease type is required when HasDisease is true"]);
-
-        RuleFor(x => x.SubscriptionPrice)
-            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Subscription price must be 0 or greater"]);
-
-        RuleFor(x => x.PaidAmount)
-            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Paid amount must be 0 or greater"])
-            .LessThanOrEqualTo(x => x.SubscriptionPrice)
-            .When(x => x.SubscriptionPrice > 0 || x.PaidAmount > 0)
-            .WithMessage(_localizer["Paid amount cannot exceed subscription price"]);
-
-        RuleFor(x => x.SubscriptionDurationMonths)
-            .GreaterThan(0).When(x => x.SubscriptionDurationMonths != 0)
-            .WithMessage(_localizer["Subscription duration must be greater than 0 months"]);
-
-        RuleFor(x => x.FreeMonths)
-            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Free months must be 0 or greater"]);
-
-        RuleFor(x => x.FreezeDays)
-            .GreaterThanOrEqualTo(0).WithMessage(_localizer["Freeze days must be 0 or greater"]);
-
-        RuleFor(x => x.SubscriptionStartDate)
-            .NotEmpty().WithMessage(_localizer["Subscription start date is required"]);
-
-        RuleFor(x => x.PaymentMethod)
-            .Must(BeValidPaymentMethod).When(x => !string.IsNullOrEmpty(x.PaymentMethod))
-            .WithMessage(_localizer["Invalid payment method"]);
-    }
-
-    private static bool BeValidPaymentMethod(string value)
-    {
-        return Enum.TryParse<Shared.Enums.PaymentMethod>(value, true, out _);
     }
 
     private static bool BeValidGender(string value)

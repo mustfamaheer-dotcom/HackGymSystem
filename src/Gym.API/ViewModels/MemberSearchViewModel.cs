@@ -12,11 +12,6 @@ public class MemberSearchViewModel
     public int? Code { get; set; }
     public string? ReceiptNumber { get; set; }
     public Guid? PackageId { get; set; }
-    public string? SubscriptionStatus { get; set; }
-    public string? PaymentStatus { get; set; }
-    public bool ExpiringSoon { get; set; }
-    public int ExpiringWithinDays { get; set; } = 7;
-    public bool OutstandingBalance { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
     public PaginatedResult<MemberDto>? Results { get; set; }

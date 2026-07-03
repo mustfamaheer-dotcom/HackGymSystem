@@ -32,8 +32,6 @@
 
                 <table class="table table-borderless table-sm text-start">
                     <tr><td class="detail-label">@SharedLocalizer["Plan"]</td><td class="detail-value">@(Model.PackageName ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["End Date"]</td><td class="detail-value">@Model.SubscriptionEndDate.ToString("dd/MM/yyyy")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Remaining"]</td><td class="detail-value">@SharedLocalizer["{0} EGP", Model.RemainingAmount.ToString("N2")]</td></tr>
                 </table>
 
                 <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">

@@ -87,6 +87,23 @@ public enum AttendanceSyncStatus
     Failed
 }
 
+public enum LeadSource
+{
+    SocialMedia,
+    Referral,
+    WalkIn,
+    Other
+}
+
+public enum LeadStatus
+{
+    New,
+    Contacted,
+    Interested,
+    Converted,
+    Lost
+}
+
 public enum OfferType
 {
     BonusDuration,

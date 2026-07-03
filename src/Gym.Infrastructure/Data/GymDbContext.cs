@@ -28,6 +28,8 @@ public class GymDbContext : DbContext
     public DbSet<SubscriptionPayment> SubscriptionPayments => Set<SubscriptionPayment>();
     public DbSet<SubscriptionFreezeHistory> SubscriptionFreezeHistories => Set<SubscriptionFreezeHistory>();
     public DbSet<SubscriptionTransactionLog> SubscriptionTransactionLogs => Set<SubscriptionTransactionLog>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<LeadFollowUp> LeadFollowUps => Set<LeadFollowUp>();
     public DbSet<WhatsAppTemplate> WhatsAppTemplates => Set<WhatsAppTemplate>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<BackupLog> BackupLogs => Set<BackupLog>();

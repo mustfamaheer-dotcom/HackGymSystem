@@ -1,6 +1,7 @@
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Infrastructure.Data;
+using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Infrastructure.Repositories;
@@ -63,8 +64,9 @@ public class MemberRepository : Repository<Member>, IMemberRepository
         var cutoff = DateTime.UtcNow.AddDays(withinDays);
         return await _dbSet
             .Include(m => m.Package)
-            .Where(m => m.SubscriptionEndDate <= cutoff && m.SubscriptionEndDate >= DateTime.UtcNow)
-            .OrderBy(m => m.SubscriptionEndDate)
+            .Include(m => m.Subscriptions)
+            .Where(m => m.Subscriptions.Any(s => s.ExpirationDate <= cutoff && s.ExpirationDate >= DateTime.UtcNow && s.Status == SubscriptionStatus.Active))
+            .OrderBy(m => m.Subscriptions.Min(s => s.ExpirationDate))
             .ToListAsync(cancellationToken);
     }
 
@@ -72,8 +74,9 @@ public class MemberRepository : Repository<Member>, IMemberRepository
     {
         return await _dbSet
             .Include(m => m.Package)
-            .Where(m => m.PaidAmount < m.SubscriptionPrice && m.SubscriptionPrice > 0)
-            .OrderByDescending(m => m.RemainingAmount)
+            .Include(m => m.Subscriptions)
+            .Where(m => m.Subscriptions.Any(s => s.RemainingBalance > 0))
+            .OrderByDescending(m => m.Subscriptions.Max(s => s.RemainingBalance))
             .ToListAsync(cancellationToken);
     }
 }

@@ -43,9 +43,12 @@
                         <label asp-for="OfferId" class="form-label">@SharedLocalizer["Offer"]</label>
                         <select asp-for="OfferId" class="form-select" id="offerSelect">
                             <option value="">@SharedLocalizer["No offer"]</option>
-                            @foreach (var offer in ViewBag.OfferList as List<dynamic> ?? new())
+                            @if (ViewBag.OfferList != null)
                             {
-                                <option value="@offer.Id">@offer.Display</option>
+                                foreach (var offer in ViewBag.OfferList)
+                                {
+                                    <option value="@offer.Id">@offer.Display</option>
+                                }
                             }
                         </select>
                         <span asp-validation-for="OfferId" class="text-danger small"></span>
@@ -133,7 +136,8 @@
                 .Cast<dynamic>()
                 .Select(m => new {
                     id = ((object)m.Id).ToString(),
-                    name = (string)m.FullName
+                    name = (string)m.FullName,
+                    code = (int)m.Code
                 }).ToList()
         );
         var offersJson = System.Text.Json.JsonSerializer.Serialize(
@@ -142,7 +146,7 @@
                 .Select(o => new {
                     id = ((object)o.Id).ToString(),
                     linkedPackageId = o.LinkedPackageId?.ToString(),
-                    offerType = (string)o.OfferType
+                        offerType = o.OfferType.ToString()
                 }).ToList()
         );
     }
@@ -211,7 +215,7 @@
         if (filtered.length === 0 || !query) { resultsDiv.style.display = 'none'; return; }
         resultsDiv.style.display = 'block';
         resultsDiv.innerHTML = filtered.map(function(m, i) {
-            return '<div class="member-item" data-index="' + i + '" data-id="' + m.id + '" data-name="' + m.name + '"><div><div class="m-name">' + m.name + '</div></div><div class="m-badge">' + m.id.slice(0,8) + '</div></div>';
+            return '<div class="member-item" data-index="' + i + '" data-id="' + m.id + '" data-name="' + m.name + '"><div><div class="m-name">' + m.name + '</div></div><div class="m-badge">#' + m.code + '</div></div>';
         }).join('');
 
         resultsDiv.querySelectorAll('.member-item').forEach(function(el) {

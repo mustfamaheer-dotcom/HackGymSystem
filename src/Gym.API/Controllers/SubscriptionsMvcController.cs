@@ -202,7 +202,7 @@ public class SubscriptionsMvcController : Controller
         ViewBag.Plans = new SelectList(plans, "Id", "Name");
 
         var offers = await _offerRepo.Query()
-            .Where(o => o.IsActive && o.StartDate <= DateTime.UtcNow && o.EndDate >= DateTime.UtcNow)
+            .Where(o => o.IsActive)
             .OrderBy(o => o.OfferTitle)
             .Select(o => new { o.Id, o.OfferTitle, o.OfferPrice, o.BonusMonths, o.BonusDays, o.LinkedPackageId, o.OfferType })
             .ToListAsync(cancellationToken);
@@ -227,7 +227,7 @@ public class SubscriptionsMvcController : Controller
         var members = await _memberRepo.Query()
             .Where(m => !m.IsDeleted)
             .OrderBy(m => m.FullName)
-            .Select(m => new { m.Id, m.FullName })
+            .Select(m => new { m.Id, m.FullName, m.Code })
             .ToListAsync(cancellationToken);
         ViewBag.Members = new SelectList(members, "Id", "FullName");
 
@@ -239,7 +239,7 @@ public class SubscriptionsMvcController : Controller
         ViewBag.Plans = new SelectList(plans, "Id", "Name");
 
         var offers = await _offerRepo.Query()
-            .Where(o => o.IsActive && o.StartDate <= DateTime.UtcNow && o.EndDate >= DateTime.UtcNow)
+            .Where(o => o.IsActive)
             .OrderBy(o => o.OfferTitle)
             .Select(o => new { o.Id, o.OfferTitle, o.OfferPrice, o.BonusMonths, o.BonusDays, o.LinkedPackageId, o.OfferType })
             .ToListAsync(cancellationToken);

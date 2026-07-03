@@ -119,8 +119,6 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
             return Result<Guid>.Failure("Offer not found");
         if (!offer.IsActive)
             return Result<Guid>.Failure("Offer is not active");
-        if (offer.StartDate > DateTime.UtcNow || offer.EndDate < DateTime.UtcNow)
-            return Result<Guid>.Failure("Offer is not within its valid date range");
 
         // Extend the active subscription's expiration by offer's bonus months/days
         activeSub.ExpirationDate = activeSub.ExpirationDate
@@ -169,8 +167,6 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
                 return Result<Guid>.Failure("Offer not found");
             if (!offer.IsActive)
                 return Result<Guid>.Failure("Offer is not active");
-            if (offer.StartDate > DateTime.UtcNow || offer.EndDate < DateTime.UtcNow)
-                return Result<Guid>.Failure("Offer is not within its valid date range");
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != resolvedPlanId)
                 return Result<Guid>.Failure("Offer is not applicable to the selected plan");
         }

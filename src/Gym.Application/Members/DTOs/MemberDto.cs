@@ -26,16 +26,8 @@ public class MemberDto : IMapFrom<Member>
     public string? ReferralSource { get; set; }
     public Guid? PackageId { get; set; }
     public string? PackageName { get; set; }
-    public decimal SubscriptionPrice { get; set; }
-    public decimal PaidAmount { get; set; }
-    public decimal RemainingAmount { get; set; }
-    public int SubscriptionDurationMonths { get; set; }
-    public int FreeMonths { get; set; }
-    public int FreezeDays { get; set; }
-    public DateTime SubscriptionStartDate { get; set; }
-    public DateTime SubscriptionEndDate { get; set; }
-    public PaymentMethod PaymentMethod { get; set; }
-    public int? FingerprintDeviceId { get; set; }
+    public string? ImagePath { get; set; }
+    public Guid? FingerprintDeviceId { get; set; }
     public string? MemberSignature { get; set; }
     public string? AdminSignature { get; set; }
     public DateTime RegistrationDate { get; set; }

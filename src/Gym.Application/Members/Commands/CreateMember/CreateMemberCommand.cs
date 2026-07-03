@@ -27,16 +27,10 @@ public record CreateMemberCommand(
     string? DiseaseType = null,
     string? ReferralSource = null,
     Guid? PackageId = null,
-    decimal SubscriptionPrice = 0,
-    decimal PaidAmount = 0,
-    int SubscriptionDurationMonths = 1,
-    int FreeMonths = 0,
-    int FreezeDays = 0,
-    DateTime? SubscriptionStartDate = null,
-    string PaymentMethod = "Cash",
-    int? FingerprintDeviceId = null,
+    Guid? FingerprintDeviceId = null,
     string? MemberSignature = null,
-    string? AdminSignature = null
+    string? AdminSignature = null,
+    string? ImagePath = null
 ) : IRequest<Result<Guid>>;
 
 public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, Result<Guid>>
@@ -52,19 +46,12 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 
     public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
-        var paymentMethod = Enum.Parse<PaymentMethod>(request.PaymentMethod, true);
-        var startDate = request.SubscriptionStartDate ?? DateTime.UtcNow;
         var receiptNumber = GenerateReceiptNumber();
 
         var member = new Member(
             receiptNumber,
             request.FullName,
             request.PhoneNumber,
-            request.SubscriptionPrice,
-            request.PaidAmount,
-            request.SubscriptionDurationMonths,
-            startDate,
-            paymentMethod,
             DateTime.UtcNow
         )
         {
@@ -81,11 +68,10 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
             DiseaseType = request.HasDisease ? request.DiseaseType : null,
             ReferralSource = request.ReferralSource,
             PackageId = request.PackageId,
-            FreeMonths = request.FreeMonths,
-            FreezeDays = request.FreezeDays,
             FingerprintDeviceId = request.FingerprintDeviceId,
             MemberSignature = request.MemberSignature,
-            AdminSignature = request.AdminSignature
+            AdminSignature = request.AdminSignature,
+            ImagePath = request.ImagePath
         };
 
         await _repository.AddAsync(member, cancellationToken);

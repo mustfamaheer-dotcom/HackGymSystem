@@ -27,16 +27,10 @@ public record UpdateMemberCommand(
     string? DiseaseType = null,
     string? ReferralSource = null,
     Guid? PackageId = null,
-    decimal SubscriptionPrice = 0,
-    decimal PaidAmount = 0,
-    int SubscriptionDurationMonths = 1,
-    int FreeMonths = 0,
-    int FreezeDays = 0,
-    DateTime? SubscriptionStartDate = null,
-    string PaymentMethod = "Cash",
-    int? FingerprintDeviceId = null,
+    Guid? FingerprintDeviceId = null,
     string? MemberSignature = null,
-    string? AdminSignature = null
+    string? AdminSignature = null,
+    string? ImagePath = null
 ) : IRequest<Result>;
 
 public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, Result>
@@ -73,19 +67,7 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
         member.DateOfBirth = request.DateOfBirth;
         member.Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true);
         member.Notes = request.Notes;
-
-        if (request.SubscriptionStartDate.HasValue)
-        {
-            member.UpdateSubscription(
-                request.PackageId,
-                request.SubscriptionPrice,
-                request.PaidAmount,
-                request.SubscriptionDurationMonths,
-                request.FreeMonths,
-                request.FreezeDays,
-                request.SubscriptionStartDate.Value
-            );
-        }
+        member.ImagePath = request.ImagePath;
 
         _repository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

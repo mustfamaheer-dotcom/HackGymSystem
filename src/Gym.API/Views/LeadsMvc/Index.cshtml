@@ -1,0 +1,136 @@
+@using Gym.Application.Leads.DTOs
+@model PaginatedResult<LeadDto>
+@{
+    var searchTerm = ViewBag.SearchTerm as string;
+    var statusFilter = ViewBag.StatusFilter as string;
+}
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-person-up"></i> @SharedLocalizer["Leads"]</h4>
+        @if (User.HasClaim("permission", "Leads.Create"))
+        {
+            <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Lead"]</a>
+        }
+    </div>
+    <div class="p-3 border-bottom bg-light">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name..."]" value="@searchTerm" />
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                    <option value="">@SharedLocalizer["All Statuses"]</option>
+                    <option value="New" selected="@(statusFilter == "New" ? "selected" : null)">@SharedLocalizer["New"]</option>
+                    <option value="Contacted" selected="@(statusFilter == "Contacted" ? "selected" : null)">@SharedLocalizer["Contacted"]</option>
+                    <option value="Interested" selected="@(statusFilter == "Interested" ? "selected" : null)">@SharedLocalizer["Interested"]</option>
+                    <option value="Converted" selected="@(statusFilter == "Converted" ? "selected" : null)">@SharedLocalizer["Converted"]</option>
+                    <option value="Lost" selected="@(statusFilter == "Lost" ? "selected" : null)">@SharedLocalizer["Lost"]</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                    <option value="10" selected="@(Model?.PageSize == 10 ? "selected" : null)">@SharedLocalizer["10 per page"]</option>
+                    <option value="20" selected="@(Model?.PageSize == 20 ? "selected" : null)">@SharedLocalizer["20 per page"]</option>
+                    <option value="50" selected="@(Model?.PageSize == 50 ? "selected" : null)">@SharedLocalizer["50 per page"]</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    @if (TempData["Success"] is not null)
+    {
+        <div class="alert alert-success m-3">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] is not null)
+    {
+        <div class="alert alert-danger m-3">@TempData["Error"]</div>
+    }
+    @if (Model is null || Model.Items.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-person-up" style="font-size: 3rem;"></i>
+            <p class="mt-2">@SharedLocalizer["No leads found."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>@SharedLocalizer["Name"]</th>
+                        <th>@SharedLocalizer["Phone"]</th>
+                        <th>@SharedLocalizer["Source"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@SharedLocalizer["Package"]</th>
+                        <th>@SharedLocalizer["Follow Ups"]</th>
+                        <th>@SharedLocalizer["Created At"]</th>
+                        <th>@SharedLocalizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lead in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@lead.Name</td>
+                            <td>@lead.Phone</td>
+                            <td>@SharedLocalizer[lead.Source.ToString()]</td>
+                            <td>
+                                <span class="badge-status @(lead.Status switch
+                                {
+                                    LeadStatus.New => "badge-active",
+                                    LeadStatus.Contacted => "badge-warning",
+                                    LeadStatus.Interested => "badge-active",
+                                    LeadStatus.Converted => "badge-success",
+                                    LeadStatus.Lost => "badge-expired",
+                                    _ => ""
+                                })">@SharedLocalizer[lead.Status.ToString()]</span>
+                            </td>
+                            <td>@(lead.InterestedPackageName ?? "-")</td>
+                            <td>@lead.FollowUpCount</td>
+                            <td>@lead.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@lead.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
+                                    @if (User.HasClaim("permission", "Leads.Edit"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@lead.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
+                                    }
+                                    @if (User.HasClaim("permission", "Leads.Convert") && lead.Status != LeadStatus.Converted && lead.Status != LeadStatus.Lost)
+                                    {
+                                        <a asp-action="Convert" asp-route-id="@lead.Id" class="btn btn-outline-success" title="@SharedLocalizer["Convert"]"><i class="bi bi-person-check"></i></a>
+                                    }
+                                    @if (User.HasClaim("permission", "Leads.Delete"))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@lead.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">@SharedLocalizer["Showing"] @Model.Items.Count @SharedLocalizer["of"] @Model.TotalCount @SharedLocalizer["leads"]</small>
+            <nav>
+                <ul class="pagination pagination-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-statusFilter="@statusFilter">@SharedLocalizer["Previous"]</a></li>
+                    }
+                    @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-statusFilter="@statusFilter">@i</a></li>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-statusFilter="@statusFilter">@SharedLocalizer["Next"]</a></li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

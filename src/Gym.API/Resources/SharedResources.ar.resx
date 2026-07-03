@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1823,4 +1823,106 @@
   <data name="&amp;mdash; Analytics, reports &amp;amp; insights" xml:space="preserve">
     <value>— التحليلات والتقارير والرؤى</value>
   </data>
-</root>
+  <data name="Leads" xml:space="preserve">
+    <value>العملاء المحتملين</value>
+  </data>
+  <data name="New Lead" xml:space="preserve">
+    <value>عميل محتمل جديد</value>
+  </data>
+  <data name="Lead" xml:space="preserve">
+    <value>عميل محتمل</value>
+  </data>
+  <data name="Edit Lead" xml:space="preserve">
+    <value>تعديل العميل المحتمل</value>
+  </data>
+  <data name="Lead Details" xml:space="preserve">
+    <value>تفاصيل العميل المحتمل</value>
+  </data>
+  <data name="Delete Lead" xml:space="preserve">
+    <value>حذف العميل المحتمل</value>
+  </data>
+  <data name="Lead Information" xml:space="preserve">
+    <value>معلومات العميل المحتمل</value>
+  </data>
+  <data name="Convert Lead to Member" xml:space="preserve">
+    <value>تحويل العميل المحتمل إلى عضو</value>
+  </data>
+  <data name="No leads found." xml:space="preserve">
+    <value>لم يتم العثور على عملاء محتملين</value>
+  </data>
+  <data name="Lead created successfully" xml:space="preserve">
+    <value>تم إنشاء العميل المحتمل بنجاح</value>
+  </data>
+  <data name="Lead updated successfully" xml:space="preserve">
+    <value>تم تحديث العميل المحتمل بنجاح</value>
+  </data>
+  <data name="Lead deleted successfully" xml:space="preserve">
+    <value>تم حذف العميل المحتمل بنجاح</value>
+  </data>
+  <data name="Lead converted to member successfully" xml:space="preserve">
+    <value>تم تحويل العميل المحتمل إلى عضو بنجاح</value>
+  </data>
+  <data name="Follow-up added successfully" xml:space="preserve">
+    <value>تم إضافة المتابعة بنجاح</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
+  <data name="Follow Ups" xml:space="preserve">
+    <value>المتابعات</value>
+  </data>
+  <data name="Follow Up Log" xml:space="preserve">
+    <value>سجل المتابعات</value>
+  </data>
+  <data name="Next Follow Up" xml:space="preserve">
+    <value>المتابعة التالية</value>
+  </data>
+  <data name="Add Follow Up" xml:space="preserve">
+    <value>إضافة متابعة</value>
+  </data>
+  <data name="Enter follow-up notes..." xml:space="preserve">
+    <value>أدخل ملاحظات المتابعة...</value>
+  </data>
+  <data name="No follow-ups yet." xml:space="preserve">
+    <value>لا توجد متابعات بعد</value>
+  </data>
+  <data name="Manage prospects" xml:space="preserve">
+    <value>إدارة العملاء المحتملين</value>
+  </data>
+  <data name="Convert" xml:space="preserve">
+    <value>تحويل</value>
+  </data>
+  <data name="Convert to Member" xml:space="preserve">
+    <value>تحويل إلى عضو</value>
+  </data>
+  <data name="Contacted" xml:space="preserve">
+    <value>تم التواصل</value>
+  </data>
+  <data name="Interested" xml:space="preserve">
+    <value>مهتم</value>
+  </data>
+  <data name="Converted" xml:space="preserve">
+    <value>تم التحويل</value>
+  </data>
+  <data name="Lost" xml:space="preserve">
+    <value>مفقود</value>
+  </data>
+  <data name="SocialMedia" xml:space="preserve">
+    <value>وسائل التواصل الاجتماعي</value>
+  </data>
+  <data name="Referral" xml:space="preserve">
+    <value>إحالة</value>
+  </data>
+  <data name="WalkIn" xml:space="preserve">
+    <value>زيارة مباشرة</value>
+  </data>
+  <data name="leads" xml:space="preserve">
+    <value>عملاء محتملين</value>
+  </data>
+  <data name="Notes are required" xml:space="preserve">
+    <value>الملاحظات مطلوبة</value>
+  </data>
+  <data name="Membership Plan" xml:space="preserve">
+    <value>باقة العضوية</value>
+  </data>
+<data name="Member Image" xml:space="preserve"><value>صورة العضو</value></data></root>

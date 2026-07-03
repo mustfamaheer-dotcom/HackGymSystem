@@ -35,6 +35,7 @@ public static class SeedData
     private static readonly Guid PermLeadsCreate = Guid.Parse("D1000006-0000-0000-0000-000000000002");
     private static readonly Guid PermLeadsEdit = Guid.Parse("D1000006-0000-0000-0000-000000000003");
     private static readonly Guid PermLeadsConvert = Guid.Parse("D1000006-0000-0000-0000-000000000004");
+    private static readonly Guid PermLeadsDelete = Guid.Parse("D1000006-0000-0000-0000-000000000005");
     private static readonly Guid PermAttendanceView = Guid.Parse("D1000007-0000-0000-0000-000000000001");
     private static readonly Guid PermAttendanceExport = Guid.Parse("D1000007-0000-0000-0000-000000000002");
     private static readonly Guid PermWhatsAppSend = Guid.Parse("D1000008-0000-0000-0000-000000000001");
@@ -82,6 +83,7 @@ public static class SeedData
         (PermLeadsCreate, "Leads.Create", "Create leads", "Leads"),
         (PermLeadsEdit, "Leads.Edit", "Edit leads", "Leads"),
         (PermLeadsConvert, "Leads.Convert", "Convert leads to members", "Leads"),
+        (PermLeadsDelete, "Leads.Delete", "Delete leads", "Leads"),
         (PermAttendanceView, "Attendance.View", "View attendance", "Attendance"),
         (PermAttendanceExport, "Attendance.Export", "Export attendance", "Attendance"),
         (PermWhatsAppSend, "WhatsApp.Send", "Send WhatsApp messages", "WhatsApp"),
@@ -186,6 +188,7 @@ public static class SeedData
             PermLeadsCreate,
             PermLeadsEdit,
             PermLeadsConvert,
+            PermLeadsDelete,
             PermAttendanceView,
             PermAttendanceExport,
             PermWhatsAppSend,
