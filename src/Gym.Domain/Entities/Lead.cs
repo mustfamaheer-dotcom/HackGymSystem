@@ -7,6 +7,8 @@ public class Lead : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public string? Email { get; set; }
+    public Gender? Gender { get; set; }
     public LeadSource Source { get; set; }
     public Guid? InterestedPackageId { get; set; }
     public LeadStatus Status { get; set; }
@@ -18,20 +20,24 @@ public class Lead : BaseEntity
 
     private Lead() { }
 
-    public Lead(string name, string phone, LeadSource source, Guid? interestedPackageId, string? notes)
+    public Lead(string name, string phone, LeadSource source, Guid? interestedPackageId, string? notes, string? email = null, Gender? gender = null)
     {
         Name = name;
         Phone = phone;
+        Email = email;
+        Gender = gender;
         Source = source;
         InterestedPackageId = interestedPackageId;
         Status = LeadStatus.New;
         Notes = notes;
     }
 
-    public void Update(string name, string phone, LeadSource source, Guid? interestedPackageId, LeadStatus status, DateTime? nextFollowUpDate, string? notes)
+    public void Update(string name, string phone, LeadSource source, Guid? interestedPackageId, LeadStatus status, DateTime? nextFollowUpDate, string? notes, string? email = null, Gender? gender = null)
     {
         Name = name;
         Phone = phone;
+        Email = email;
+        Gender = gender;
         Source = source;
         InterestedPackageId = interestedPackageId;
         Status = status;

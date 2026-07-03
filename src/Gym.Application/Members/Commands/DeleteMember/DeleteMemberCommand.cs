@@ -14,24 +14,26 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, R
 {
     private readonly IRepository<Member> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public DeleteMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork)
+    public DeleteMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
     {
         var member = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         member.SoftDelete();
         _repository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member deleted successfully");
+        return Result.Success(_localizer["Member deleted successfully"]);
     }
 }
 

@@ -15,28 +15,30 @@ public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateComman
 {
     private readonly IRepository<WhatsAppTemplate> _repo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork)
+    public UpdateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repo = repo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Unit>> Handle(UpdateTemplateCommand request, CancellationToken cancellationToken)
     {
         var template = await _repo.GetByIdAsync(request.Id, cancellationToken);
         if (template == null)
-            return Result<Unit>.Failure("Template not found");
+            return Result<Unit>.Failure(_localizer["Template not found"]);
 
         var duplicate = await _repo.AnyAsync(t => t.Name == request.Name && t.Id != request.Id, cancellationToken);
         if (duplicate)
-            return Result<Unit>.Failure("Another template with this name already exists");
+            return Result<Unit>.Failure(_localizer["Another template with this name already exists"]);
 
         template.Update(request.Name, request.MessageBody, request.IsActive, request.TriggerType);
         _repo.Update(template);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Unit>.Success(Unit.Value, "Template updated successfully");
+        return Result<Unit>.Success(Unit.Value, _localizer["Template updated successfully"]);
     }
 }
 

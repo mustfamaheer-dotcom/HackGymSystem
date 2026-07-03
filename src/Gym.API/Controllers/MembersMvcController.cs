@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Gym.API.Services;
 using Gym.API.ViewModels;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Members.DTOs;
@@ -8,6 +10,7 @@ using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Gym.API.Filters;
 using Gym.API.Resources;
@@ -25,12 +28,18 @@ public class MembersMvcController : Controller
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IStringLocalizer<SharedResources> _localizer;
     private readonly IWebHostEnvironment _env;
+    private readonly ReceiptPdfService _pdfService;
+    private readonly IRepository<WhatsAppTemplate> _templateRepo;
+    private readonly IRepository<Offer> _offerRepo;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
         IRepository<MembershipPlan> planRepository,
         IRepository<Attendance> attendanceRepository,
         IStringLocalizer<SharedResources> localizer,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        ReceiptPdfService pdfService,
+        IRepository<WhatsAppTemplate> templateRepo,
+        IRepository<Offer> offerRepo)
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
@@ -38,6 +47,9 @@ public class MembersMvcController : Controller
         _attendanceRepository = attendanceRepository;
         _localizer = localizer;
         _env = env;
+        _pdfService = pdfService;
+        _templateRepo = templateRepo;
+        _offerRepo = offerRepo;
     }
 
     [RequirePermission("Members.View")]
@@ -53,6 +65,10 @@ public class MembersMvcController : Controller
             TempData["Error"] = result.Message;
             return View("Index", null);
         }
+
+        var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
+        ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         ViewBag.SearchTerm = searchTerm;
         ViewBag.SortBy = sortBy;
@@ -90,7 +106,12 @@ public class MembersMvcController : Controller
 
         if (result.IsFailure)
         {
-            TempData["Error"] = result.Message;
+            if (result.Message?.Contains("National ID") == true)
+                ModelState.AddModelError("NationalId", result.Message);
+            else if (result.Message?.Contains("Phone number") == true)
+                ModelState.AddModelError("PhoneNumber", result.Message);
+            else
+                ModelState.AddModelError("", result.Message ?? _localizer["An error occurred"].Value);
             return View(dto);
         }
 
@@ -211,7 +232,29 @@ public class MembersMvcController : Controller
 
         ViewBag.Attendances = attendances;
 
+        var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
+        ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
         return View(result.Data);
+    }
+
+    [RequirePermission("Members.View")]
+    [HttpGet("DownloadReceiptPdf/{id}")]
+    public async Task<IActionResult> DownloadReceiptPdf(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _memberService.GetByIdAsync(id, cancellationToken);
+        if (result.IsFailure)
+        {
+            TempData["Error"] = result.Message;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var pdfBytes = _pdfService.GenerateReceipt(result.Data!);
+        return File(pdfBytes, "application/pdf", $"receipt-{result.Data!.Code}.pdf");
     }
 
     [RequirePermission("Members.Delete")]

@@ -27,19 +27,22 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
     private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IRepository<Offer> _offerRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public RenewSubscriptionCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
         IRepository<Member> memberRepo,
         IRepository<MembershipPlan> planRepo,
         IRepository<Offer> offerRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _subscriptionRepo = subscriptionRepo;
         _memberRepo = memberRepo;
         _planRepo = planRepo;
         _offerRepo = offerRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(RenewSubscriptionCommand request, CancellationToken cancellationToken)
@@ -48,7 +51,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
             .Include(s => s.Member)
             .FirstOrDefaultAsync(s => s.Id == request.PreviousSubscriptionId, cancellationToken);
         if (previous == null)
-            return Result<Guid>.Failure("Previous subscription not found");
+            return Result<Guid>.Failure(_localizer["Previous subscription not found"]);
 
         previous.Renew(
             request.NewPlanId ?? previous.PlanId,
@@ -59,9 +62,9 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         var planId = request.NewPlanId ?? previous.PlanId;
         var plan = await _planRepo.GetByIdAsync(planId, cancellationToken);
         if (plan == null)
-            return Result<Guid>.Failure("Plan not found");
+            return Result<Guid>.Failure(_localizer["Plan not found"]);
         if (!plan.IsActive)
-            return Result<Guid>.Failure("Plan is not active");
+            return Result<Guid>.Failure(_localizer["Plan is not active"]);
 
         decimal totalValue = plan.Price;
         Domain.Entities.Offer? offer = null;
@@ -71,12 +74,12 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
             offer = await _offerRepo.Query()
                 .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
             if (offer == null)
-                return Result<Guid>.Failure("Offer not found");
+                return Result<Guid>.Failure(_localizer["Offer not found"]);
             if (!offer.IsActive)
-                return Result<Guid>.Failure("Offer is not valid");
+                return Result<Guid>.Failure(_localizer["Offer is not valid"]);
 
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != planId)
-                return Result<Guid>.Failure("Offer is not applicable to the selected plan");
+                return Result<Guid>.Failure(_localizer["Offer is not applicable to the selected plan"]);
 
             totalValue = offer.OfferType == OfferType.FixedPrice
                 ? (offer.OfferPrice ?? plan.Price)
@@ -84,7 +87,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         }
 
         if (request.AmountPaid > totalValue)
-            return Result<Guid>.Failure("Amount paid cannot exceed total subscription value");
+            return Result<Guid>.Failure(_localizer["Amount paid cannot exceed total subscription value"]);
 
         int durationDays = plan.DurationDays;
         int freeMonths = 0;
@@ -134,7 +137,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         await _unitOfWork.Repository<SubscriptionTransactionLog>().AddAsync(prevLog, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result<Guid>.Success(newSubscription.Id, "Subscription renewed successfully");
+        return Result<Guid>.Success(newSubscription.Id, _localizer["Subscription renewed successfully"]);
     }
 }
 

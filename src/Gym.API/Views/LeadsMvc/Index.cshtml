@@ -1,8 +1,17 @@
 @using Gym.Application.Leads.DTOs
+@using Gym.Application.Leads.Queries.GetLeadStats
+@using Gym.Application.MembershipPlans.DTOs
 @model PaginatedResult<LeadDto>
 @{
     var searchTerm = ViewBag.SearchTerm as string;
     var statusFilter = ViewBag.StatusFilter as string;
+    var genderFilter = ViewBag.GenderFilter as string;
+    var sourceFilter = ViewBag.SourceFilter as string;
+    var packageFilter = ViewBag.PackageFilter as Guid?;
+    var stats = ViewBag.LeadStats as LeadStatsDto;
+    var plans = ViewBag.Plans as IReadOnlyList<PlanDto> ?? new List<PlanDto>();
+    var hasFilters = !string.IsNullOrEmpty(searchTerm) || !string.IsNullOrEmpty(statusFilter) || !string.IsNullOrEmpty(genderFilter) || !string.IsNullOrEmpty(sourceFilter) || packageFilter.HasValue;
+    var filterCount = (string.IsNullOrEmpty(searchTerm) ? 0 : 1) + (string.IsNullOrEmpty(statusFilter) ? 0 : 1) + (string.IsNullOrEmpty(genderFilter) ? 0 : 1) + (string.IsNullOrEmpty(sourceFilter) ? 0 : 1) + (packageFilter.HasValue ? 1 : 0);
 }
 <div class="receipt-card">
     <div class="receipt-header">
@@ -12,33 +21,140 @@
             <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Lead"]</a>
         }
     </div>
-    <div class="p-3 border-bottom bg-light">
-        <form asp-action="Index" method="get" class="row g-2 align-items-center">
-            <div class="col-md-4">
-                <div class="input-group">
-                    <input type="text" name="searchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name..."]" value="@searchTerm" />
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+
+    @* Stats Bar *@
+    @if (stats != null)
+    {
+        <div class="row g-2 p-3 border-bottom bg-light">
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-2 text-center bg-white">
+                    <div class="small text-muted">@SharedLocalizer["Total Leads"]</div>
+                    <div class="fw-bold fs-5">@stats.TotalLeads</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <select name="statusFilter" class="form-select" onchange="this.form.submit()">
-                    <option value="">@SharedLocalizer["All Statuses"]</option>
-                    <option value="New" selected="@(statusFilter == "New" ? "selected" : null)">@SharedLocalizer["New"]</option>
-                    <option value="Contacted" selected="@(statusFilter == "Contacted" ? "selected" : null)">@SharedLocalizer["Contacted"]</option>
-                    <option value="Interested" selected="@(statusFilter == "Interested" ? "selected" : null)">@SharedLocalizer["Interested"]</option>
-                    <option value="Converted" selected="@(statusFilter == "Converted" ? "selected" : null)">@SharedLocalizer["Converted"]</option>
-                    <option value="Lost" selected="@(statusFilter == "Lost" ? "selected" : null)">@SharedLocalizer["Lost"]</option>
-                </select>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-2 text-center bg-white">
+                    <div class="small text-muted">@SharedLocalizer["New This Week"]</div>
+                    <div class="fw-bold fs-5 text-primary">@stats.NewThisWeek</div>
+                </div>
             </div>
-            <div class="col-md-2">
-                <select name="pageSize" class="form-select" onchange="this.form.submit()">
-                    <option value="10" selected="@(Model?.PageSize == 10 ? "selected" : null)">@SharedLocalizer["10 per page"]</option>
-                    <option value="20" selected="@(Model?.PageSize == 20 ? "selected" : null)">@SharedLocalizer["20 per page"]</option>
-                    <option value="50" selected="@(Model?.PageSize == 50 ? "selected" : null)">@SharedLocalizer["50 per page"]</option>
-                </select>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-2 text-center bg-white">
+                    <div class="small text-muted">@SharedLocalizer["Follow-ups Due"]</div>
+                    <div class="fw-bold fs-5 @(stats.FollowUpsDueToday > 0 ? "text-warning" : "")">@stats.FollowUpsDueToday</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="border rounded-3 p-2 text-center bg-white">
+                    <div class="small text-muted">@SharedLocalizer["Conversion Rate"]</div>
+                    <div class="fw-bold fs-5 text-success">@stats.ConversionRate%</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* WhatsApp Template Selector *@
+    <div class="p-3 border-bottom bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-whatsapp text-success"></i></span>
+                    <select id="whatsappTemplate" class="form-select">
+                        <option value="">@SharedLocalizer["Select WhatsApp template..."]</option>
+                        @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+                        {
+                            foreach (var t in tpls)
+                            {
+                                <option value="@t.Value">@t.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-8 text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template above, then click the WhatsApp button on any row"]
+            </div>
+        </div>
+    </div>
+
+    @* Advanced Filter Panel *@
+    <div class="p-3 border-bottom bg-light" style="border-top:1px solid var(--border-solid);">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div>
+                <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#advancedFilters" role="button">
+                    <i class="bi bi-funnel"></i> @SharedLocalizer["Filters"]
+                    @if (filterCount > 0)
+                    {
+                        <span class="badge bg-primary ms-1">@filterCount</span>
+                    }
+                </a>
+                @if (hasFilters)
+                {
+                    <a asp-action="Index" class="btn btn-sm btn-outline-danger ms-1"><i class="bi bi-x-lg"></i> @SharedLocalizer["Clear"]</a>
+                }
+            </div>
+        </div>
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            <div class="collapse @(hasFilters ? "show" : "")" id="advancedFilters">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small">@SharedLocalizer["Search"]</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="searchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name, phone or email..."]" value="@searchTerm" />
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">@SharedLocalizer["Status"]</label>
+                        <select name="statusFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">@SharedLocalizer["All Statuses"]</option>
+                            <option value="New" selected="@(statusFilter == "New" ? "selected" : null)">@SharedLocalizer["New"]</option>
+                            <option value="Contacted" selected="@(statusFilter == "Contacted" ? "selected" : null)">@SharedLocalizer["Contacted"]</option>
+                            <option value="Interested" selected="@(statusFilter == "Interested" ? "selected" : null)">@SharedLocalizer["Interested"]</option>
+                            <option value="Converted" selected="@(statusFilter == "Converted" ? "selected" : null)">@SharedLocalizer["Converted"]</option>
+                            <option value="Lost" selected="@(statusFilter == "Lost" ? "selected" : null)">@SharedLocalizer["Lost"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">@SharedLocalizer["Gender"]</label>
+                        <select name="genderFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">@SharedLocalizer["All"]</option>
+                            <option value="Male" selected="@(genderFilter == "Male" ? "selected" : null)">@SharedLocalizer["Male"]</option>
+                            <option value="Female" selected="@(genderFilter == "Female" ? "selected" : null)">@SharedLocalizer["Female"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">@SharedLocalizer["Source"]</label>
+                        <select name="sourceFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">@SharedLocalizer["All"]</option>
+                            <option value="SocialMedia" selected="@(sourceFilter == "SocialMedia" ? "selected" : null)">@SharedLocalizer["SocialMedia"]</option>
+                            <option value="Referral" selected="@(sourceFilter == "Referral" ? "selected" : null)">@SharedLocalizer["Referral"]</option>
+                            <option value="WalkIn" selected="@(sourceFilter == "WalkIn" ? "selected" : null)">@SharedLocalizer["WalkIn"]</option>
+                            <option value="Other" selected="@(sourceFilter == "Other" ? "selected" : null)">@SharedLocalizer["Other"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">@SharedLocalizer["Package"]</label>
+                        <select name="packageFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">@SharedLocalizer["All"]</option>
+                            @foreach (var plan in plans)
+                            {
+                                <option value="@plan.Id" selected="@(packageFilter == plan.Id ? "selected" : null)">@plan.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <select name="pageSize" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="10" selected="@(Model?.PageSize == 10 ? "selected" : null)">@SharedLocalizer["10 per page"]</option>
+                            <option value="20" selected="@(Model?.PageSize == 20 ? "selected" : null)">@SharedLocalizer["20 per page"]</option>
+                            <option value="50" selected="@(Model?.PageSize == 50 ? "selected" : null)">@SharedLocalizer["50 per page"]</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
+
     @if (TempData["Success"] is not null)
     {
         <div class="alert alert-success m-3">@TempData["Success"]</div>
@@ -47,6 +163,7 @@
     {
         <div class="alert alert-danger m-3">@TempData["Error"]</div>
     }
+
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">
@@ -61,7 +178,8 @@
                 <thead>
                     <tr>
                         <th>@SharedLocalizer["Name"]</th>
-                        <th>@SharedLocalizer["Phone"]</th>
+                        <th>@SharedLocalizer["Phone"] / @SharedLocalizer["Email"]</th>
+                        <th>@SharedLocalizer["Gender"]</th>
                         <th>@SharedLocalizer["Source"]</th>
                         <th>@SharedLocalizer["Status"]</th>
                         <th>@SharedLocalizer["Package"]</th>
@@ -75,7 +193,26 @@
                     {
                         <tr>
                             <td class="fw-semibold">@lead.Name</td>
-                            <td>@lead.Phone</td>
+                            <td>
+                                <div>@lead.Phone</div>
+                                @if (!string.IsNullOrEmpty(lead.Email))
+                                {
+                                    <small class="text-muted">@lead.Email</small>
+                                }
+                            </td>
+                            <td>
+                                @if (lead.Gender.HasValue)
+                                {
+                                    <span class="badge @(lead.Gender == Gender.Male ? "bg-info" : "bg-pink")">
+                                        <i class="bi @(lead.Gender == Gender.Male ? "bi-gender-male" : "bi-gender-female")"></i>
+                                        @SharedLocalizer[lead.Gender.ToString()!]
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
                             <td>@SharedLocalizer[lead.Source.ToString()]</td>
                             <td>
                                 <span class="badge-status @(lead.Status switch
@@ -102,6 +239,9 @@
                                     {
                                         <a asp-action="Convert" asp-route-id="@lead.Id" class="btn btn-outline-success" title="@SharedLocalizer["Convert"]"><i class="bi bi-person-check"></i></a>
                                     }
+                                    <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
+                                       data-phone="@lead.Phone"
+                                       data-member="@lead.Name"><i class="bi bi-whatsapp"></i></a>
                                     @if (User.HasClaim("permission", "Leads.Delete"))
                                     {
                                         <a asp-action="Delete" asp-route-id="@lead.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
@@ -113,7 +253,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+        <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap">
             <small class="text-muted">@SharedLocalizer["Showing"] @Model.Items.Count @SharedLocalizer["of"] @Model.TotalCount @SharedLocalizer["leads"]</small>
             <nav>
                 <ul class="pagination pagination-sm">
@@ -134,3 +274,67 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            function formatOffer(o) {
+                var lines = ['▸ ' + o.OfferTitle];
+                var details = [];
+                if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                if (o.OfferType === 'FixedPrice') {
+                    details.push('Type: Fixed Price');
+                } else if (o.OfferType === 'BonusDuration') {
+                    var bonus = [];
+                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
+                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
+                    if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
+                    details.push('Type: Bonus Duration');
+                } else if (o.OfferType === 'FreeRegistration') {
+                    details.push('Type: Free Registration');
+                } else if (o.OfferType === 'ExtraFreeze') {
+                    if (o.ExtraFreezeDays) details.push('Extra Freeze: +' + o.ExtraFreezeDays + ' day' + (o.ExtraFreezeDays > 1 ? 's' : ''));
+                    details.push('Type: Extra Freeze');
+                } else if (o.OfferType === 'Custom') {
+                    details.push('Type: Custom');
+                }
+                if (details.length) lines.push('  ' + details.join(' | '));
+                return lines.join('\n');
+            }
+            var offersText = activeOffers.length > 0
+                ? activeOffers.map(formatOffer).join('\n\n')
+                : '';
+
+            var select = document.getElementById('whatsappTemplate');
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+
+                var tid = select ? select.value : '';
+                if (!tid) {
+                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    return;
+                }
+
+                var body = templateMap[tid] || '';
+                var msg = body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{Offers\}/g, offersText);
+
+                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+            });
+        })();
+    </script>
+}

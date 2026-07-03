@@ -37,18 +37,20 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
 {
     private readonly IRepository<Member> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdateMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork)
+    public UpdateMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UpdateMemberCommand request, CancellationToken cancellationToken)
     {
         var member = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         member.UpdateBasicInfo(
             request.FullName,
@@ -72,7 +74,7 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
         _repository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member updated successfully");
+        return Result.Success(_localizer["Member updated successfully"]);
     }
 }
 

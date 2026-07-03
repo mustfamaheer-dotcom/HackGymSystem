@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -18,10 +20,12 @@ public record UpdateUserCommand(
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdateUserCommandHandler(IUnitOfWork unitOfWork)
+    public UpdateUserCommandHandler(IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -31,16 +35,16 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
 
         var user = await userRepo.GetByIdAsync(request.Id, cancellationToken);
         if (user is null)
-            return Result.Failure("User not found");
+            return Result.Failure(_localizer["User not found"]);
 
         var role = await roleRepo.GetByIdAsync(request.RoleId, cancellationToken);
         if (role is null)
-            return Result.Failure("Role not found");
+            return Result.Failure(_localizer["Role not found"]);
 
         var emailExists = await userRepo.Query()
             .AnyAsync(u => u.Email == request.Email && u.Id != request.Id, cancellationToken);
         if (emailExists)
-            return Result.Failure("Email already in use by another user");
+            return Result.Failure(_localizer["Email already in use by another user"]);
 
         user.FullName = request.FullName;
         user.Email = request.Email;
@@ -52,7 +56,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
         userRepo.Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("User updated successfully");
+        return Result.Success(_localizer["User updated successfully"]);
     }
 }
 

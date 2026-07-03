@@ -1,3 +1,6 @@
+using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -16,19 +19,22 @@ public class ConvertToMemberCommandHandler : IRequestHandler<ConvertToMemberComm
     private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public ConvertToMemberCommandHandler(
         IRepository<Lead> leadRepo,
         IRepository<Member> memberRepo,
         IRepository<MembershipPlan> planRepo,
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _leadRepo = leadRepo;
         _memberRepo = memberRepo;
         _planRepo = planRepo;
         _subscriptionRepo = subscriptionRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(ConvertToMemberCommand request, CancellationToken cancellationToken)
@@ -37,22 +43,24 @@ public class ConvertToMemberCommandHandler : IRequestHandler<ConvertToMemberComm
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(l => l.Id == request.LeadId, cancellationToken);
         if (lead == null)
-            return Result<Guid>.Failure("Lead not found");
+            return Result<Guid>.Failure(_localizer["Lead not found"]);
 
         var plan = await _planRepo.GetByIdAsync(request.PlanId, cancellationToken);
         if (plan == null)
-            return Result<Guid>.Failure("Plan not found");
+            return Result<Guid>.Failure(_localizer["Plan not found"]);
 
         var now = DateTime.UtcNow;
 
         // Generate code
         var lastMember = await _memberRepo.Query()
+            .IgnoreQueryFilters()
             .OrderByDescending(m => m.Code)
             .FirstOrDefaultAsync(cancellationToken);
         var code = (lastMember?.Code ?? 0) + 1;
 
         // Generate receipt number
         var lastReceipt = await _memberRepo.Query()
+            .IgnoreQueryFilters()
             .OrderByDescending(m => m.ReceiptNumber)
             .Select(m => m.ReceiptNumber)
             .FirstOrDefaultAsync(cancellationToken);
@@ -87,6 +95,6 @@ public class ConvertToMemberCommandHandler : IRequestHandler<ConvertToMemberComm
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(member.Id, "Lead converted to member successfully");
+        return Result<Guid>.Success(member.Id, _localizer["Lead converted to member successfully"]);
     }
 }

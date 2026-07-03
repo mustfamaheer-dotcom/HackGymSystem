@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -12,18 +14,20 @@ public class UpdateSettingCommandHandler : IRequestHandler<UpdateSettingCommand,
 {
     private readonly IRepository<Setting> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdateSettingCommandHandler(IRepository<Setting> repository, IUnitOfWork unitOfWork)
+    public UpdateSettingCommandHandler(IRepository<Setting> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UpdateSettingCommand request, CancellationToken cancellationToken)
     {
         var setting = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (setting == null)
-            return Result.Failure("Setting not found");
+            return Result.Failure(_localizer["Setting not found"]);
 
         setting.UpdateValue(request.Value);
         _repository.Update(setting);

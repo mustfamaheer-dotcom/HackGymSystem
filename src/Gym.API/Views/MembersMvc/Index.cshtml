@@ -11,7 +11,31 @@
         <h4><i class="bi bi-people-fill"></i> @SharedLocalizer["Members"]</h4>
         <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["Add Member"]</a>
     </div>
+    @* WhatsApp Template Selector *@
     <div class="p-3 border-bottom bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-whatsapp text-success"></i></span>
+                    <select id="whatsappTemplate" class="form-select">
+                        <option value="">@SharedLocalizer["Select WhatsApp template..."]</option>
+                        @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+                        {
+                            foreach (var t in tpls)
+                            {
+                                <option value="@t.Value">@t.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-8 text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template above, then click the WhatsApp button on any row"]
+            </div>
+        </div>
+    </div>
+
+    <div class="p-3 border-bottom bg-light" style="border-top:1px solid var(--border-solid);">
         <form asp-action="Index" method="get" class="row g-2 align-items-center">
             <div class="col-md-4">
                 <div class="input-group">
@@ -93,7 +117,46 @@
                                     <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
                                     <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
                                     <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
-                                </div>
+                                    <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
+                                       data-phone="@member.PhoneNumber"
+                                       data-member="@member.FullName"
+                                       data-receipt="@member.ReceiptNumber"
+                                       data-pdflink="@Url.Action("DownloadReceiptPdf", "Members", new { id = member.Id }, Context.Request.Scheme)"><i class="bi bi-whatsapp"></i></a>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var select = document.getElementById('whatsappTemplate');
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+
+                var tid = select ? select.value : '';
+                if (!tid) {
+                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    return;
+                }
+
+                var body = templateMap[tid] || '';
+                var msg = body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{PdfLink\}/g, btn.dataset.pdflink || '');
+
+                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+            });
+        })();
+    </script>
+}
                             </td>
                         </tr>
                     }

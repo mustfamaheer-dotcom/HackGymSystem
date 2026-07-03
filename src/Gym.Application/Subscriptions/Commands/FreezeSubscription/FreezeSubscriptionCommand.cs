@@ -17,15 +17,18 @@ public class FreezeSubscriptionCommandHandler : IRequestHandler<FreezeSubscripti
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public FreezeSubscriptionCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
         IRepository<MembershipPlan> planRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _subscriptionRepo = subscriptionRepo;
         _planRepo = planRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(FreezeSubscriptionCommand request, CancellationToken cancellationToken)
@@ -36,22 +39,22 @@ public class FreezeSubscriptionCommandHandler : IRequestHandler<FreezeSubscripti
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
 
         if (subscription == null)
-            return Result.Failure("Subscription not found");
+            return Result.Failure(_localizer["Subscription not found"]);
 
         if (subscription.Status != SubscriptionStatus.Active)
-            return Result.Failure("Only active subscriptions can be frozen");
+            return Result.Failure(_localizer["Only active subscriptions can be frozen"]);
 
         if (subscription.Status == SubscriptionStatus.Frozen)
-            return Result.Failure("Subscription is already frozen");
+            return Result.Failure(_localizer["Subscription is already frozen"]);
 
         var plan = await _planRepo.GetByIdAsync(subscription.PlanId, cancellationToken);
         if (plan != null && plan.FreezeDays.HasValue && request.FreezeDays > plan.FreezeDays.Value)
-            return Result.Failure($"Maximum freeze days for this plan is {plan.FreezeDays.Value}");
+            return Result.Failure(_localizer["Maximum freeze days for this plan is {0}", plan.FreezeDays.Value]);
 
         var freezeStart = DateTime.UtcNow;
         var freezeEnd = freezeStart.AddDays(request.FreezeDays);
 
-        subscription.Freeze(freezeStart, freezeEnd, request.FreezeDays, request.Reason);
+        subscription.Freeze(freezeStart, freezeEnd, request.FreezeDays, request.Reason, _localizer["Only active subscriptions can be frozen"]);
 
         var freezeHistory = new SubscriptionFreezeHistory(
             subscription.Id, freezeStart, freezeEnd, request.FreezeDays, request.Reason);
@@ -63,7 +66,7 @@ public class FreezeSubscriptionCommandHandler : IRequestHandler<FreezeSubscripti
         await _unitOfWork.Repository<SubscriptionTransactionLog>().AddAsync(log, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success("Subscription frozen successfully");
+        return Result.Success(_localizer["Subscription frozen successfully"]);
     }
 }
 

@@ -27,26 +27,29 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
     private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IRepository<Offer> _offerRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public CreateSubscriptionCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
         IRepository<Member> memberRepo,
         IRepository<MembershipPlan> planRepo,
         IRepository<Offer> offerRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _subscriptionRepo = subscriptionRepo;
         _memberRepo = memberRepo;
         _planRepo = planRepo;
         _offerRepo = offerRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateSubscriptionCommand request, CancellationToken cancellationToken)
     {
         var member = await _memberRepo.GetByIdAsync(request.MemberId, cancellationToken);
         if (member == null)
-            return Result<Guid>.Failure("Member not found");
+            return Result<Guid>.Failure(_localizer["Member not found"]);
 
         // Check for existing active subscription
         var activeSub = await _subscriptionRepo.Query()
@@ -54,7 +57,7 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
 
         // If member has active sub and no offer selected → reject
         if (activeSub != null && !request.OfferId.HasValue)
-            return Result<Guid>.Failure("Member already has an active subscription");
+            return Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
 
         // If member has active sub and offer is selected → extend the active sub
         if (activeSub != null && request.OfferId.HasValue)
@@ -69,25 +72,25 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
             resolvedPlanId = request.PlanId.Value;
             plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
             if (plan == null)
-                return Result<Guid>.Failure("Plan not found");
+                return Result<Guid>.Failure(_localizer["Plan not found"]);
             if (!plan.IsActive)
-                return Result<Guid>.Failure("Plan is not active");
+                return Result<Guid>.Failure(_localizer["Plan is not active"]);
         }
         else if (request.OfferId.HasValue)
         {
             var resolvedOffer = await _offerRepo.Query()
                 .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
             if (resolvedOffer == null)
-                return Result<Guid>.Failure("Offer not found");
+                return Result<Guid>.Failure(_localizer["Offer not found"]);
 
             if (resolvedOffer.LinkedPackageId.HasValue)
             {
                 resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
                 plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
                 if (plan == null)
-                    return Result<Guid>.Failure("Linked plan not found");
+                    return Result<Guid>.Failure(_localizer["Linked plan not found"]);
                 if (!plan.IsActive)
-                    return Result<Guid>.Failure("Linked plan is not active");
+                    return Result<Guid>.Failure(_localizer["Linked plan is not active"]);
             }
             else
             {
@@ -97,13 +100,13 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
                     .OrderBy(p => p.Name)
                     .FirstOrDefaultAsync(cancellationToken);
                 if (plan == null)
-                    return Result<Guid>.Failure("No active plan found to link the offer to");
+                    return Result<Guid>.Failure(_localizer["No active plan found to link the offer to"]);
                 resolvedPlanId = plan.Id;
             }
         }
         else
         {
-            return Result<Guid>.Failure("Either plan or offer must be selected");
+            return Result<Guid>.Failure(_localizer["Either plan or offer must be selected"]);
         }
 
         return await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
@@ -116,9 +119,9 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         var offer = await _offerRepo.Query()
             .FirstOrDefaultAsync(o => o.Id == request.OfferId, cancellationToken);
         if (offer == null)
-            return Result<Guid>.Failure("Offer not found");
+            return Result<Guid>.Failure(_localizer["Offer not found"]);
         if (!offer.IsActive)
-            return Result<Guid>.Failure("Offer is not active");
+            return Result<Guid>.Failure(_localizer["Offer is not active"]);
 
         // Extend the active subscription's expiration by offer's bonus months/days
         activeSub.ExpirationDate = activeSub.ExpirationDate
@@ -150,7 +153,7 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(activeSub.Id, "Subscription extended with offer successfully");
+        return Result<Guid>.Success(activeSub.Id, _localizer["Subscription extended with offer successfully"]);
     }
 
     private async Task<Result<Guid>> HandleNewAsync(
@@ -164,18 +167,18 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
             offer = await _offerRepo.Query()
                 .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
             if (offer == null)
-                return Result<Guid>.Failure("Offer not found");
+                return Result<Guid>.Failure(_localizer["Offer not found"]);
             if (!offer.IsActive)
-                return Result<Guid>.Failure("Offer is not active");
+                return Result<Guid>.Failure(_localizer["Offer is not active"]);
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != resolvedPlanId)
-                return Result<Guid>.Failure("Offer is not applicable to the selected plan");
+                return Result<Guid>.Failure(_localizer["Offer is not applicable to the selected plan"]);
         }
 
         // Calculate total value based on offer type
         var totalValue = CalculateTotalValue(plan.Price, offer);
         if (totalValue < 0) totalValue = 0;
         if (request.AmountPaid > totalValue)
-            return Result<Guid>.Failure("Amount paid cannot exceed total subscription value");
+            return Result<Guid>.Failure(_localizer["Amount paid cannot exceed total subscription value"]);
 
         // Calculate expiration: plan duration + offer bonuses
         var durationDays = plan.DurationDays;
@@ -233,7 +236,7 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(subscription.Id, "Subscription created successfully");
+        return Result<Guid>.Success(subscription.Id, _localizer["Subscription created successfully"]);
     }
 
     private static decimal CalculateTotalValue(decimal planPrice, Domain.Entities.Offer? offer)

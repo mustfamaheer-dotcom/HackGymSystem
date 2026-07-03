@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -13,13 +15,16 @@ public class UnfreezeSubscriptionCommandHandler : IRequestHandler<UnfreezeSubscr
 {
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public UnfreezeSubscriptionCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _subscriptionRepo = subscriptionRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UnfreezeSubscriptionCommand request, CancellationToken cancellationToken)
@@ -29,10 +34,10 @@ public class UnfreezeSubscriptionCommandHandler : IRequestHandler<UnfreezeSubscr
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
 
         if (subscription == null)
-            return Result.Failure("Subscription not found");
+            return Result.Failure(_localizer["Subscription not found"]);
 
         if (subscription.Status != SubscriptionStatus.Frozen)
-            return Result.Failure("Only frozen subscriptions can be unfrozen");
+            return Result.Failure(_localizer["Only frozen subscriptions can be unfrozen"]);
 
         var unfreezeDate = DateTime.UtcNow;
 
@@ -41,7 +46,7 @@ public class UnfreezeSubscriptionCommandHandler : IRequestHandler<UnfreezeSubscr
         if (lastFreeze != null)
             lastFreeze.SetUnfreezeDate(unfreezeDate);
 
-        subscription.Unfreeze();
+        subscription.Unfreeze(_localizer["Only frozen subscriptions can be unfrozen"]);
 
         var log = new SubscriptionTransactionLog(
             subscription.Id, "Unfrozen",
@@ -49,6 +54,6 @@ public class UnfreezeSubscriptionCommandHandler : IRequestHandler<UnfreezeSubscr
         await _unitOfWork.Repository<SubscriptionTransactionLog>().AddAsync(log, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success("Subscription unfrozen successfully");
+        return Result.Success(_localizer["Subscription unfrozen successfully"]);
     }
 }

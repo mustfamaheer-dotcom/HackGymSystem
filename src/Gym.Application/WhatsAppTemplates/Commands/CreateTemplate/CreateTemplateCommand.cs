@@ -15,24 +15,26 @@ public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateComman
 {
     private readonly IRepository<WhatsAppTemplate> _repo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public CreateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork)
+    public CreateTemplateCommandHandler(IRepository<WhatsAppTemplate> repo, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repo = repo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateTemplateCommand request, CancellationToken cancellationToken)
     {
         var exists = await _repo.AnyAsync(t => t.Name == request.Name, cancellationToken);
         if (exists)
-            return Result<Guid>.Failure("A template with this name already exists");
+            return Result<Guid>.Failure(_localizer["A template with this name already exists"]);
 
         var template = new WhatsAppTemplate(request.Name, request.MessageBody, request.TriggerType);
         await _repo.AddAsync(template, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(template.Id, "Template created successfully");
+        return Result<Guid>.Success(template.Id, _localizer["Template created successfully"]);
     }
 }
 

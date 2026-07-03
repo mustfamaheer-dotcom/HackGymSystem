@@ -47,10 +47,10 @@ public class Subscription : BaseEntity
         ExpirationDate = expirationDate;
     }
 
-    public void Freeze(DateTime freezeStart, DateTime freezeEnd, int freezeDays, string? reason = null)
+    public void Freeze(DateTime freezeStart, DateTime freezeEnd, int freezeDays, string? reason = null, string? invalidStatusErrorMessage = null)
     {
         if (Status != SubscriptionStatus.Active)
-            throw new InvalidOperationException("Only active subscriptions can be frozen");
+            throw new InvalidOperationException(invalidStatusErrorMessage ?? "Only active subscriptions can be frozen");
 
         FreezeStart = freezeStart;
         FreezeEnd = freezeEnd;
@@ -60,10 +60,10 @@ public class Subscription : BaseEntity
         MarkUpdated();
     }
 
-    public void Unfreeze()
+    public void Unfreeze(string? invalidStatusErrorMessage = null)
     {
         if (Status != SubscriptionStatus.Frozen)
-            throw new InvalidOperationException("Only frozen subscriptions can be unfrozen");
+            throw new InvalidOperationException(invalidStatusErrorMessage ?? "Only frozen subscriptions can be unfrozen");
 
         FreezeStart = null;
         FreezeEnd = null;

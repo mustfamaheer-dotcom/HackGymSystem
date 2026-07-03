@@ -23,12 +23,14 @@ public class UpdateDeviceCommandHandler : IRequestHandler<UpdateDeviceCommand, R
     private readonly IRepository<Device> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdateDeviceCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdateDeviceCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UpdateDeviceCommand request, CancellationToken cancellationToken)
@@ -36,7 +38,7 @@ public class UpdateDeviceCommandHandler : IRequestHandler<UpdateDeviceCommand, R
         var device = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (device is null)
-            return Result.Failure("Device not found");
+            return Result.Failure(_localizer["Device not found"]);
 
         device.Name = request.Name;
         device.IPAddress = request.IPAddress;

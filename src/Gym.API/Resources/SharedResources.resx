@@ -1093,6 +1093,9 @@
   <data name="records" xml:space="preserve">
     <value>records</value>
   </data>
+  <data name="An error occurred" xml:space="preserve">
+    <value>An error occurred</value>
+  </data>
   <data name="No attendance records found." xml:space="preserve">
     <value>No attendance records found.</value>
   </data>
@@ -1869,4 +1872,25 @@
   <data name="Contacted" xml:space="preserve">
     <value>Contacted</value>
   </data>
-<data name="Member Image" xml:space="preserve"><value>Member Image</value></data></root>
+<data name="Member Image" xml:space="preserve"><value>Member Image</value></data>
+  <data name="Total Leads" xml:space="preserve">
+    <value>Total Leads</value>
+  </data>
+  <data name="New This Week" xml:space="preserve">
+    <value>New This Week</value>
+  </data>
+  <data name="Follow-ups Due" xml:space="preserve">
+    <value>Follow-ups Due</value>
+  </data>
+  <data name="Conversion Rate" xml:space="preserve">
+    <value>Conversion Rate</value>
+  </data>
+  <data name="Date From" xml:space="preserve">
+    <value>From Date</value>
+  </data>
+  <data name="Date To" xml:space="preserve">
+    <value>To Date</value>
+  </data>
+  <data name="Search by name, phone or email..." xml:space="preserve">
+    <value>Search by name, phone or email...</value>
+  </data></root>

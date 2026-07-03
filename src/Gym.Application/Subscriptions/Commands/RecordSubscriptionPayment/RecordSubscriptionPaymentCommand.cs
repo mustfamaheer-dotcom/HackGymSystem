@@ -21,13 +21,16 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
 {
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public RecordSubscriptionPaymentCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _subscriptionRepo = subscriptionRepo;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(RecordSubscriptionPaymentCommand request, CancellationToken cancellationToken)
@@ -37,13 +40,13 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
             .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, cancellationToken);
 
         if (subscription == null)
-            return Result.Failure("Subscription not found");
+            return Result.Failure(_localizer["Subscription not found"]);
 
         if (request.Amount <= 0)
-            return Result.Failure("Payment amount must be greater than zero");
+            return Result.Failure(_localizer["Payment amount must be greater than zero"]);
 
         if (request.Amount > subscription.RemainingBalance)
-            return Result.Failure("Payment amount exceeds remaining balance");
+            return Result.Failure(_localizer["Payment amount exceeds remaining balance"]);
 
         subscription.RecordPayment(request.Amount);
 
@@ -58,7 +61,7 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
         await _unitOfWork.Repository<SubscriptionTransactionLog>().AddAsync(log, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success("Payment recorded successfully");
+        return Result.Success(_localizer["Payment recorded successfully"]);
     }
 }
 

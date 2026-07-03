@@ -39,6 +39,7 @@ BEGIN
         Id              UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
         Name            NVARCHAR(100)    NOT NULL,
         Description     NVARCHAR(500)    NULL,
+        Module          NVARCHAR(50)     NOT NULL DEFAULT '',
         CreatedAt       DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt       DATETIME2        NULL,
         CONSTRAINT UQ_Permissions_Name UNIQUE (Name)
@@ -79,7 +80,7 @@ BEGIN
         LastLoginAt         DATETIME2        NULL,
         CreatedAt           DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt           DATETIME2        NULL,
-        CONSTRAINT FK_Users_Roles FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE RESTRICT,
+        CONSTRAINT FK_Users_Roles FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE NO ACTION,
         CONSTRAINT UQ_Users_Username UNIQUE (Username),
         CONSTRAINT UQ_Users_Email UNIQUE (Email)
     );
@@ -151,8 +152,8 @@ BEGIN
         Notes               NVARCHAR(1000)   NULL,
         CreatedAt           DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt           DATETIME2        NULL,
-        CONSTRAINT FK_Memberships_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE RESTRICT,
-        CONSTRAINT FK_Memberships_Plans FOREIGN KEY (PlanId) REFERENCES MembershipPlans(Id) ON DELETE RESTRICT
+        CONSTRAINT FK_Memberships_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE NO ACTION,
+        CONSTRAINT FK_Memberships_Plans FOREIGN KEY (PlanId) REFERENCES MembershipPlans(Id) ON DELETE NO ACTION
     );
     CREATE INDEX IX_Memberships_MemberId_Status ON Memberships (MemberId, Status);
 END
@@ -173,7 +174,7 @@ BEGIN
         SyncStatus      NVARCHAR(20)     NULL DEFAULT 'Synced',
         CreatedAt       DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt       DATETIME2        NULL,
-        CONSTRAINT FK_Attendance_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE RESTRICT,
+        CONSTRAINT FK_Attendance_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE NO ACTION,
         CONSTRAINT FK_Attendance_Devices FOREIGN KEY (DeviceId) REFERENCES Devices(Id) ON DELETE SET NULL
     );
     CREATE INDEX IX_Attendance_MemberId_Date ON Attendance (MemberId, Date);
@@ -198,7 +199,7 @@ BEGIN
         ReceiptNumber       NVARCHAR(50)     NOT NULL,
         CreatedAt           DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt           DATETIME2        NULL,
-        CONSTRAINT FK_Payments_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE RESTRICT,
+        CONSTRAINT FK_Payments_Members FOREIGN KEY (MemberId) REFERENCES Members(Id) ON DELETE NO ACTION,
         CONSTRAINT FK_Payments_Users FOREIGN KEY (EmployeeId) REFERENCES Users(Id) ON DELETE SET NULL,
         CONSTRAINT UQ_Payments_ReceiptNumber UNIQUE (ReceiptNumber)
     );
@@ -292,7 +293,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Settings')
 BEGIN
     CREATE TABLE Settings (
         Id              UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
-        Key             NVARCHAR(100)    NOT NULL,
+        [Key]           NVARCHAR(100)    NOT NULL,
         Value           NVARCHAR(2000)   NOT NULL,
         [Group]         NVARCHAR(100)    NULL,
         Description     NVARCHAR(500)    NULL,
@@ -379,22 +380,22 @@ GO
 -- Permissions
 IF NOT EXISTS (SELECT * FROM Permissions WHERE Name = 'members.read')
 BEGIN
-    INSERT INTO Permissions (Id, Name, Description, CreatedAt) VALUES
-        ('E5F6A7B8-C9D0-1234-EF56-789012345678', 'members.read',     'View members',             GETUTCDATE()),
-        ('F6A7B8C9-D0E1-2345-F678-901234567890', 'members.write',    'Create/Edit members',      GETUTCDATE()),
-        ('A7B8C9D0-E1F2-3456-A789-012345678901', 'members.delete',   'Delete members',           GETUTCDATE()),
-        ('B8C9D0E1-F2A3-4567-B890-123456789012', 'plans.read',       'View plans',               GETUTCDATE()),
-        ('C9D0E1F2-A3B4-5678-C901-234567890123', 'plans.write',      'Create/Edit plans',        GETUTCDATE()),
-        ('D0E1F2A3-B4C5-6789-D012-345678901234', 'attendance.read',  'View attendance',          GETUTCDATE()),
-        ('E1F2A3B4-C5D6-7890-E123-456789012345', 'attendance.write', 'Record attendance',        GETUTCDATE()),
-        ('F2A3B4C5-D6E7-8901-F234-567890123456', 'payments.read',    'View payments',            GETUTCDATE()),
-        ('A3B4C5D6-E7F8-9012-A345-678901234567', 'payments.write',   'Process payments',         GETUTCDATE()),
-        ('B4C5D6E7-F8A9-0123-B456-789012345678', 'reports.read',     'View reports',             GETUTCDATE()),
-        ('C5D6E7F8-A9B0-1234-C567-890123456789', 'settings.read',    'View settings',            GETUTCDATE()),
-        ('D6E7F8A9-B0C1-2345-D678-901234567890', 'settings.write',   'Manage settings',          GETUTCDATE()),
-        ('E7F8A9B0-C1D2-3456-E789-012345678901', 'devices.manage',   'Manage devices',           GETUTCDATE()),
-        ('F8A9B0C1-D2E3-4567-F890-123456789012', 'backup.manage',    'Manage backups',           GETUTCDATE()),
-        ('A9B0C1D2-E3F4-5678-A901-234567890123', 'offers.manage',    'Manage offers',            GETUTCDATE());
+    INSERT INTO Permissions (Id, Name, Description, Module, CreatedAt) VALUES
+        ('E5F6A7B8-C9D0-1234-EF56-789012345678', 'members.read',     'View members',             'Members',     GETUTCDATE()),
+        ('F6A7B8C9-D0E1-2345-F678-901234567890', 'members.write',    'Create/Edit members',      'Members',     GETUTCDATE()),
+        ('A7B8C9D0-E1F2-3456-A789-012345678901', 'members.delete',   'Delete members',           'Members',     GETUTCDATE()),
+        ('B8C9D0E1-F2A3-4567-B890-123456789012', 'plans.read',       'View plans',               'Plans',       GETUTCDATE()),
+        ('C9D0E1F2-A3B4-5678-C901-234567890123', 'plans.write',      'Create/Edit plans',        'Plans',       GETUTCDATE()),
+        ('D0E1F2A3-B4C5-6789-D012-345678901234', 'attendance.read',  'View attendance',          'Attendance',  GETUTCDATE()),
+        ('E1F2A3B4-C5D6-7890-E123-456789012345', 'attendance.write', 'Record attendance',        'Attendance',  GETUTCDATE()),
+        ('F2A3B4C5-D6E7-8901-F234-567890123456', 'payments.read',    'View payments',            'Payments',    GETUTCDATE()),
+        ('A3B4C5D6-E7F8-9012-A345-678901234567', 'payments.write',   'Process payments',         'Payments',    GETUTCDATE()),
+        ('B4C5D6E7-F8A9-0123-B456-789012345678', 'reports.read',     'View reports',             'Reports',     GETUTCDATE()),
+        ('C5D6E7F8-A9B0-1234-C567-890123456789', 'settings.read',    'View settings',            'Settings',    GETUTCDATE()),
+        ('D6E7F8A9-B0C1-2345-D678-901234567890', 'settings.write',   'Manage settings',          'Settings',    GETUTCDATE()),
+        ('E7F8A9B0-C1D2-3456-E789-012345678901', 'devices.manage',   'Manage devices',           'Devices',    GETUTCDATE()),
+        ('F8A9B0C1-D2E3-4567-F890-123456789012', 'backup.manage',    'Manage backups',           'Backup',     GETUTCDATE()),
+        ('A9B0C1D2-E3F4-5678-A901-234567890123', 'offers.manage',    'Manage offers',            'Offers',     GETUTCDATE());
 END
 GO
 

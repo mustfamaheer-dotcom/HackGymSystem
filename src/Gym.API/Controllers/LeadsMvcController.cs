@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Gym.API.Filters;
 using Gym.Application.Leads.Commands.AddFollowUp;
 using Gym.Application.Leads.Commands.ConvertToMember;
@@ -8,13 +9,18 @@ using Gym.Application.Leads.DTOs;
 using Gym.Application.Leads.Queries.GetAllLeads;
 using Gym.Application.Leads.Queries.GetFollowUps;
 using Gym.Application.Leads.Queries.GetLeadById;
+using Gym.Application.Leads.Queries.GetLeadStats;
 using Gym.Application.MembershipPlans.DTOs;
 using Gym.Application.MembershipPlans.Queries.GetAllPlans;
 using Gym.API.Resources;
+using Gym.Domain.Entities;
+using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -25,30 +31,62 @@ public class LeadsMvcController : Controller
 {
     private readonly IMediator _mediator;
     private readonly IStringLocalizer<SharedResources> _localizer;
+    private readonly IRepository<WhatsAppTemplate> _templateRepo;
+    private readonly IRepository<Offer> _offerRepo;
 
-    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer)
+    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo)
     {
         _mediator = mediator;
         _localizer = localizer;
+        _templateRepo = templateRepo;
+        _offerRepo = offerRepo;
     }
 
     [HttpGet]
     [RequirePermission("Leads.View")]
-    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, string? genderFilter = null, string? sourceFilter = null, Guid? packageFilter = null, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Leads"];
         ViewBag.SearchTerm = searchTerm;
         ViewBag.StatusFilter = statusFilter;
+        ViewBag.GenderFilter = genderFilter;
+        ViewBag.SourceFilter = sourceFilter;
+        ViewBag.PackageFilter = packageFilter;
+
         LeadStatus? parsedStatus = null;
         if (Enum.TryParse<LeadStatus>(statusFilter, true, out var s))
             parsedStatus = s;
-        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, page, pageSize);
+
+        Gender? parsedGender = null;
+        if (Enum.TryParse<Gender>(genderFilter, true, out var g))
+            parsedGender = g;
+
+        LeadSource? parsedSource = null;
+        if (Enum.TryParse<LeadSource>(sourceFilter, true, out var src))
+            parsedSource = src;
+
+        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, parsedGender, parsedSource, packageFilter, null, null, page, pageSize);
         var result = await _mediator.Send(query, cancellationToken);
+
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;
             return View("Index", null);
         }
+
+        var statsResult = await _mediator.Send(new GetLeadStatsQuery(), cancellationToken);
+        ViewBag.LeadStats = statsResult.IsSuccess ? statsResult.Data : null;
+
+        var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
+        ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var allPlans = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
+        ViewBag.Plans = allPlans.IsSuccess ? allPlans.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+
         return View(result.Data);
     }
 
@@ -95,7 +133,7 @@ public class LeadsMvcController : Controller
         var dto = result.Data!;
         var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
         ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
-        var command = new UpdateLeadCommand(dto.Id, dto.Name, dto.Phone, dto.Source, dto.InterestedPackageId, dto.Status, dto.NextFollowUpDate, dto.Notes);
+        var command = new UpdateLeadCommand(dto.Id, dto.Name, dto.Phone, dto.Source, dto.InterestedPackageId, dto.Status, dto.NextFollowUpDate, dto.Notes, dto.Email, dto.Gender);
         return View(command);
     }
 
@@ -136,6 +174,14 @@ public class LeadsMvcController : Controller
         }
         var followUpsResult = await _mediator.Send(new GetFollowUpsQuery(id), cancellationToken);
         ViewBag.FollowUps = followUpsResult.IsSuccess ? followUpsResult.Data ?? new List<LeadFollowUpDto>() : new List<LeadFollowUpDto>();
+
+        var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
+        ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+        var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+
         return View(result.Data);
     }
 

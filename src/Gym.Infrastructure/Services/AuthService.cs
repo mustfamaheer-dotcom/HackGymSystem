@@ -4,6 +4,8 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 
 namespace Gym.Infrastructure.Services;
 
@@ -11,11 +13,13 @@ public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public AuthService(IUnitOfWork unitOfWork, ITokenService tokenService)
+    public AuthService(IUnitOfWork unitOfWork, ITokenService tokenService, IStringLocalizer<ApplicationResources> localizer)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
+        _localizer = localizer;
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(string username, string password, CancellationToken cancellationToken = default)
@@ -28,7 +32,7 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return Result<AuthResponse>.Failure("Invalid username or password.");
+            return Result<AuthResponse>.Failure(_localizer["Invalid username or password."]);
 
         user.RecordLogin();
         _unitOfWork.Repository<User>().Update(user);
@@ -56,7 +60,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone,
-                Role = user.Role?.Name ?? "User",
+                Role = user.Role?.Name ?? _localizer["User"],
                 RoleId = user.RoleId,
                 Permissions = permissions
             }
@@ -73,7 +77,7 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && u.IsActive, cancellationToken);
 
         if (user is null || user.RefreshTokenExpiry <= DateTime.UtcNow)
-            return Result<AuthResponse>.Failure("Invalid or expired refresh token.");
+            return Result<AuthResponse>.Failure(_localizer["Invalid or expired refresh token."]);
 
         var permissions = user.Role.RolePermissions?
             .Select(rp => rp.Permission?.Name ?? string.Empty)
@@ -97,7 +101,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone,
-                Role = user.Role?.Name ?? "User",
+                Role = user.Role?.Name ?? _localizer["User"],
                 RoleId = user.RoleId,
                 Permissions = permissions
             }
@@ -108,13 +112,13 @@ public class AuthService : IAuthService
     {
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId, cancellationToken);
         if (user is null)
-            return Result.Failure("User not found.");
+            return Result.Failure(_localizer["User not found."]);
 
         user.UpdateRefreshToken(null, null);
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Logged out successfully.");
+        return Result.Success(_localizer["Logged out successfully."]);
     }
 
     public async Task<Result<UserDto>> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -127,7 +131,7 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user is null)
-            return Result<UserDto>.Failure("User not found.");
+            return Result<UserDto>.Failure(_localizer["User not found."]);
 
         var permissions = user.Role.RolePermissions?
             .Select(rp => rp.Permission?.Name ?? string.Empty)
@@ -141,7 +145,7 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Phone = user.Phone,
-            Role = user.Role?.Name ?? "User",
+            Role = user.Role?.Name ?? _localizer["User"],
             RoleId = user.RoleId,
             Permissions = permissions
         });

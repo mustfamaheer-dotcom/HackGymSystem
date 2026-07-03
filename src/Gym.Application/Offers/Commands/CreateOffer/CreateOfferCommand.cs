@@ -25,11 +25,16 @@ public class CreateOfferCommandHandler : IRequestHandler<CreateOfferCommand, Res
 {
     private readonly IRepository<Offer> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public CreateOfferCommandHandler(IRepository<Offer> repository, IUnitOfWork unitOfWork)
+    public CreateOfferCommandHandler(
+        IRepository<Offer> repository,
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateOfferCommand request, CancellationToken cancellationToken)
@@ -42,7 +47,7 @@ public class CreateOfferCommandHandler : IRequestHandler<CreateOfferCommand, Res
         await _repository.AddAsync(offer, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(offer.Id, "Offer created successfully");
+        return Result<Guid>.Success(offer.Id, _localizer["Offer created successfully"]);
     }
 }
 

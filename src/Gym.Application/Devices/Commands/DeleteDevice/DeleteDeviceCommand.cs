@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -14,12 +16,14 @@ public class DeleteDeviceCommandHandler : IRequestHandler<DeleteDeviceCommand, R
     private readonly IRepository<Device> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public DeleteDeviceCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public DeleteDeviceCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(DeleteDeviceCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ public class DeleteDeviceCommandHandler : IRequestHandler<DeleteDeviceCommand, R
         var device = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (device is null)
-            return Result.Failure("Device not found");
+            return Result.Failure(_localizer["Device not found"]);
 
         _repository.Delete(device);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

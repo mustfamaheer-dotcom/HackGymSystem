@@ -13,8 +13,7 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Code)
-            .ValueGeneratedOnAdd()
-            .HasDefaultValue(0);
+            .IsRequired();
 
         builder.HasIndex(x => x.Code)
             .IsUnique();

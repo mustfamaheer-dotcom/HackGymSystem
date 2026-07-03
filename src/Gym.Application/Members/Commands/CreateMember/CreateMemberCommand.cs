@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.Extensions.Localization;
@@ -8,6 +7,7 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using Gym.Shared.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Members.Commands.CreateMember;
 
@@ -37,16 +37,20 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 {
     private readonly IRepository<Member> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public CreateMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork)
+    public CreateMemberCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
         var receiptNumber = GenerateReceiptNumber();
+
+        var lastCode = await _repository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
 
         var member = new Member(
             receiptNumber,
@@ -55,6 +59,7 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
             DateTime.UtcNow
         )
         {
+            Code = lastCode + 1,
             Email = request.Email,
             DateOfBirth = request.DateOfBirth,
             Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true),
@@ -77,7 +82,7 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
         await _repository.AddAsync(member, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(member.Id, "Member created successfully");
+        return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
     }
 
     private static string GenerateReceiptNumber()

@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -14,12 +16,14 @@ public class TogglePlanStatusCommandHandler : IRequestHandler<TogglePlanStatusCo
     private readonly IRepository<MembershipPlan> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public TogglePlanStatusCommandHandler(IRepository<MembershipPlan> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public TogglePlanStatusCommandHandler(IRepository<MembershipPlan> repository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(TogglePlanStatusCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ public class TogglePlanStatusCommandHandler : IRequestHandler<TogglePlanStatusCo
         var plan = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (plan is null)
-            return Result.Failure("Plan not found");
+            return Result.Failure(_localizer["Plan not found"]);
 
         plan.ToggleActive(request.IsActive);
         _repository.Update(plan);

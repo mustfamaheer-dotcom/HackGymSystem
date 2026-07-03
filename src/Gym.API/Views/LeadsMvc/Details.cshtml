@@ -8,11 +8,34 @@
         <h4><i class="bi bi-person-up"></i> @Model.Name</h4>
         <span class="receipt-badge">@SharedLocalizer[Model.Status.ToString()]</span>
     </div>
+    @* WhatsApp *@
+    <div class="p-3 border-bottom bg-light d-flex align-items-center gap-2">
+        <i class="bi bi-whatsapp text-success"></i>
+        <select id="whatsappTemplate" class="form-select form-select-sm" style="width:auto;max-width:180px;">
+            <option value="">@SharedLocalizer["Select template..."]</option>
+            @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+            {
+                foreach (var t in tpls)
+                {
+                    <option value="@t.Value">@t.Text</option>
+                }
+            }
+        </select>
+        <a id="whatsappBtn" class="btn btn-success btn-sm rounded-pill"
+           data-phone="@Model.Phone"
+           data-member="@Model.Name"
+           href="#" target="_blank">
+            <i class="bi bi-whatsapp"></i>
+        </a>
+    </div>
+
     <div class="receipt-body">
         <div class="section-title"><i class="bi bi-info-circle"></i> @SharedLocalizer["Lead Information"]</div>
         <table class="table table-borderless table-sm">
             <tr><td class="detail-label">@SharedLocalizer["Name"]</td><td class="detail-value">@Model.Name</td></tr>
             <tr><td class="detail-label">@SharedLocalizer["Phone"]</td><td class="detail-value">@Model.Phone</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Email"]</td><td class="detail-value">@(!string.IsNullOrEmpty(Model.Email) ? Model.Email : "-")</td></tr>
+            <tr><td class="detail-label">@SharedLocalizer["Gender"]</td><td class="detail-value">@(Model.Gender.HasValue ? SharedLocalizer[Model.Gender.ToString()!].Value : "-")</td></tr>
             <tr><td class="detail-label">@SharedLocalizer["Source"]</td><td class="detail-value">@SharedLocalizer[Model.Source.ToString()]</td></tr>
             <tr><td class="detail-label">@SharedLocalizer["Status"]</td><td class="detail-value">@SharedLocalizer[Model.Status.ToString()]</td></tr>
             <tr><td class="detail-label">@SharedLocalizer["Package"]</td><td class="detail-value">@(Model.InterestedPackageName ?? "-")</td></tr>
@@ -78,3 +101,75 @@
         <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            function formatOffer(o) {
+                var lines = ['▸ ' + o.OfferTitle];
+                var details = [];
+                if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                if (o.OfferType === 'FixedPrice') {
+                    details.push('Type: Fixed Price');
+                } else if (o.OfferType === 'BonusDuration') {
+                    var bonus = [];
+                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
+                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
+                    if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
+                    details.push('Type: Bonus Duration');
+                } else if (o.OfferType === 'FreeRegistration') {
+                    details.push('Type: Free Registration');
+                } else if (o.OfferType === 'ExtraFreeze') {
+                    if (o.ExtraFreezeDays) details.push('Extra Freeze: +' + o.ExtraFreezeDays + ' day' + (o.ExtraFreezeDays > 1 ? 's' : ''));
+                    details.push('Type: Extra Freeze');
+                } else if (o.OfferType === 'Custom') {
+                    details.push('Type: Custom');
+                }
+                if (details.length) lines.push('  ' + details.join(' | '));
+                return lines.join('\n');
+            }
+            var offersText = activeOffers.length > 0
+                ? activeOffers.map(formatOffer).join('\n\n')
+                : '';
+
+            var select = document.getElementById('whatsappTemplate');
+            var btn = document.getElementById('whatsappBtn');
+
+            function renderMessage(templateId) {
+                var body = templateMap[templateId] || '';
+                return body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{Offers\}/g, offersText);
+            }
+
+            select.addEventListener('change', function() {
+                var tid = this.value;
+                if (tid) {
+                    var msg = renderMessage(tid);
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.href = '#';
+                    btn.classList.add('disabled');
+                }
+            });
+
+            btn.addEventListener('click', function(e) {
+                if (!select.value) {
+                    e.preventDefault();
+                    alert('@SharedLocalizer["Please select a template first"]');
+                }
+            });
+        })();
+    </script>
+}

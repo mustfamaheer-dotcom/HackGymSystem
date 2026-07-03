@@ -12,7 +12,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Leads.Queries.GetAllLeads;
 
-public record GetAllLeadsQuery(string? SearchTerm, LeadStatus? StatusFilter, int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedResult<LeadDto>>>;
+public record GetAllLeadsQuery(
+    string? SearchTerm,
+    LeadStatus? StatusFilter,
+    Gender? GenderFilter,
+    LeadSource? SourceFilter,
+    Guid? PackageFilter,
+    DateTime? DateFrom,
+    DateTime? DateTo,
+    int Page = 1,
+    int PageSize = 20) : IRequest<Result<PaginatedResult<LeadDto>>>;
 
 public class GetAllLeadsQueryHandler : IRequestHandler<GetAllLeadsQuery, Result<PaginatedResult<LeadDto>>>
 {
@@ -35,11 +44,26 @@ public class GetAllLeadsQueryHandler : IRequestHandler<GetAllLeadsQuery, Result<
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var s = request.SearchTerm.ToLower();
-            query = query.Where(l => l.Name.ToLower().Contains(s) || l.Phone.Contains(s));
+            query = query.Where(l => l.Name.ToLower().Contains(s) || l.Phone.Contains(s) || (l.Email != null && l.Email.ToLower().Contains(s)));
         }
 
         if (request.StatusFilter.HasValue)
             query = query.Where(l => l.Status == request.StatusFilter.Value);
+
+        if (request.GenderFilter.HasValue)
+            query = query.Where(l => l.Gender == request.GenderFilter.Value);
+
+        if (request.SourceFilter.HasValue)
+            query = query.Where(l => l.Source == request.SourceFilter.Value);
+
+        if (request.PackageFilter.HasValue)
+            query = query.Where(l => l.InterestedPackageId == request.PackageFilter.Value);
+
+        if (request.DateFrom.HasValue)
+            query = query.Where(l => l.CreatedAt >= request.DateFrom.Value);
+
+        if (request.DateTo.HasValue)
+            query = query.Where(l => l.CreatedAt <= request.DateTo.Value);
 
         query = query.OrderByDescending(l => l.CreatedAt);
 

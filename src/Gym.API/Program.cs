@@ -3,9 +3,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Gym.API.Middleware;
 using Gym.API.Resources;
+using Gym.API.Services;
 using Gym.Application;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
+using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -111,9 +113,12 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddScoped<ReceiptPdfService>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 

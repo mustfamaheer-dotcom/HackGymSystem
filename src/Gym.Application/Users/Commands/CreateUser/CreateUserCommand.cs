@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -18,10 +20,12 @@ public record CreateUserCommand(
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public CreateUserCommandHandler(IUnitOfWork unitOfWork)
+    public CreateUserCommandHandler(IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -31,17 +35,17 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 
         var role = await roleRepo.GetByIdAsync(request.RoleId, cancellationToken);
         if (role is null)
-            return Result<Guid>.Failure("Role not found");
+            return Result<Guid>.Failure(_localizer["Role not found"]);
 
         var existingUser = await userRepo.Query()
             .FirstOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
         if (existingUser is not null)
-            return Result<Guid>.Failure("Username already exists");
+            return Result<Guid>.Failure(_localizer["Username already exists"]);
 
         var existingEmail = await userRepo.Query()
             .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
         if (existingEmail is not null)
-            return Result<Guid>.Failure("Email already exists");
+            return Result<Guid>.Failure(_localizer["Email already exists"]);
 
         var user = new User(
             request.Username,

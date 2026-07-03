@@ -148,12 +148,29 @@ if /i not "!CONFIRM!"=="YES" (
     goto db_menu
 )
 
-:: Get default data path from SQL Server
+:: Determine data path based on instance type
 set "DATA_PATH="
-for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -C -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
-    set "DATA_PATH=%%P"
+
+:: Check if it's LocalDB (avoid pipe + findstr subshell bug)
+set "IS_LOCALDB=0"
+if not "%DB_INSTANCE:localdb=%"=="%DB_INSTANCE%" set "IS_LOCALDB=1"
+if not "%DB_INSTANCE:LocalDB=%"=="%DB_INSTANCE%" set "IS_LOCALDB=1"
+
+if %IS_LOCALDB% EQU 1 (
+    set "DATA_PATH=%LOCALAPPDATA%\Microsoft\Microsoft SQL Server Local DB\Instances\MSSQLLocalDB\"
+) else (
+    :: Query full SQL Server instance for default data path (retry without -C flag)
+    for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
+        if not "%%P"=="" set "DATA_PATH=%%P"
+    )
+    if "!DATA_PATH!"=="" (
+        for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
+            if not "%%P"=="" set "DATA_PATH=%%P"
+        )
+    )
+    if "!DATA_PATH!"=="" set "DATA_PATH=C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\"
 )
-if "!DATA_PATH!"=="" set "DATA_PATH=C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\"
+
 if not "!DATA_PATH:~-1!"=="\" set "DATA_PATH=!DATA_PATH!\"
 
 echo.
@@ -161,19 +178,69 @@ echo   Restoring: !RESTORE_FILE!
 echo   Data path: !DATA_PATH!
 echo.
 
-sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET SINGLE_USER WITH ROLLBACK IMMEDIATE" >nul 2>&1
-sqlcmd -S %DB_INSTANCE% -E -C -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH MOVE 'GymManagementDb' TO '!DATA_PATH:\=\\!GymManagementDb.mdf', MOVE 'GymManagementDb_log' TO '!DATA_PATH:\=\\!GymManagementDb_log.ldf', REPLACE, RECOVERY"
+echo   Step 1/3: Setting database to SINGLE_USER...
+sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET SINGLE_USER WITH ROLLBACK IMMEDIATE" >nul 2>&1
+
+echo   Step 2/3: Restoring from backup...
+sqlcmd -S %DB_INSTANCE% -E -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH MOVE 'GymManagementDb' TO '!DATA_PATH:\=\\!GymManagementDb.mdf', MOVE 'GymManagementDb_log' TO '!DATA_PATH:\=\\!GymManagementDb_log.ldf', REPLACE, RECOVERY"
 if %ERRORLEVEL% EQU 0 (
-    sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+    echo   Step 3/3: Setting database to MULTI_USER...
+    sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+    echo.
     echo   SUCCESS: Database restored successfully.
     echo.
-    echo   Press any key to continue to application startup...
-    pause >nul
+    echo   IMPORTANT: The restored database may have an older schema.
+    echo   If the app fails, delete the database and run option [1] Auto-migrate.
+    echo.
+    echo.
+    echo   Choose next step:
+    echo     [C] Continue to full application startup (build + launch)
+    echo     [X] Exit this launcher (database restored, safe to close)
+    echo.
+    set /p "POST_RESTORE=  Your choice: "
+    if /i "!POST_RESTORE!"=="X" (
+        echo.
+        echo   Database restored. Launcher exiting.
+        echo   Run start-system.bat later to start the application.
+        pause >nul
+        exit /b 0
+    )
     goto db_done
 ) else (
-    sqlcmd -S %DB_INSTANCE% -E -C -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+    echo   Restore command failed. Trying alternative: restore without MOVE...
+    sqlcmd -S %DB_INSTANCE% -E -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH REPLACE, RECOVERY"
+    if %ERRORLEVEL% EQU 0 (
+        echo   Step 3/3: Setting database to MULTI_USER...
+        sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
+        echo.
+        echo   SUCCESS: Database restored successfully (without MOVE).
+        echo.
+        echo.
+        echo   Choose next step:
+        echo     [C] Continue to full application startup (build + launch)
+        echo     [X] Exit this launcher (database restored, safe to close)
+        echo.
+        set /p "POST_RESTORE=  Your choice: "
+        if /i "!POST_RESTORE!"=="X" (
+            echo.
+            echo   Database restored. Launcher exiting.
+            echo   Run start-system.bat later to start the application.
+            pause >nul
+            exit /b 0
+        )
+        goto db_done
+    )
+    echo.
     echo   ERROR: Restore failed. Check backup file and SQL Server logs.
     echo.
+    echo   Possible causes:
+    echo   - The .bak file may be from a different SQL Server version
+    echo   - The logical file names inside the backup may differ
+    echo   - SQL Server may not have permission to write to the data path
+    echo.
+    echo   Press any key to return to menu...
+    pause >nul
+    sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     goto db_menu
 )
 

@@ -5,6 +5,8 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 
 namespace Gym.Infrastructure.Services;
 
@@ -13,12 +15,14 @@ public class RolePermissionService : IRolePermissionService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUser;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public RolePermissionService(IUnitOfWork unitOfWork, ICurrentUserService currentUser, IHttpContextAccessor httpContextAccessor)
+    public RolePermissionService(IUnitOfWork unitOfWork, ICurrentUserService currentUser, IHttpContextAccessor httpContextAccessor, IStringLocalizer<ApplicationResources> localizer)
     {
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
         _httpContextAccessor = httpContextAccessor;
+        _localizer = localizer;
     }
 
     public async Task<Result<List<RoleListDto>>> GetAllRolesAsync(CancellationToken ct = default)
@@ -53,7 +57,7 @@ public class RolePermissionService : IRolePermissionService
             .FirstOrDefaultAsync(r => r.Id == id, ct);
 
         if (role is null)
-            return Result<RoleDetailDto>.Failure("Role not found.");
+            return Result<RoleDetailDto>.Failure(_localizer["Role not found."]);
 
         return Result<RoleDetailDto>.Success(new RoleDetailDto
         {
@@ -74,7 +78,7 @@ public class RolePermissionService : IRolePermissionService
             .AnyAsync(r => r.Name == dto.Name, ct);
 
         if (exists)
-            return Result<Guid>.Failure("A role with this name already exists.");
+            return Result<Guid>.Failure(_localizer["A role with this name already exists."]);
 
         var role = new Role(dto.Name, dto.Description) { IsActive = dto.IsActive };
         await _unitOfWork.Repository<Role>().AddAsync(role, ct);
@@ -89,7 +93,7 @@ public class RolePermissionService : IRolePermissionService
             await _unitOfWork.SaveChangesAsync(ct);
         }
 
-        await LogPermissionChangeAsync("Create", role.Name, null, dto.PermissionIds, ct);
+        await LogPermissionChangeAsync(_localizer["Create"], role.Name, null, dto.PermissionIds, ct);
 
         return Result<Guid>.Success(role.Id);
     }
@@ -102,14 +106,14 @@ public class RolePermissionService : IRolePermissionService
             .FirstOrDefaultAsync(r => r.Id == dto.Id, ct);
 
         if (role is null)
-            return Result.Failure("Role not found.");
+            return Result.Failure(_localizer["Role not found."]);
 
         var duplicate = await _unitOfWork.Repository<Role>()
             .Query()
             .AnyAsync(r => r.Name == dto.Name && r.Id != dto.Id, ct);
 
         if (duplicate)
-            return Result.Failure("A role with this name already exists.");
+            return Result.Failure(_localizer["A role with this name already exists."]);
 
         var oldPermissionIds = role.RolePermissions.Select(rp => rp.PermissionId).ToList();
 
@@ -129,9 +133,9 @@ public class RolePermissionService : IRolePermissionService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
-        await LogPermissionChangeAsync("Update", role.Name, oldPermissionIds, dto.PermissionIds, ct);
+        await LogPermissionChangeAsync(_localizer["Update"], role.Name, oldPermissionIds, dto.PermissionIds, ct);
 
-        return Result.Success("Role updated successfully.");
+        return Result.Success(_localizer["Role updated successfully."]);
     }
 
     public async Task<Result> DeleteRoleAsync(Guid id, CancellationToken ct = default)
@@ -143,13 +147,13 @@ public class RolePermissionService : IRolePermissionService
             .FirstOrDefaultAsync(r => r.Id == id, ct);
 
         if (role is null)
-            return Result.Failure("Role not found.");
+            return Result.Failure(_localizer["Role not found."]);
 
         if (role.IsSystem)
-            return Result.Failure("System roles cannot be deleted.");
+            return Result.Failure(_localizer["System roles cannot be deleted."]);
 
         if (role.Users.Count > 0)
-            return Result.Failure("Cannot delete a role that is assigned to users.");
+            return Result.Failure(_localizer["Cannot delete a role that is assigned to users."]);
 
         var adminCount = await _unitOfWork.Repository<User>()
             .Query()
@@ -160,7 +164,7 @@ public class RolePermissionService : IRolePermissionService
             .CountAsync(u => u.IsActive, ct);
 
         if (adminCount > 0 && totalAdmins <= 1)
-            return Result.Failure("Cannot remove the last admin role.");
+            return Result.Failure(_localizer["Cannot remove the last admin role."]);
 
         foreach (var rp in role.RolePermissions.ToList())
             _unitOfWork.Repository<RolePermission>().Delete(rp);
@@ -168,7 +172,7 @@ public class RolePermissionService : IRolePermissionService
         _unitOfWork.Repository<Role>().Delete(role);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return Result.Success("Role deleted successfully.");
+        return Result.Success(_localizer["Role deleted successfully."]);
     }
 
     public async Task<Result<List<PermissionGroupDto>>> GetAllPermissionsGroupedAsync(CancellationToken ct = default)
@@ -179,7 +183,7 @@ public class RolePermissionService : IRolePermissionService
             .ToListAsync(ct);
 
         var groups = permissions
-            .GroupBy(p => string.IsNullOrEmpty(p.Module) ? "General" : p.Module)
+            .GroupBy(p => string.IsNullOrEmpty(p.Module) ? _localizer["General"] : p.Module)
             .Select(g => new PermissionGroupDto
             {
                 Module = g.Key,
@@ -203,7 +207,7 @@ public class RolePermissionService : IRolePermissionService
             .FirstOrDefaultAsync(r => r.Id == roleId, ct);
 
         if (role is null)
-            return Result.Failure("Role not found.");
+            return Result.Failure(_localizer["Role not found."]);
 
         var oldPermissionIds = role.RolePermissions.Select(rp => rp.PermissionId).ToList();
         var existing = oldPermissionIds.ToHashSet();
@@ -217,9 +221,9 @@ public class RolePermissionService : IRolePermissionService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
-        await LogPermissionChangeAsync("UpdatePermissions", role.Name, oldPermissionIds, permissionIds, ct);
+        await LogPermissionChangeAsync(_localizer["UpdatePermissions"], role.Name, oldPermissionIds, permissionIds, ct);
 
-        return Result.Success("Role permissions updated successfully.");
+        return Result.Success(_localizer["Role permissions updated successfully."]);
     }
 
     private string GetClientIp()
@@ -228,10 +232,10 @@ public class RolePermissionService : IRolePermissionService
         {
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext?.Request.Headers.TryGetValue("X-Forwarded-For", out var forwarded) == true)
-                return forwarded.FirstOrDefault() ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            return httpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return forwarded.FirstOrDefault() ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? _localizer["unknown"];
+            return httpContext?.Connection.RemoteIpAddress?.ToString() ?? _localizer["unknown"];
         }
-        catch { return "unknown"; }
+        catch { return _localizer["unknown"]; }
     }
 
     private async Task LogPermissionChangeAsync(string action, string roleName, List<Guid>? oldPermIds, List<Guid>? newPermIds, CancellationToken ct)

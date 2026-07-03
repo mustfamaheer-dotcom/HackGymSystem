@@ -1,3 +1,4 @@
+using System.Threading;
 using ClosedXML.Excel;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Members.Import;
@@ -5,6 +6,8 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 
 namespace Gym.Infrastructure.Services;
 
@@ -14,17 +17,20 @@ public class ExcelImportService : IExcelImportService
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Subscription> _subscriptionRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public ExcelImportService(
         IMemberRepository memberRepository,
         IRepository<MembershipPlan> planRepository,
         IRepository<Subscription> subscriptionRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _memberRepository = memberRepository;
         _planRepository = planRepository;
         _subscriptionRepository = subscriptionRepository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<MemberImportResult> ImportMembersAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
@@ -36,7 +42,7 @@ public class ExcelImportService : IExcelImportService
             result.Failed.Add(new MemberImportRow
             {
                 RowNumber = 0,
-                FailureReason = "File must be an .xlsx file"
+                FailureReason = _localizer["File must be an .xlsx file"]
             });
             return result;
         }
@@ -59,6 +65,8 @@ public class ExcelImportService : IExcelImportService
 
         var seenNationalIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var nextCode = (await _memberRepository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0) + 1;
 
         using var workbook = new XLWorkbook(fileStream);
         var sheet = workbook.Worksheet(1);
@@ -97,15 +105,15 @@ public class ExcelImportService : IExcelImportService
                 importRow.NationalId = nationalId;
 
                 if (string.IsNullOrWhiteSpace(fullName))
-                    errors.Add("Full name is required");
+                    errors.Add(_localizer["Full name is required"]);
 
                 if (string.IsNullOrWhiteSpace(phoneNumber))
-                    errors.Add("Phone number is required");
+                    errors.Add(_localizer["Phone number is required"]);
                 else if (phoneNumber.Length != 11 || !phoneNumber.All(char.IsDigit))
-                    errors.Add("Phone number must be exactly 11 digits");
+                    errors.Add(_localizer["Phone number must be exactly 11 digits"]);
 
                 if (!string.IsNullOrEmpty(nationalId) && (nationalId.Length != 14 || !nationalId.All(char.IsDigit)))
-                    errors.Add("National ID must be exactly 14 digits");
+                    errors.Add(_localizer["National ID must be exactly 14 digits"]);
 
                 var hasDisease = !string.IsNullOrEmpty(hasDiseaseStr) &&
                     (hasDiseaseStr.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
@@ -113,13 +121,13 @@ public class ExcelImportService : IExcelImportService
                      hasDiseaseStr == "1");
 
                 if (hasDisease && string.IsNullOrWhiteSpace(diseaseType))
-                    errors.Add("Disease type is required when HasDisease is true");
+                    errors.Add(_localizer["Disease type is required when HasDisease is true"]);
 
                 decimal.TryParse(subscriptionPriceStr, out var subscriptionPrice);
                 decimal.TryParse(paidAmountStr, out var paidAmount);
 
                 if (paidAmount > subscriptionPrice)
-                    errors.Add("Paid amount cannot exceed subscription price");
+                    errors.Add(_localizer["Paid amount cannot exceed subscription price"]);
 
                 if (!int.TryParse(durationStr, out var durationMonths) || durationMonths <= 0)
                     durationMonths = 1;
@@ -135,17 +143,17 @@ public class ExcelImportService : IExcelImportService
                 if (!string.IsNullOrWhiteSpace(paymentMethodStr))
                 {
                     if (!Enum.TryParse<PaymentMethod>(paymentMethodStr, true, out paymentMethod))
-                        errors.Add($"Invalid payment method '{paymentMethodStr}'. Use Cash, Visa, Instapay, or Wallet");
+                        errors.Add(string.Format(_localizer["Invalid payment method '{0}'. Use Cash, Visa, Instapay, or Wallet"], paymentMethodStr));
                 }
 
                 if (!string.IsNullOrEmpty(nationalId))
                 {
                     if (existingNationalIds.Contains(nationalId) || seenNationalIds.Contains(nationalId))
-                        errors.Add($"Duplicate National ID '{nationalId}' - already registered");
+                        errors.Add(string.Format(_localizer["Duplicate National ID '{0}' - already registered"], nationalId));
                 }
 
                 if (existingPhones.Contains(phoneNumber) || seenPhones.Contains(phoneNumber))
-                    errors.Add($"Duplicate phone number '{phoneNumber}' - already registered");
+                    errors.Add(string.Format(_localizer["Duplicate phone number '{0}' - already registered"], phoneNumber));
 
                 Guid? packageId = null;
                 if (!string.IsNullOrWhiteSpace(planName))
@@ -153,7 +161,7 @@ public class ExcelImportService : IExcelImportService
                     var plan = plans.FirstOrDefault(p =>
                         p.Name.Equals(planName, StringComparison.OrdinalIgnoreCase));
                     if (plan is null)
-                        errors.Add($"Plan '{planName}' not found");
+                        errors.Add(string.Format(_localizer["Plan '{0}' not found"], planName));
                     else
                         packageId = plan.Id;
                 }
@@ -165,7 +173,6 @@ public class ExcelImportService : IExcelImportService
                     continue;
                 }
 
-                var lastCode = await _memberRepository.Query().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
                 var receiptNumber = GenerateReceiptNumber();
 
                 var member = new Member(
@@ -175,7 +182,7 @@ public class ExcelImportService : IExcelImportService
                     DateTime.UtcNow
                 )
                 {
-                    Code = lastCode + 1,
+                    Code = nextCode++,
                     Nationality = nationality,
                     NationalId = nationalId,
                     Company = company,
@@ -225,7 +232,7 @@ public class ExcelImportService : IExcelImportService
             }
             catch (Exception ex)
             {
-                importRow.FailureReason = $"Unexpected error: {ex.Message}";
+                importRow.FailureReason = string.Format(_localizer["Unexpected error: {0}"], ex.Message);
                 result.Failed.Add(importRow);
             }
         }
@@ -241,8 +248,10 @@ public class ExcelImportService : IExcelImportService
         return cell.IsEmpty() ? string.Empty : cell.GetString().Trim();
     }
 
+    private static int _receiptCounter = 0;
     private static string GenerateReceiptNumber()
     {
-        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        var seq = Interlocked.Increment(ref _receiptCounter);
+        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + seq.ToString("D4");
     }
 }

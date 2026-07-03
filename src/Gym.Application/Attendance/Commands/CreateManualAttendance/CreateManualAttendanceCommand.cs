@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -19,22 +21,25 @@ public class CreateManualAttendanceCommandHandler : IRequestHandler<CreateManual
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IRepository<Member> _memberRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public CreateManualAttendanceCommandHandler(
         IRepository<Attendance> attendanceRepository,
         IRepository<Member> memberRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStringLocalizer<ApplicationResources> localizer)
     {
         _attendanceRepository = attendanceRepository;
         _memberRepository = memberRepository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateManualAttendanceCommand request, CancellationToken cancellationToken)
     {
         var memberExists = await _memberRepository.AnyAsync(m => m.Id == request.MemberId, cancellationToken);
         if (!memberExists)
-            return Result<Guid>.Failure("Member not found");
+            return Result<Guid>.Failure(_localizer["Member not found"]);
 
         var attendance = new Attendance(request.MemberId, request.Date, request.Time, true);
 

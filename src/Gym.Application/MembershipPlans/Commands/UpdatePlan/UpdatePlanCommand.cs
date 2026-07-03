@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -22,12 +24,14 @@ public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, Resul
     private readonly IRepository<MembershipPlan> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public UpdatePlanCommandHandler(IRepository<MembershipPlan> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdatePlanCommandHandler(IRepository<MembershipPlan> repository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(UpdatePlanCommand request, CancellationToken cancellationToken)
@@ -35,7 +39,7 @@ public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, Resul
         var plan = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (plan is null)
-            return Result.Failure("Plan not found");
+            return Result.Failure(_localizer["Plan not found"]);
 
         plan.Update(
             request.Name,

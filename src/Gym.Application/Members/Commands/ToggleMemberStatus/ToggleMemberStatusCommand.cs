@@ -14,18 +14,20 @@ public class ToggleMemberStatusCommandHandler : IRequestHandler<ToggleMemberStat
 {
     private readonly IRepository<Member> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public ToggleMemberStatusCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork)
+    public ToggleMemberStatusCommandHandler(IRepository<Member> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(ToggleMemberStatusCommand request, CancellationToken cancellationToken)
     {
         var member = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         if (request.IsDeleted)
             member.SoftDelete();
@@ -35,7 +37,7 @@ public class ToggleMemberStatusCommandHandler : IRequestHandler<ToggleMemberStat
         _repository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member status updated successfully");
+        return Result.Success(_localizer["Member status updated successfully"]);
     }
 }
 

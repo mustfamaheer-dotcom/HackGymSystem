@@ -1,116 +1,212 @@
 @using Gym.Application.Members.DTOs
 @model MemberDto
+@{
+    var attendances = ViewBag.Attendances as IReadOnlyList<Attendance>;
+    var pdfUrl = Url.Action("DownloadReceiptPdf", "Members", new { id = Model.Id });
+}
 
 <div class="receipt-card">
     <div class="receipt-header">
-        <h4><i class="bi bi-receipt"></i> @SharedLocalizer["Membership Receipt"]</h4>
-        <span class="receipt-badge"><i class="bi bi-receipt-cutoff"></i> #@Model.Code</span>
+        <h4><i class="bi bi-person-badge"></i> @Model.FullName</h4>
+        <div class="d-flex align-items-center gap-2">
+            <span class="receipt-badge"><i class="bi bi-receipt-cutoff"></i> #@Model.Code</span>
+            @if (Model.IsDeleted)
+            {
+                <span class="badge-status badge-expired">@SharedLocalizer["Deleted"]</span>
+            }
+            else
+            {
+                <span class="badge-status badge-active">@SharedLocalizer["Active"]</span>
+            }
+        </div>
+    </div>
+
+    @* WhatsApp Template Selector *@
+    <div class="p-3 border-bottom bg-light d-flex align-items-center gap-2">
+        <i class="bi bi-whatsapp text-success"></i>
+        <select id="whatsappTemplate" class="form-select form-select-sm" style="width:auto;max-width:180px;">
+            <option value="">@SharedLocalizer["Select template..."]</option>
+            @if (ViewBag.WhatsAppTemplates is SelectList tpls)
+            {
+                foreach (var t in tpls)
+                {
+                    <option value="@t.Value">@t.Text</option>
+                }
+            }
+        </select>
+        <a id="whatsappBtn" class="btn btn-success btn-sm rounded-pill"
+           data-phone="@Model.PhoneNumber"
+           data-member="@Model.FullName"
+           data-receipt="@Model.ReceiptNumber"
+           data-code="@Model.Code"
+           href="#" target="_blank">
+            <i class="bi bi-whatsapp"></i>
+        </a>
     </div>
 
     <div class="receipt-body">
-        <div class="row g-4">
-            <div class="col-md-6">
-                @if (!string.IsNullOrEmpty(Model.ImagePath))
-                {
-                    <div class="text-center mb-3">
-                        <img src="~/@Model.ImagePath" alt="@Model.FullName" class="rounded border" style="max-width: 200px; max-height: 200px; object-fit: cover;" />
-                    </div>
-                }
-                <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
-                <table class="table table-borderless table-sm">
-                    <tr><td class="detail-label">@SharedLocalizer["Member ID"]</td><td class="detail-value"><strong>@Model.Code</strong></td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Receipt ID"]</td><td class="detail-value"><code>@Model.ReceiptNumber</code></td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Full Name"]</td><td class="detail-value">@Model.FullName</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Phone Number"]</td><td class="detail-value">@Model.PhoneNumber</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Email"]</td><td class="detail-value">@(Model.Email ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Date of Birth"]</td><td class="detail-value">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Gender"]</td><td class="detail-value">@(Model.Gender?.ToString() ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Nationality"]</td><td class="detail-value">@Model.Nationality</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["National ID"]</td><td class="detail-value">@Model.NationalId</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Company"]</td><td class="detail-value">@(Model.Company ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Address"]</td><td class="detail-value">@(Model.Address ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Referral Source"]</td><td class="detail-value">@(Model.ReferralSource ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Notes"]</td><td class="detail-value">@(Model.Notes ?? "-")</td></tr>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <div class="section-title"><i class="bi bi-calendar-check"></i> @SharedLocalizer["Subscription"]</div>
-                <table class="table table-borderless table-sm">
-                    <tr><td class="detail-label">@SharedLocalizer["Membership Plan"]</td><td class="detail-value">@(Model.PackageName ?? "-")</td></tr>
-                    <tr><td class="detail-label">@SharedLocalizer["Registration Date"]</td><td class="detail-value">@Model.RegistrationDate.ToString("dd/MM/yyyy")</td></tr>
-                </table>
-            </div>
-        </div>
-
-        <div class="section-divider"><span>@SharedLocalizer["Medical"]</span></div>
-        <div class="section-title"><i class="bi bi-heart-pulse"></i> @SharedLocalizer["Medical Information"]</div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Has Disease"]</div>
-                <div class="detail-value">@(Model.HasDisease ? SharedLocalizer["Yes"] : SharedLocalizer["No"])</div>
-            </div>
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Disease Type"]</div>
-                <div class="detail-value">@(Model.DiseaseType ?? "-")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Weight"]</div>
-                <div class="detail-value">@(Model.Weight.HasValue ? Model.Weight.Value.ToString("N1") + " " + SharedLocalizer["kg"] : "-")</div>
-            </div>
-        </div>
-
-        <div class="section-divider"><span>@SharedLocalizer["Fingerprint"]</span></div>
-        <div class="section-title"><i class="bi bi-fingerprint"></i> @SharedLocalizer["Fingerprint"]</div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="detail-label">@SharedLocalizer["Device ID"]</div>
-                <div class="detail-value">@(Model.FingerprintDeviceId?.ToString() ?? "-")</div>
-            </div>
-        </div>
-
-        <div class="section-divider"><span>@SharedLocalizer["Signatures"]</span></div>
-        <div class="section-title"><i class="bi bi-pen"></i> @SharedLocalizer["Signatures"]</div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="detail-label">@SharedLocalizer["Member Signature"]</div>
-                <div class="detail-value">@(Model.MemberSignature ?? "-")</div>
-            </div>
-            <div class="col-md-6">
-                <div class="detail-label">@SharedLocalizer["Admin Signature"]</div>
-                <div class="detail-value">@(Model.AdminSignature ?? "-")</div>
-            </div>
-        </div>
-
-        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Created At"]</div>
-                <div class="detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Last Updated"]</div>
-                <div class="detail-value">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="detail-label">@SharedLocalizer["Status"]</div>
-                <div class="detail-value">
-                    @if (Model.IsDeleted)
+        @* Profile Card *@
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="detail-card text-center">
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
                     {
-                        <span class="badge-status badge-expired">@SharedLocalizer["Deleted"]</span>
+                        <img src="~/@Model.ImagePath" alt="@Model.FullName" class="rounded-circle border mb-2" style="width:120px;height:120px;object-fit:cover;" />
                     }
                     else
                     {
-                        <span class="badge-status badge-active">@SharedLocalizer["Active"]</span>
+                        <div class="rounded-circle border mb-2 mx-auto d-flex align-items-center justify-content-center" style="width:120px;height:120px;background:var(--hover-bg);font-size:2.5rem;color:var(--text-muted-custom);">
+                            <i class="bi bi-person"></i>
+                        </div>
                     }
+                    <h5 class="mb-0">@Model.FullName</h5>
+                    <small class="text-muted">#@Model.Code - @Model.ReceiptNumber</small>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-success-soft);color:var(--green);"><i class="bi bi-telephone"></i></div>
+                            <div class="card-label">@SharedLocalizer["Phone"]</div>
+                            <div class="card-value">@Model.PhoneNumber</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-info-soft);color:var(--blue);"><i class="bi bi-envelope"></i></div>
+                            <div class="card-label">@SharedLocalizer["Email"]</div>
+                            <div class="card-value">@(Model.Email ?? "-")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-warning-soft);color:var(--amber);"><i class="bi bi-calendar"></i></div>
+                            <div class="card-label">@SharedLocalizer["Registered"]</div>
+                            <div class="card-value">@Model.RegistrationDate.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-gray-soft);color:var(--text-secondary);"><i class="bi bi-globe"></i></div>
+                            <div class="card-label">@SharedLocalizer["Nationality"]</div>
+                            <div class="card-value">@Model.Nationality</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-info-soft);color:var(--blue);"><i class="bi bi-credit-card"></i></div>
+                            <div class="card-label">@SharedLocalizer["National ID"]</div>
+                            <div class="card-value">@Model.NationalId</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-card">
+                            <div class="card-icon mb-2" style="background:var(--bg-success-soft);color:var(--green);"><i class="bi bi-box-seam"></i></div>
+                            <div class="card-label">@SharedLocalizer["Plan"]</div>
+                            <div class="card-value">@(Model.PackageName ?? "-")</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        @* More Info Grid *@
+        <div class="section-divider"><span>@SharedLocalizer["Additional Information"]</span></div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Date of Birth"]</div>
+                    <div class="card-value">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Gender"]</div>
+                    <div class="card-value">@(Model.Gender?.ToString() ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Company"]</div>
+                    <div class="card-value">@(Model.Company ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Referral"]</div>
+                    <div class="card-value">@(Model.ReferralSource ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Address"]</div>
+                    <div class="card-value">@(Model.Address ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Weight"]</div>
+                    <div class="card-value">@(Model.Weight.HasValue ? Model.Weight.Value.ToString("N1") + " kg" : "-")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="detail-card">
+                    <div class="card-label">@SharedLocalizer["Disease"]</div>
+                    <div class="card-value">@(Model.HasDisease ? (Model.DiseaseType ?? SharedLocalizer["Yes"].Value) : SharedLocalizer["No"].Value)</div>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="col-12">
+                    <div class="detail-card">
+                        <div class="card-label">@SharedLocalizer["Notes"]</div>
+                        <div class="card-value">@Model.Notes</div>
+                    </div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.MemberSignature) || !string.IsNullOrEmpty(Model.AdminSignature))
+            {
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <div class="card-label">@SharedLocalizer["Member Signature"]</div>
+                        <div class="card-value" style="font-family:'Brush Script MT',cursive;font-size:1.2rem;">@(Model.MemberSignature ?? "-")</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <div class="card-label">@SharedLocalizer["Admin Signature"]</div>
+                        <div class="card-value" style="font-family:'Brush Script MT',cursive;font-size:1.2rem;">@(Model.AdminSignature ?? "-")</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Timestamps *@
+        <div class="section-divider"><span>@SharedLocalizer["Timestamps"]</span></div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="detail-card text-center">
+                    <div class="card-label">@SharedLocalizer["Created At"]</div>
+                    <div class="card-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="detail-card text-center">
+                    <div class="card-label">@SharedLocalizer["Last Updated"]</div>
+                    <div class="card-value">@(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="detail-card text-center">
+                    <div class="card-label">@SharedLocalizer["Fingerprint Device"]</div>
+                    <div class="card-value">@(Model.FingerprintDeviceId?.ToString() ?? "-")</div>
+                </div>
+            </div>
+        </div>
+
+        @* Attendance Log *@
         <div class="section-divider"><span>@SharedLocalizer["Attendance Log"]</span></div>
-        <div class="section-title"><i class="bi bi-door-open"></i> @SharedLocalizer["Attendance Log"]</div>
-        @{
-            var attendances = ViewBag.Attendances as IReadOnlyList<Attendance>;
-        }
         @if (attendances is null || attendances.Count == 0)
         {
             <p class="text-muted small">@SharedLocalizer["No attendance records."]</p>
@@ -148,8 +244,83 @@
         }
     </div>
 
-    <div class="receipt-footer">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back to List"]</a>
+    <div class="receipt-footer" style="justify-content:space-between;">
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+            <a href="@pdfUrl" target="_blank" class="btn btn-outline-danger"><i class="bi bi-filetype-pdf"></i> @SharedLocalizer["Print PDF"]</a>
+        </div>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back"]</a>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateMap = {};
+            templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
+
+            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            function formatOffer(o) {
+                var lines = ['▸ ' + o.OfferTitle];
+                var details = [];
+                if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                if (o.OfferType === 'FixedPrice') {
+                    details.push('Type: Fixed Price');
+                } else if (o.OfferType === 'BonusDuration') {
+                    var bonus = [];
+                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
+                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
+                    if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
+                    details.push('Type: Bonus Duration');
+                } else if (o.OfferType === 'FreeRegistration') {
+                    details.push('Type: Free Registration');
+                } else if (o.OfferType === 'ExtraFreeze') {
+                    if (o.ExtraFreezeDays) details.push('Extra Freeze: +' + o.ExtraFreezeDays + ' day' + (o.ExtraFreezeDays > 1 ? 's' : ''));
+                    details.push('Type: Extra Freeze');
+                } else if (o.OfferType === 'Custom') {
+                    details.push('Type: Custom');
+                }
+                if (details.length) lines.push('  ' + details.join(' | '));
+                return lines.join('\n');
+            }
+            var offersText = activeOffers.length > 0
+                ? activeOffers.map(formatOffer).join('\n\n')
+                : '';
+
+            var select = document.getElementById('whatsappTemplate');
+            var btn = document.getElementById('whatsappBtn');
+
+            function renderMessage(templateId) {
+                var body = templateMap[templateId] || '';
+                return body
+                    .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{Offers\}/g, offersText);
+            }
+
+            select.addEventListener('change', function() {
+                var tid = this.value;
+                if (tid) {
+                    var msg = renderMessage(tid);
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.href = '#';
+                    btn.classList.add('disabled');
+                }
+            });
+
+            btn.addEventListener('click', function(e) {
+                if (!select.value) {
+                    e.preventDefault();
+                    alert('@SharedLocalizer["Please select a template first"]');
+                }
+            });
+        })();
+    </script>
+}

@@ -7,6 +7,8 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 
 namespace Gym.Infrastructure.Services;
 
@@ -15,12 +17,14 @@ public class MemberService : IMemberService
     private readonly IMemberRepository _memberRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public MemberService(IMemberRepository memberRepository, IUnitOfWork unitOfWork, IMapper mapper)
+    public MemberService(IMemberRepository memberRepository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _memberRepository = memberRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result<PaginatedResult<MemberDto>>> GetAllAsync(
@@ -75,7 +79,7 @@ public class MemberService : IMemberService
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
         if (member is null)
-            return Result<MemberDto>.Failure("Member not found");
+            return Result<MemberDto>.Failure(_localizer["Member not found"]);
 
         var dto = _mapper.Map<MemberDto>(member);
         return Result<MemberDto>.Success(dto);
@@ -170,39 +174,18 @@ public class MemberService : IMemberService
 
     public async Task<Result<Guid>> CreateAsync(CreateMemberDto dto, CancellationToken cancellationToken = default)
     {
-        var errors = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(dto.FullName))
-            errors.Add("Full name is required");
-
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-            errors.Add("Phone number is required");
-        else if (dto.PhoneNumber.Length != 11 || !dto.PhoneNumber.All(char.IsDigit))
-            errors.Add("Phone number must be exactly 11 digits");
-
-        if (string.IsNullOrWhiteSpace(dto.Nationality))
-            errors.Add("Nationality is required");
-
-        if (string.IsNullOrWhiteSpace(dto.NationalId))
-            errors.Add("National ID is required");
-        else if (dto.NationalId.Length != 14 || !dto.NationalId.All(char.IsDigit))
-            errors.Add("National ID must be exactly 14 digits");
-
         if (dto.HasDisease && string.IsNullOrWhiteSpace(dto.DiseaseType))
-            errors.Add("Disease type is required when HasDisease is true");
-
-        if (errors.Count > 0)
-            return Result<Guid>.Failure(errors.ToArray());
+            return Result<Guid>.Failure(_localizer["Disease type is required when HasDisease is true"]);
 
         var nationalIdExists = await _memberRepository.AnyAsync(m => m.NationalId == dto.NationalId, cancellationToken);
         if (nationalIdExists)
-            return Result<Guid>.Failure("National ID is already registered to another member");
+            return Result<Guid>.Failure(_localizer["National ID is already registered to another member"]);
 
         var phoneExists = await _memberRepository.AnyAsync(m => m.PhoneNumber == dto.PhoneNumber, cancellationToken);
         if (phoneExists)
-            return Result<Guid>.Failure("Phone number is already registered to another member");
+            return Result<Guid>.Failure(_localizer["Phone number is already registered to another member"]);
 
-        var lastCode = await _memberRepository.Query().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
+        var lastCode = await _memberRepository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
         var receiptNumber = GenerateReceiptNumber();
 
         var member = new Member(
@@ -235,35 +218,35 @@ public class MemberService : IMemberService
         await _memberRepository.AddAsync(member, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(member.Id, "Member created successfully");
+        return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
     }
 
     public async Task<Result> UpdateAsync(UpdateMemberDto dto, CancellationToken cancellationToken = default)
     {
         var member = await _memberRepository.GetByIdAsync(dto.Id, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(dto.FullName))
-            errors.Add("Full name is required");
+            errors.Add(_localizer["Full name is required"]);
 
         if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-            errors.Add("Phone number is required");
+            errors.Add(_localizer["Phone number is required"]);
         else if (dto.PhoneNumber.Length != 11 || !dto.PhoneNumber.All(char.IsDigit))
-            errors.Add("Phone number must be exactly 11 digits");
+            errors.Add(_localizer["Phone number must be exactly 11 digits"]);
 
         if (string.IsNullOrWhiteSpace(dto.Nationality))
-            errors.Add("Nationality is required");
+            errors.Add(_localizer["Nationality is required"]);
 
         if (string.IsNullOrWhiteSpace(dto.NationalId))
-            errors.Add("National ID is required");
+            errors.Add(_localizer["National ID is required"]);
         else if (dto.NationalId.Length != 14 || !dto.NationalId.All(char.IsDigit))
-            errors.Add("National ID must be exactly 14 digits");
+            errors.Add(_localizer["National ID must be exactly 14 digits"]);
 
         if (dto.HasDisease && string.IsNullOrWhiteSpace(dto.DiseaseType))
-            errors.Add("Disease type is required when HasDisease is true");
+            errors.Add(_localizer["Disease type is required when HasDisease is true"]);
 
         if (errors.Count > 0)
             return Result.Failure(string.Join("; ", errors));
@@ -272,14 +255,14 @@ public class MemberService : IMemberService
         {
             var nationalIdExists = await _memberRepository.AnyAsync(m => m.NationalId == dto.NationalId && m.Id != dto.Id, cancellationToken);
             if (nationalIdExists)
-                return Result.Failure("National ID is already registered to another member");
+                return Result.Failure(_localizer["National ID is already registered to another member"]);
         }
 
         if (dto.PhoneNumber != member.PhoneNumber)
         {
             var phoneExists = await _memberRepository.AnyAsync(m => m.PhoneNumber == dto.PhoneNumber && m.Id != dto.Id, cancellationToken);
             if (phoneExists)
-                return Result.Failure("Phone number is already registered to another member");
+                return Result.Failure(_localizer["Phone number is already registered to another member"]);
         }
 
         member.UpdateBasicInfo(
@@ -304,14 +287,14 @@ public class MemberService : IMemberService
         _memberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member updated successfully");
+        return Result.Success(_localizer["Member updated successfully"]);
     }
 
     public async Task<Result> UpdateImagePathAsync(Guid memberId, string? imagePath, CancellationToken cancellationToken = default)
     {
         var member = await _memberRepository.GetByIdAsync(memberId, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         member.ImagePath = imagePath;
         member.MarkUpdated();
@@ -325,26 +308,26 @@ public class MemberService : IMemberService
     {
         var member = await _memberRepository.GetByIdAsync(id, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         member.SoftDelete();
         _memberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member deleted successfully");
+        return Result.Success(_localizer["Member deleted successfully"]);
     }
 
     public async Task<Result> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var member = await _memberRepository.GetByIdAsync(id, true, cancellationToken);
         if (member is null)
-            return Result.Failure("Member not found");
+            return Result.Failure(_localizer["Member not found"]);
 
         member.Restore();
         _memberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Member restored successfully");
+        return Result.Success(_localizer["Member restored successfully"]);
     }
 
     private static string GenerateReceiptNumber()

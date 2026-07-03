@@ -29,6 +29,13 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(x => x.Email)
+            .HasMaxLength(200);
+
+        builder.Property(x => x.Gender)
+            .HasConversion<string>()
+            .HasMaxLength(10);
+
         builder.Property(x => x.Notes)
             .HasMaxLength(2000);
 

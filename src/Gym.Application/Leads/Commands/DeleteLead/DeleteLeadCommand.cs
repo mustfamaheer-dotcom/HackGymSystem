@@ -1,3 +1,6 @@
+using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -11,21 +14,23 @@ public class DeleteLeadCommandHandler : IRequestHandler<DeleteLeadCommand, Resul
 {
     private readonly IRepository<Lead> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public DeleteLeadCommandHandler(IRepository<Lead> repository, IUnitOfWork unitOfWork)
+    public DeleteLeadCommandHandler(IRepository<Lead> repository, IUnitOfWork unitOfWork, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(DeleteLeadCommand request, CancellationToken cancellationToken)
     {
         var lead = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (lead == null)
-            return Result.Failure("Lead not found");
+            return Result.Failure(_localizer["Lead not found"]);
 
         _repository.Delete(lead);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success("Lead deleted successfully");
+        return Result.Success(_localizer["Lead deleted successfully"]);
     }
 }

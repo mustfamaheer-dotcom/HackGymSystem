@@ -28,6 +28,24 @@
                         <input asp-for="Phone" class="form-control" />
                         <span asp-validation-for="Phone" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@SharedLocalizer["Gender"]</label>
+                        <div class="d-flex gap-3 pt-1">
+                            <label class="form-check">
+                                <input type="radio" name="Gender" value="Male" class="form-check-input" checked="@(Model.Gender == Gender.Male ? "checked" : null)" />
+                                <span class="form-check-label"><i class="bi bi-gender-male text-info"></i> @SharedLocalizer["Male"]</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="radio" name="Gender" value="Female" class="form-check-input" checked="@(Model.Gender == Gender.Female ? "checked" : null)" />
+                                <span class="form-check-label"><i class="bi bi-gender-female text-danger"></i> @SharedLocalizer["Female"]</span>
+                            </label>
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <label asp-for="Source" class="form-label">@SharedLocalizer["Source"]</label>
                         <select asp-for="Source" class="form-select" asp-items="Html.GetEnumSelectList<LeadSource>()">

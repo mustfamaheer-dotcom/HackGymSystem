@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Gym.Application.Resources;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -15,12 +17,14 @@ public class ToggleDeviceStatusCommandHandler : IRequestHandler<ToggleDeviceStat
     private readonly IRepository<Device> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IStringLocalizer<ApplicationResources> _localizer;
 
-    public ToggleDeviceStatusCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public ToggleDeviceStatusCommandHandler(IRepository<Device> repository, IUnitOfWork unitOfWork, IMapper mapper, IStringLocalizer<ApplicationResources> localizer)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _localizer = localizer;
     }
 
     public async Task<Result> Handle(ToggleDeviceStatusCommand request, CancellationToken cancellationToken)
@@ -28,7 +32,7 @@ public class ToggleDeviceStatusCommandHandler : IRequestHandler<ToggleDeviceStat
         var device = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (device is null)
-            return Result.Failure("Device not found");
+            return Result.Failure(_localizer["Device not found"]);
 
         device.Status = request.Status;
         device.MarkUpdated();
