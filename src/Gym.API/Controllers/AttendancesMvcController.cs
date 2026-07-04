@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Gym.API.Filters;
 using Gym.API;
+using Gym.Application.Common.DTOs;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -25,11 +26,11 @@ public class AttendancesMvcController : Controller
 
     [RequirePermission("Attendance.View")]
     [HttpGet]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(int page = 1, int? pageSize = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Attendance"];
 
-        var query = new GetAllAttendancesQuery { Page = page, PageSize = pageSize };
+        var query = new GetAllAttendancesQuery { Page = page, PageSize = pageSize ?? PaginationRequest.DefaultPageSize };
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)

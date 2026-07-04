@@ -46,6 +46,9 @@
                         </select>
                         <span asp-validation-for="OfferId" class="text-danger small"></span>
                     </div>
+                    <div class="col-12">
+                        <small class="text-muted"><i class="bi bi-info-circle"></i> @SharedLocalizer["Select a plan OR an offer — they are mutually exclusive"]</small>
+                    </div>
 
                     @* Start Date *@
                     <div class="col-md-6">
@@ -148,53 +151,36 @@
     members = JSON.parse(document.getElementById('subscriptionsCreate-membersData').textContent);
     var offers = JSON.parse(document.getElementById('subscriptionsCreate-offersData').textContent);
 
-    // --- Offer filtering by plan ---
-    function filterOffersByPlan() {
-        var planId = planSelect.value;
-        var currentOffer = offerSelect.value;
-
-        // Show all offers, highlight incompatible ones using option disabled
-        Array.from(offerSelect.options).forEach(function(opt) {
-            if (!opt.value) return; // skip "No offer"
-            var offerData = offers.find(function(o) { return o.id === opt.value; });
-            if (offerData && offerData.linkedPackageId && planId && offerData.linkedPackageId !== planId) {
-                opt.disabled = true;
-                opt.style.color = '#ccc';
-                // If this incompatible offer is currently selected, clear it
-                if (offerSelect.value === opt.value) offerSelect.value = '';
-            } else {
-                opt.disabled = false;
-                opt.style.color = '';
-            }
-        });
-    }
-
-    // --- Auto-select plan when an offer with linked package is chosen ---
-    function onOfferChange() {
-        if (!offerSelect.value) return;
-        var offerData = offers.find(function(o) { return o.id === offerSelect.value; });
-        if (offerData && offerData.linkedPackageId) {
-            // Check if the linked plan exists in the plan dropdown
-            var planOpt = Array.from(planSelect.options).find(function(opt) {
-                return opt.value === offerData.linkedPackageId;
-            });
-            if (planOpt) {
-                planSelect.value = offerData.linkedPackageId;
-            }
+    // --- Mutual exclusivity: Plan OR Offer, not both ---
+    function syncMutualExclusivity(changed) {
+        if (changed === 'plan' && planSelect.value) {
+            offerSelect.value = '';
+            offerSelect.disabled = true;
+            offerSelect.style.opacity = '0.5';
+            planSelect.style.opacity = '1';
+        } else if (changed === 'offer' && offerSelect.value) {
+            planSelect.value = '';
+            planSelect.disabled = true;
+            planSelect.style.opacity = '0.5';
+            offerSelect.style.opacity = '1';
+        } else {
+            planSelect.disabled = false;
+            offerSelect.disabled = false;
+            planSelect.style.opacity = '1';
+            offerSelect.style.opacity = '1';
         }
-        filterOffersByPlan();
     }
 
     planSelect.addEventListener('change', function() {
         this.classList.remove('is-invalid');
-        if (this.value) document.getElementById('offerSelect').classList.remove('is-invalid');
-        filterOffersByPlan();
+        offerSelect.classList.remove('is-invalid');
+        syncMutualExclusivity('plan');
     });
 
     offerSelect.addEventListener('change', function() {
         this.classList.remove('is-invalid');
-        if (this.value) document.getElementById('planSelect').classList.remove('is-invalid');
-        onOfferChange();
+        planSelect.classList.remove('is-invalid');
+        syncMutualExclusivity('offer');
     });
 
     // --- Member search ---
@@ -257,7 +243,7 @@
         if (!planSelect.value && !offerSelect.value) { e.preventDefault(); planSelect.classList.add('is-invalid'); offerSelect.classList.add('is-invalid'); }
     });
 
-    // Initial filter
-    filterOffersByPlan();
+    // Initial state
+    syncMutualExclusivity(null);
 })();
 </script>

@@ -54,12 +54,14 @@ public class AccountController : Controller
 
         var response = result.Data!;
 
+        var accessTokenMaxAge = response.ExpiresAt - DateTime.UtcNow;
+
         Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
             Secure = Request.IsHttps,
-            MaxAge = TimeSpan.FromDays(7)
+            MaxAge = accessTokenMaxAge
         });
 
         Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions

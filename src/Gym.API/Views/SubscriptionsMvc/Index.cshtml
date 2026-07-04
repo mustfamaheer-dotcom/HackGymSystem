@@ -213,8 +213,8 @@
 </div>
 
 @section Scripts {
-    <script type="application/json" id="subscriptionsIndex-templateData">@(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
-    <script type="application/json" id="subscriptionsIndex-activeOffers">@(ViewBag.ActiveOffersJson ?? "[]")</script>
+    <script type="application/json" id="subscriptionsIndex-templateData">@Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
+    <script type="application/json" id="subscriptionsIndex-activeOffers">@Html.Raw(ViewBag.ActiveOffersJson ?? "[]")</script>
     <script>
         (function() {
             var templateData = JSON.parse(document.getElementById('subscriptionsIndex-templateData').textContent);
@@ -241,8 +241,6 @@
                     } else if (o.OfferType === 'ExtraFreeze') {
                         if (o.ExtraFreezeDays) details.push('@SharedLocalizer["Extra Freeze"]: +' + (o.ExtraFreezeDays || 0) + ' @SharedLocalizer["day(s)"]');
                         details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Extra Freeze"]');
-                    } else {
-                        details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Custom"]');
                     }
                     if (details.length) lines.push('  ' + details.join(', '));
                     return lines.join('\n');

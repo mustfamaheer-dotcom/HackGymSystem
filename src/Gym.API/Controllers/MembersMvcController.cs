@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Gym.API.Filters;
 using Gym.API;
 using Microsoft.Extensions.Localization;
+using Gym.Application.Common.DTOs;
 
 namespace Gym.API.Controllers;
 
@@ -57,11 +58,11 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.View")]
     [HttpGet]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, string? sortBy = null, bool sortDescending = false, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(int page = 1, int? pageSize = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = false, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Members"];
 
-        var result = await _memberService.GetAllAsync(page, pageSize, searchTerm, sortBy, sortDescending, cancellationToken);
+        var result = await _memberService.GetAllAsync(page, pageSize ?? PaginationRequest.DefaultPageSize, searchTerm, sortBy, sortDescending, cancellationToken);
 
         if (result.IsFailure)
         {

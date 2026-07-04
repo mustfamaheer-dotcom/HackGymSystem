@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Gym.API;
+using Gym.Application.Common.DTOs;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -30,12 +31,12 @@ public class OffersMvcController : Controller
 
     [HttpGet]
     [RequirePermission("Offers.View")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? searchTerm = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(int page = 1, int? pageSize = null, string? searchTerm = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Offers"];
         ViewBag.SearchTerm = searchTerm;
 
-        var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
+        var result = await _offerService.GetAllAsync(page, pageSize ?? PaginationRequest.DefaultPageSize, searchTerm, cancellationToken);
         if (result.IsFailure)
         {
             TempData["Error"] = result.Message;

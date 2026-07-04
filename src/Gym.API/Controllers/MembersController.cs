@@ -34,13 +34,13 @@ public class MembersController : BaseController
     [RequirePermission("Members.View")]
     public async Task<IActionResult> GetAllMembers(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int? pageSize = null,
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortBy = null,
         [FromQuery] bool sortDescending = false,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetAllMembersQuery(page, pageSize, searchTerm, sortBy, sortDescending);
+        var query = new GetAllMembersQuery(page, pageSize ?? PaginationRequest.DefaultPageSize, searchTerm, sortBy, sortDescending);
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)

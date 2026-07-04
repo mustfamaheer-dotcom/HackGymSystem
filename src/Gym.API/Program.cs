@@ -114,6 +114,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ReceiptPdfService>();
+builder.Services.AddHostedService<Gym.Infrastructure.Data.Seed.SeedDataInitializer>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

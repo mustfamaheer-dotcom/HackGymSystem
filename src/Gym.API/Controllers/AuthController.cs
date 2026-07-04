@@ -33,12 +33,14 @@ public class AuthController : BaseController
 
         var response = result.Data!;
 
+        var accessTokenMaxAge = response.ExpiresAt - DateTime.UtcNow;
+
         Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
             Secure = Request.IsHttps,
-            MaxAge = TimeSpan.FromDays(7)
+            MaxAge = accessTokenMaxAge
         });
 
         Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
@@ -71,12 +73,14 @@ public class AuthController : BaseController
 
         var response = result.Data!;
 
+        var accessTokenMaxAge = response.ExpiresAt - DateTime.UtcNow;
+
         Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
             Secure = Request.IsHttps,
-            MaxAge = TimeSpan.FromDays(7)
+            MaxAge = accessTokenMaxAge
         });
 
         Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
@@ -120,6 +124,9 @@ public class AuthController : BaseController
         Response.Cookies.Delete("refreshToken");
 
         var result = await _authService.LogoutAsync(CurrentUserId.Value, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message!));
+
         return Ok(ApiResponse.Ok(result.Message));
     }
 

@@ -2397,4 +2397,7 @@
   <data name="Manual" xml:space="preserve">
     <value>يدوي</value>
   </data>
+  <data name="Select a plan OR an offer — they are mutually exclusive" xml:space="preserve">
+    <value>اختر خطة أو عرضاً — لا يمكن اختيار كليهما</value>
+  </data>
 </root>

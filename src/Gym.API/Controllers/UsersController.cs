@@ -34,6 +34,9 @@ public class UsersController : BaseController
     public async Task<IActionResult> GetAll([FromQuery] GetAllUsersQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message!));
+
         return Ok(ApiResponse<PaginatedResult<UserListItemDto>>.Ok(result.Data!));
     }
 
@@ -53,6 +56,9 @@ public class UsersController : BaseController
     public async Task<IActionResult> GetRoles(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetRolesQuery(), cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message!));
+
         return Ok(ApiResponse<List<RoleDto>>.Ok(result.Data!));
     }
 

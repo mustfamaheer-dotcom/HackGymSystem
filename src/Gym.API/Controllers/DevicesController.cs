@@ -155,7 +155,7 @@ public class DevicesController : BaseController
         var dto = device.Data!;
 
         if (string.IsNullOrEmpty(dto.IPAddress))
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Device has no IP address configured"])));
+            return BadRequest(ApiResponse.Fail(_localizer["Device has no IP address configured"]));
 
         try
         {
@@ -169,11 +169,11 @@ public class DevicesController : BaseController
                     return Ok(ApiResponse<ConnectionTestResult>.Ok(new(true, _localizer["Connected to {0}:{1} successfully", dto.IPAddress, dto.Port])));
                 }
             }
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Connection to {0}:{1} timed out", dto.IPAddress, dto.Port])));
+            return BadRequest(ApiResponse.Fail(_localizer["Connection to {0}:{1} timed out", dto.IPAddress, dto.Port]));
         }
         catch (Exception ex)
         {
-            return Ok(ApiResponse<ConnectionTestResult>.Ok(new(false, _localizer["Connection failed: {0}", ex.Message])));
+            return BadRequest(ApiResponse.Fail(_localizer["Connection failed: {0}", ex.Message]));
         }
     }
 

@@ -25,9 +25,9 @@ public class OffersController : BaseController
 
     [HttpGet]
     [RequirePermission("Offers.View")]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? searchTerm = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int? pageSize = null, [FromQuery] string? searchTerm = null, CancellationToken cancellationToken = default)
     {
-        var result = await _offerService.GetAllAsync(page, pageSize, searchTerm, cancellationToken);
+        var result = await _offerService.GetAllAsync(page, pageSize ?? PaginationRequest.DefaultPageSize, searchTerm, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve offers"]));
 

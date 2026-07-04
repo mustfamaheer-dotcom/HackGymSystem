@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Gym.Application.Common.DTOs;
 
 namespace Gym.API.Controllers;
 
@@ -64,7 +65,7 @@ public class LeadsMvcController : Controller
 
     [HttpGet]
     [RequirePermission("Leads.View")]
-    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, string? genderFilter = null, string? sourceFilter = null, Guid? packageFilter = null, DateTime? dateFrom = null, DateTime? dateTo = null, DateTime? nextFollowUpFrom = null, DateTime? nextFollowUpTo = null, bool? hasFollowUp = null, string? sortBy = null, bool sortDescending = false, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(string? searchTerm = null, string? statusFilter = null, string? genderFilter = null, string? sourceFilter = null, Guid? packageFilter = null, DateTime? dateFrom = null, DateTime? dateTo = null, DateTime? nextFollowUpFrom = null, DateTime? nextFollowUpTo = null, bool? hasFollowUp = null, string? sortBy = null, bool sortDescending = false, int page = 1, int? pageSize = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Leads"];
         ViewBag.SearchTerm = searchTerm;
@@ -92,7 +93,7 @@ public class LeadsMvcController : Controller
         if (Enum.TryParse<LeadSource>(sourceFilter, true, out var src))
             parsedSource = src;
 
-        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, parsedGender, parsedSource, packageFilter, dateFrom, dateTo, nextFollowUpFrom, nextFollowUpTo, hasFollowUp, sortBy, sortDescending, page, pageSize);
+        var query = new GetAllLeadsQuery(searchTerm, parsedStatus, parsedGender, parsedSource, packageFilter, dateFrom, dateTo, nextFollowUpFrom, nextFollowUpTo, hasFollowUp, sortBy, sortDescending, page, pageSize ?? PaginationRequest.DefaultPageSize);
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)

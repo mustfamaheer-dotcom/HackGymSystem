@@ -159,20 +159,20 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             .Where(p => p.CreatedAt >= today)
             .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
 
-        var totalOutstanding = await subWithPlan
+        var totalOutstanding = await subscriptionQuery
             .SumAsync(s => (decimal?)s.RemainingBalance, cancellationToken) ?? 0;
 
         var avgSubValue = totalSubs > 0
-            ? Math.Round(await subWithPlan.SumAsync(s => (decimal?)s.TotalSubscriptionValue, cancellationToken) ?? 0 / totalSubs, 2)
+            ? Math.Round(await subscriptionQuery.SumAsync(s => (decimal?)s.TotalSubscriptionValue, cancellationToken) ?? 0 / totalSubs, 2)
             : 0;
 
-        var expiring7Days = await subWithPlan
+        var expiring7Days = await subscriptionQuery
             .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now
                 && s.Status == SubscriptionStatus.Active, cancellationToken);
-        var expiring30Days = await subWithPlan
+        var expiring30Days = await subscriptionQuery
             .CountAsync(s => s.ExpirationDate <= now.AddDays(30) && s.ExpirationDate > now
                 && s.Status == SubscriptionStatus.Active, cancellationToken);
-        var subsWithOffers = await subWithPlan.CountAsync(s => s.OfferId != null, cancellationToken);
+        var subsWithOffers = await subscriptionQuery.CountAsync(s => s.OfferId != null, cancellationToken);
         var freezesThisMonth = await freezeQuery
             .CountAsync(f => f.CreatedAt >= monthStart, cancellationToken);
 

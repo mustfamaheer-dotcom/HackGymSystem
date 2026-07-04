@@ -293,7 +293,7 @@
 </div>
 
 @section Scripts {
-    <script type="application/json" id="subscriptionsDetails-templateData">@(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
+    <script type="application/json" id="subscriptionsDetails-templateData">@Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
     <script>
         (function() {
             var templateData = JSON.parse(document.getElementById('subscriptionsDetails-templateData').textContent);
