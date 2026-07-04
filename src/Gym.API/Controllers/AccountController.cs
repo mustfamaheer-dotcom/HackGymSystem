@@ -7,7 +7,6 @@ using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
 
-[AllowAnonymous]
 public class AccountController : Controller
 {
     private readonly IAuthService _authService;
@@ -20,6 +19,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)
@@ -30,6 +30,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(string username, string password, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Login"];
@@ -54,7 +55,7 @@ public class AccountController : Controller
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
-            Secure = false,
+            Secure = Request.IsHttps,
             MaxAge = TimeSpan.FromDays(7)
         });
 
@@ -74,6 +75,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public IActionResult SetLanguage(string culture, string returnUrl = "/")
     {
         if (culture != "ar" && culture != "en")

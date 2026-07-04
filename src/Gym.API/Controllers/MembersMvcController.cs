@@ -351,7 +351,7 @@ public class MembersMvcController : Controller
             .OrderByDescending(p => p.PaymentDate)
             .ToList();
 
-        var pdfDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Payments History";
+        var pdfDir = Path.Combine(_env.ContentRootPath, "Payments History");
         Directory.CreateDirectory(pdfDir);
         var pdfFileName = $"payment-history-{member.Code}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.pdf";
         var pdfFilePath = Path.Combine(pdfDir, pdfFileName);
@@ -586,7 +586,7 @@ public class MembersMvcController : Controller
         sheet.Columns().AdjustToContents();
 
         var fileName = $"Members_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
-        var exportDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Exported Excel Sheets";
+        var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
         Directory.CreateDirectory(exportDir);
         var filePath = Path.Combine(exportDir, fileName);
         workbook.SaveAs(filePath);

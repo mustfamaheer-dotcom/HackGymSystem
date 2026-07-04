@@ -362,7 +362,7 @@ public class LeadsMvcController : Controller
         sheet.Columns().AdjustToContents();
 
         var fileName = $"Leads_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
-        var exportDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Exported Excel Sheets";
+        var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
         Directory.CreateDirectory(exportDir);
         var filePath = Path.Combine(exportDir, fileName);
         workbook.SaveAs(filePath);

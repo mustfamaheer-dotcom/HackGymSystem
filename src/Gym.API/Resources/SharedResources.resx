@@ -1998,4 +1998,416 @@
   </data>
   <data name="Show only members with remaining balance" xml:space="preserve">
     <value>Show only members with remaining balance</value>
-  </data></root>
+  </data>
+  <data name="Business Analysis" xml:space="preserve">
+    <value>Business Analysis</value>
+  </data>
+  <data name="Growth" xml:space="preserve">
+    <value>Growth</value>
+  </data>
+  <data name="Demographics" xml:space="preserve">
+    <value>Demographics</value>
+  </data>
+  <data name="Revenue" xml:space="preserve">
+    <value>Revenue</value>
+  </data>
+  <data name="Risks" xml:space="preserve">
+    <value>Risks</value>
+  </data>
+  <data name="Revenue Trends" xml:space="preserve">
+    <value>Revenue Trends</value>
+  </data>
+  <data name="Gender Split" xml:space="preserve">
+    <value>Gender Split</value>
+  </data>
+  <data name="Active Member Retention" xml:space="preserve">
+    <value>Active Member Retention</value>
+  </data>
+  <data name="Annualized Growth Rate" xml:space="preserve">
+    <value>Annualized Growth Rate</value>
+  </data>
+  <data name="New Members This Month" xml:space="preserve">
+    <value>New Members This Month</value>
+  </data>
+  <data name="Imbalance Gap" xml:space="preserve">
+    <value>Imbalance Gap</value>
+  </data>
+  <data name="Total Registered" xml:space="preserve">
+    <value>Total Registered</value>
+  </data>
+  <data name="Expired No Renewal" xml:space="preserve">
+    <value>Expired No Renewal</value>
+  </data>
+  <data name="AOV &amp; Pricing" xml:space="preserve">
+    <value>AOV &amp; Pricing</value>
+  </data>
+  <data name="Collection &amp; Risk" xml:space="preserve">
+    <value>Collection &amp; Risk</value>
+  </data>
+  <data name="Outstanding Ratio" xml:space="preserve">
+    <value>Outstanding Ratio</value>
+  </data>
+  <data name="Average Payment Delay" xml:space="preserve">
+    <value>Average Payment Delay</value>
+  </data>
+  <data name="Overdue Accounts" xml:space="preserve">
+    <value>Overdue Accounts</value>
+  </data>
+  <data name="Revenue Concentration" xml:space="preserve">
+    <value>Revenue Concentration</value>
+  </data>
+  <data name="Revenue Lost to Freezes" xml:space="preserve">
+    <value>Revenue Lost to Freezes</value>
+  </data>
+  <data name="Freeze Impact (6 Months)" xml:space="preserve">
+    <value>Freeze Impact (6 Months)</value>
+  </data>
+  <data name="Renewal Rate by Plan" xml:space="preserve">
+    <value>Renewal Rate by Plan</value>
+  </data>
+  <data name="Top Spenders (Top 10%)" xml:space="preserve">
+    <value>Top Spenders (Top 10%)</value>
+  </data>
+  <data name="Plan Popularity" xml:space="preserve">
+    <value>Plan Popularity</value>
+  </data>
+  <data name="Health Status" xml:space="preserve">
+    <value>Health Status</value>
+  </data>
+  <data name="Risk Indicators" xml:space="preserve">
+    <value>Risk Indicators</value>
+  </data>
+  <data name="Traffic Patterns" xml:space="preserve">
+    <value>Traffic Patterns</value>
+  </data>
+  <data name="Utilization" xml:space="preserve">
+    <value>Utilization</value>
+  </data>
+  <data name="Momentum" xml:space="preserve">
+    <value>Momentum</value>
+  </data>
+  <data name="Paid Amount (EGP)" xml:space="preserve">
+    <value>Paid Amount (EGP)</value>
+  </data>
+  <data name="Subscription Price (EGP)" xml:space="preserve">
+    <value>Subscription Price (EGP)</value>
+  </data>
+  <data name="Total Paid" xml:space="preserve">
+    <value>Total Paid</value>
+  </data>
+  <data name="Drag &amp; drop or click to upload" xml:space="preserve">
+    <value>Drag &amp; drop or click to upload</value>
+  </data>
+  <data name="JPG, PNG or GIF" xml:space="preserve">
+    <value>JPG, PNG or GIF</value>
+  </data>
+  <data name="GUID (optional)" xml:space="preserve">
+    <value>GUID (optional)</value>
+  </data>
+  <data name="Role Name" xml:space="preserve">
+    <value>Role Name</value>
+  </data>
+  <data name="Permissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Save Changes" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="Upload &amp; Import" xml:space="preserve">
+    <value>Upload &amp; Import</value>
+  </data>
+  <data name="Export Excel" xml:space="preserve">
+    <value>Export Excel</value>
+  </data>
+  <data name="Download PDF" xml:space="preserve">
+    <value>Download PDF</value>
+  </data>
+  <data name="Print PDF" xml:space="preserve">
+    <value>Print PDF</value>
+  </data>
+  <data name="-- Select Payment --" xml:space="preserve">
+    <value>-- Select Payment --</value>
+  </data>
+  <data name="Access control" xml:space="preserve">
+    <value>Access control</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+  <data name="Additional Information" xml:space="preserve">
+    <value>Additional Information</value>
+  </data>
+  <data name="Analysis &amp; reports" xml:space="preserve">
+    <value>Analysis &amp; reports</value>
+  </data>
+  <data name="AOV Trend (MoM)" xml:space="preserve">
+    <value>AOV Trend (MoM)</value>
+  </data>
+  <data name="Are you sure?" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="Avg Daily (Week)" xml:space="preserve">
+    <value>Avg Daily (Week)</value>
+  </data>
+  <data name="Avg Payment Delay" xml:space="preserve">
+    <value>Avg Payment Delay</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Churn Rate (Expired+Cancelled)" xml:space="preserve">
+    <value>Churn Rate (Expired+Cancelled)</value>
+  </data>
+  <data name="Create Role" xml:space="preserve">
+    <value>Create Role</value>
+  </data>
+  <data name="Daily Utilization Rate" xml:space="preserve">
+    <value>Daily Utilization Rate</value>
+  </data>
+  <data name="Delete Role" xml:space="preserve">
+    <value>Delete Role</value>
+  </data>
+  <data name="Disease" xml:space="preserve">
+    <value>Disease</value>
+  </data>
+  <data name="Edit Role" xml:space="preserve">
+    <value>Edit Role</value>
+  </data>
+  <data name="Expires" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="Extra Days" xml:space="preserve">
+    <value>Extra Days</value>
+  </data>
+  <data name="Fingerprint Device" xml:space="preserve">
+    <value>Fingerprint Device</value>
+  </data>
+  <data name="Freeze &amp; Retention" xml:space="preserve">
+    <value>Freeze &amp; Retention</value>
+  </data>
+  <data name="Freeze Revenue Impact" xml:space="preserve">
+    <value>Freeze Revenue Impact</value>
+  </data>
+  <data name="Frozen Memberships" xml:space="preserve">
+    <value>Frozen Memberships</value>
+  </data>
+  <data name="Go Home" xml:space="preserve">
+    <value>Go Home</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Lowest Renewal Plan" xml:space="preserve">
+    <value>Lowest Renewal Plan</value>
+  </data>
+  <data name="Manage subscriptions" xml:space="preserve">
+    <value>Manage subscriptions</value>
+  </data>
+  <data name="Member &amp; Plan" xml:space="preserve">
+    <value>Member &amp; Plan</value>
+  </data>
+  <data name="Monthly Total" xml:space="preserve">
+    <value>Monthly Total</value>
+  </data>
+  <data name="Month-over-Month Growth" xml:space="preserve">
+    <value>Month-over-Month Growth</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="New Role" xml:space="preserve">
+    <value>New Role</value>
+  </data>
+  <data name="No assignment" xml:space="preserve">
+    <value>No assignment</value>
+  </data>
+  <data name="No data." xml:space="preserve">
+    <value>No data.</value>
+  </data>
+  <data name="No freeze data." xml:space="preserve">
+    <value>No freeze data.</value>
+  </data>
+  <data name="No overdue payments." xml:space="preserve">
+    <value>No overdue payments.</value>
+  </data>
+  <data name="No payment data." xml:space="preserve">
+    <value>No payment data.</value>
+  </data>
+  <data name="Notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="of Revenue" xml:space="preserve">
+    <value>of Revenue</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Outstanding Ratio" xml:space="preserve">
+    <value>Outstanding Ratio</value>
+  </data>
+  <data name="Overall Renewal Rate" xml:space="preserve">
+    <value>Overall Renewal Rate</value>
+  </data>
+  <data name="Payment Delay Trend (Avg Days)" xml:space="preserve">
+    <value>Payment Delay Trend (Avg Days)</value>
+  </data>
+  <data name="Peak Day" xml:space="preserve">
+    <value>Peak Day</value>
+  </data>
+  <data name="Permission Matrix" xml:space="preserve">
+    <value>Permission Matrix</value>
+  </data>
+  <data name="Pipeline" xml:space="preserve">
+    <value>Pipeline</value>
+  </data>
+  <data name="Placeholders" xml:space="preserve">
+    <value>Placeholders</value>
+  </data>
+  <data name="Plan Concentration" xml:space="preserve">
+    <value>Plan Concentration</value>
+  </data>
+  <data name="Registered" xml:space="preserve">
+    <value>Registered</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Renewal Performance" xml:space="preserve">
+    <value>Renewal Performance</value>
+  </data>
+  <data name="Renewed This Period" xml:space="preserve">
+    <value>Renewed This Period</value>
+  </data>
+  <data name="Risk Indicators" xml:space="preserve">
+    <value>Risk Indicators</value>
+  </data>
+  <data name="Role Details" xml:space="preserve">
+    <value>Role Details</value>
+  </data>
+  <data name="Roles &amp; Permissions" xml:space="preserve">
+    <value>Roles &amp; Permissions</value>
+  </data>
+  <data name="Slowest Day" xml:space="preserve">
+    <value>Slowest Day</value>
+  </data>
+  <data name="Subscription Utilization" xml:space="preserve">
+    <value>Subscription Utilization</value>
+  </data>
+  <data name="Subscriptions with Offers" xml:space="preserve">
+    <value>Subscriptions with Offers</value>
+  </data>
+  <data name="System Role" xml:space="preserve">
+    <value>System Role</value>
+  </data>
+  <data name="Task" xml:space="preserve">
+    <value>Task</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>Templates</value>
+  </data>
+  <data name="Top Plan" xml:space="preserve">
+    <value>Top Plan</value>
+  </data>
+  <data name="Top Revenue Package" xml:space="preserve">
+    <value>Top Revenue Package</value>
+  </data>
+  <data name="Total Plans Offered" xml:space="preserve">
+    <value>Total Plans Offered</value>
+  </data>
+  <data name="Validation Error" xml:space="preserve">
+    <value>Validation Error</value>
+  </data>
+  <data name="View Details" xml:space="preserve">
+    <value>View Details</value>
+  </data>
+  <data name="Vodafone Cash" xml:space="preserve">
+    <value>Vodafone Cash</value>
+  </data>
+  <data name="Week-over-Week Change" xml:space="preserve">
+    <value>Week-over-Week Change</value>
+  </data>
+  <data name="month(s)" xml:space="preserve">
+    <value>month(s)</value>
+  </data>
+  <data name="Fixed Price" xml:space="preserve">
+    <value>Fixed Price</value>
+  </data>
+  <data name="Free Registration" xml:space="preserve">
+    <value>Free Registration</value>
+  </data>
+  <data name="Extra Freeze" xml:space="preserve">
+    <value>Extra Freeze</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="No offers available" xml:space="preserve">
+    <value>No offers available</value>
+  </data>
+  <data name="Dash_Reco_Member_Expiring" xml:space="preserve">
+    <value>High number of members expiring this week — launch an urgency-based renewal campaign via SMS/email with a limited-time discount.</value>
+  </data>
+  <data name="Dash_Reco_Member_GenderImbalance" xml:space="preserve">
+    <value>Significant gender imbalance detected — consider targeted marketing, women-specific classes, or referral incentives for the underrepresented segment.</value>
+  </data>
+  <data name="Dash_Reco_Member_RetentionLow" xml:space="preserve">
+    <value>Active retention is below 60% — introduce a loyalty program, check-in rewards, or a mid-term checkup call to reduce churn.</value>
+  </data>
+  <data name="Dash_Reco_Member_Healthy" xml:space="preserve">
+    <value>Healthy member base with steady growth. Focus on referral programs and community events to accelerate acquisition.</value>
+  </data>
+  <data name="Dash_Reco_Att_WideVariance" xml:space="preserve">
+    <value>Wide variance between peak and slow days — offer off-peak discounts or weekday-only memberships to flatten traffic and improve member experience.</value>
+  </data>
+  <data name="Dash_Reco_Att_NearCapacity" xml:space="preserve">
+    <value>Gym is near capacity right now. Consider capacity planning, off-peak incentives, or expanding floor hours to prevent overcrowding.</value>
+  </data>
+  <data name="Dash_Reco_Att_LowUtilization" xml:space="preserve">
+    <value>Daily utilization is below 40% of active members — run engagement campaigns, challenges, or free trial weeks to bring members back to the gym.</value>
+  </data>
+  <data name="Dash_Reco_Att_Healthy" xml:space="preserve">
+    <value>Attendance patterns are healthy. Maintain momentum with monthly challenges and member spotlights to keep engagement high.</value>
+  </data>
+  <data name="Dash_Reco_Memb_HighChurn" xml:space="preserve">
+    <value>Churn rate exceeds 30% — implement a retention workflow: 7-day-before-expiry reminder, reactivation offer at expiry, and a win-back campaign for cancelled members.</value>
+  </data>
+  <data name="Dash_Reco_Memb_Concentration" xml:space="preserve">
+    <value>Heavy concentration on one plan — introduce tiered upgrades or bundle options to diversify. Cross-sell premium features to top-plan members.</value>
+  </data>
+  <data name="Dash_Reco_Memb_HighFrozen" xml:space="preserve">
+    <value>Frozen memberships are high — reach out to understand why. Offer flexible re-activation incentives or temporary plan downgrades to retain them.</value>
+  </data>
+  <data name="Dash_Reco_Memb_Healthy" xml:space="preserve">
+    <value>Membership health is stable. Focus on upselling active members to higher tiers and launching seasonal promotions to grow new sign-ups.</value>
+  </data>
+  <data name="Dash_Reco_Rev_OutstandingHigh" xml:space="preserve">
+    <value>Outstanding payments exceed 20% of total revenue — automate payment reminders at 3, 7, and 14 days overdue. Consider late fees or prepay discounts to improve collection.</value>
+  </data>
+  <data name="Dash_Reco_Rev_Concentration" xml:space="preserve">
+    <value>Revenue is heavily dependent on one plan — diversify with tiered pricing, add-on services (PT, nutrition, classes), and bundle upgrades to reduce risk.</value>
+  </data>
+  <data name="Dash_Reco_Rev_Declining" xml:space="preserve">
+    <value>Revenue is declining month-over-month — analyze churn reasons, review pricing competitiveness, and launch a limited-time promo to re-engage lapsed members.</value>
+  </data>
+  <data name="Dash_Reco_Rev_FreezeImpact" xml:space="preserve">
+    <value>Freezes are costing significant revenue — consider offering a lower-cost 'pause' plan instead of full freeze, or a credit system to retain cash flow.</value>
+  </data>
+  <data name="Dash_Reco_Rev_Healthy" xml:space="preserve">
+    <value>Revenue is on a solid trajectory. Focus on increasing AOV through premium upgrades, add-ons, and multi-month prepay incentives.</value>
+  </data>
+  <data name="Dash_Reco_Sub_LowRenewal" xml:space="preserve">
+    <value>Renewal rate is critically low — audit the member experience at renewal touchpoints, offer a 'renew early' discount, and implement an automated reminder sequence starting 2 weeks before expiry.</value>
+  </data>
+  <data name="Dash_Reco_Sub_FreezeImpact" xml:space="preserve">
+    <value>Freezes are costing {0} in lost revenue and '{1}' has the lowest renewal rate. Review pricing and value perception for this plan, and offer a temporary downgrade option instead of freeze.</value>
+  </data>
+  <data name="Dash_Reco_Sub_ManyExpiring" xml:space="preserve">
+    <value>Over 10 subscriptions expiring within 7 days — deploy an urgent SMS/email campaign with a time-sensitive offer to maximize renewals before they lapse.</value>
+  </data>
+  <data name="Dash_Reco_Sub_Healthy" xml:space="preserve">
+    <value>Subscription health is stable. Drive growth by promoting multi-month prepaid plans (higher lock-in) and referral rewards that give both parties a free month.</value>
+  </data>
+</root>

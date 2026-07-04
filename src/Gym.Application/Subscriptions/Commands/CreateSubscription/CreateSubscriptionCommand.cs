@@ -48,69 +48,97 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
 
     public async Task<Result<Guid>> Handle(CreateSubscriptionCommand request, CancellationToken cancellationToken)
     {
-        var member = await _memberRepo.GetByIdAsync(request.MemberId, cancellationToken);
-        if (member == null)
-            return Result<Guid>.Failure(_localizer["Member not found"]);
+        const int maxRetries = 3;
 
-        // Check for existing active subscription
-        var activeSub = await _subscriptionRepo.Query()
-            .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && s.Status == SubscriptionStatus.Active, cancellationToken);
-
-        // If member has active sub and no offer selected → reject
-        if (activeSub != null && !request.OfferId.HasValue)
-            return Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
-
-        // If member has active sub and offer is selected → extend the active sub
-        if (activeSub != null && request.OfferId.HasValue)
-            return await HandleExtendAsync(activeSub, member, request, cancellationToken);
-
-        // --- No active subscription → create a new one ---
-        Guid resolvedPlanId;
-        MembershipPlan plan;
-
-        if (request.PlanId.HasValue)
+        for (int attempt = 0; attempt < maxRetries; attempt++)
         {
-            resolvedPlanId = request.PlanId.Value;
-            plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
-            if (plan == null)
-                return Result<Guid>.Failure(_localizer["Plan not found"]);
-            if (!plan.IsActive)
-                return Result<Guid>.Failure(_localizer["Plan is not active"]);
-        }
-        else if (request.OfferId.HasValue)
-        {
-            var resolvedOffer = await _offerRepo.Query()
-                .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
-            if (resolvedOffer == null)
-                return Result<Guid>.Failure(_localizer["Offer not found"]);
-
-            if (resolvedOffer.LinkedPackageId.HasValue)
+            try
             {
-                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
-                plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
-                if (plan == null)
-                    return Result<Guid>.Failure(_localizer["Linked plan not found"]);
-                if (!plan.IsActive)
-                    return Result<Guid>.Failure(_localizer["Linked plan is not active"]);
+                await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+                Result<Guid> result;
+
+                var member = await _memberRepo.GetByIdAsync(request.MemberId, cancellationToken);
+                if (member == null)
+                {
+                    result = Result<Guid>.Failure(_localizer["Member not found"]);
+                }
+                else
+                {
+                    var activeSub = await _subscriptionRepo.Query()
+                        .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && s.Status == SubscriptionStatus.Active, cancellationToken);
+
+                    if (activeSub != null && !request.OfferId.HasValue)
+                        result = Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
+                    else if (activeSub != null && request.OfferId.HasValue)
+                        result = await HandleExtendAsync(activeSub, member, request, cancellationToken);
+                    else
+                    {
+                        Guid resolvedPlanId;
+                        MembershipPlan plan;
+
+                        if (request.PlanId.HasValue)
+                        {
+                            resolvedPlanId = request.PlanId.Value;
+                            plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
+                            if (plan == null)
+                                result = Result<Guid>.Failure(_localizer["Plan not found"]);
+                            else if (!plan.IsActive)
+                                result = Result<Guid>.Failure(_localizer["Plan is not active"]);
+                            else
+                                result = await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
+                        }
+                        else if (request.OfferId.HasValue)
+                        {
+                            var resolvedOffer = await _offerRepo.Query()
+                                .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
+                            if (resolvedOffer == null)
+                                result = Result<Guid>.Failure(_localizer["Offer not found"]);
+                            else if (resolvedOffer.LinkedPackageId.HasValue)
+                            {
+                                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
+                                plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
+                                if (plan == null)
+                                    result = Result<Guid>.Failure(_localizer["Linked plan not found"]);
+                                else if (!plan.IsActive)
+                                    result = Result<Guid>.Failure(_localizer["Linked plan is not active"]);
+                                else
+                                    result = await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
+                            }
+                            else
+                            {
+                                plan = await _planRepo.Query()
+                                    .Where(p => p.IsActive)
+                                    .OrderBy(p => p.Name)
+                                    .FirstOrDefaultAsync(cancellationToken);
+                                if (plan == null)
+                                    result = Result<Guid>.Failure(_localizer["No active plan found to link the offer to"]);
+                                else
+                                    result = await HandleNewAsync(member, plan, plan.Id, request, cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            result = Result<Guid>.Failure(_localizer["Either plan or offer must be selected"]);
+                        }
+                    }
+                }
+
+                if (result.IsSuccess)
+                    await _unitOfWork.CommitAsync(cancellationToken);
+                else
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+
+                return result;
             }
-            else
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
             {
-                // Offer has no linked plan — pick the first active plan as FK reference
-                plan = await _planRepo.Query()
-                    .Where(p => p.IsActive)
-                    .OrderBy(p => p.Name)
-                    .FirstOrDefaultAsync(cancellationToken);
-                if (plan == null)
-                    return Result<Guid>.Failure(_localizer["No active plan found to link the offer to"]);
-                resolvedPlanId = plan.Id;
+                await _unitOfWork.ResetAsync(cancellationToken);
+                continue;
             }
-        }
-        else
-        {
-            return Result<Guid>.Failure(_localizer["Either plan or offer must be selected"]);
         }
 
-        return await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
+        return Result<Guid>.Failure(_localizer["Failed to create subscription. Please try again."]);
     }
 
     private async Task<Result<Guid>> HandleExtendAsync(

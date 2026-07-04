@@ -58,15 +58,14 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var maleCount = await memberQuery.CountAsync(m => m.Gender == Gender.Male, cancellationToken);
         var femaleCount = await memberQuery.CountAsync(m => m.Gender == Gender.Female, cancellationToken);
 
-        var totalSubsList = await subscriptionQuery.ToListAsync(cancellationToken);
-        var totalSubscriptions = totalSubsList.Count;
-        var activeSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Active);
-        var frozenSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Frozen);
-        var expiredSubscriptions = totalSubsList.Count(s => s.Status == SubscriptionStatus.Expired);
+        var totalSubscriptions = await subscriptionQuery.CountAsync(cancellationToken);
+        var activeSubscriptions = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
+        var frozenSubscriptions = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Frozen, cancellationToken);
+        var expiredSubscriptions = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Expired, cancellationToken);
         var cancelledSubscriptions = 0;
 
-        var expiringThisWeek = totalSubsList
-            .Count(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active);
+        var expiringThisWeek = await subscriptionQuery
+            .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active, cancellationToken);
 
         var todayAttendance = await attendanceQuery.CountAsync(a => a.Date == today, cancellationToken);
         var weekAttendance = await attendanceQuery.CountAsync(a => a.Date >= weekStart, cancellationToken);
@@ -76,23 +75,17 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
 
         var avgDailyThisMonth = Math.Round((double)monthAttendance / Math.Max(now.Day, 1), 1);
 
-        var activeSubsWithPlan = totalSubsList.Where(s => s.Status == SubscriptionStatus.Active).ToList();
-        var subsByPlan = activeSubsWithPlan
-            .GroupBy(s => s.PlanId)
-            .Select(g => new
+        var subsByPlan = await subscriptionQuery
+            .Where(s => s.Status == SubscriptionStatus.Active)
+            .GroupBy(s => s.Plan.Name)
+            .Select(g => new PlanDistributionDto
             {
-                PlanId = g.Key,
-                Count = g.Count(),
-                PlanName = g.First().Plan?.Name ?? ""
+                PlanName = g.Key,
+                Count = g.Count()
             })
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var membershipByPlan = subsByPlan.Select(s => new PlanDistributionDto
-        {
-            PlanName = s.PlanName,
-            Count = s.Count
-        }).ToList();
-
+        var membershipByPlan = subsByPlan;
         var totalPlanMembers = membershipByPlan.Sum(p => p.Count);
         foreach (var plan in membershipByPlan)
             plan.Percent = totalPlanMembers > 0 ? Math.Round(plan.Count * 100.0 / totalPlanMembers, 1) : 0;
@@ -149,11 +142,11 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             .Include(s => s.Plan)
             .Include(s => s.Member);
 
-        var totalSubs = await subWithPlan.CountAsync(cancellationToken);
-        var activeSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
-        var frozenSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Frozen, cancellationToken);
-        var expiredSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Expired, cancellationToken);
-        var renewedSubs = await subWithPlan.CountAsync(s => s.Status == SubscriptionStatus.Renewed, cancellationToken);
+        var totalSubs = await subscriptionQuery.CountAsync(cancellationToken);
+        var activeSubs = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
+        var frozenSubs = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Frozen, cancellationToken);
+        var expiredSubs = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Expired, cancellationToken);
+        var renewedSubs = await subscriptionQuery.CountAsync(s => s.Status == SubscriptionStatus.Renewed, cancellationToken);
 
         var totalRevenue = await paymentQuery.SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0;
         var revenueThisMonth = await paymentQuery
@@ -219,7 +212,7 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
             .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(p => p.Amount), Payments = g.Count() })
             .ToListAsync(cancellationToken);
 
-        var monthlySubCounts = await subWithPlan
+        var monthlySubCounts = await subscriptionQuery
             .Where(s => s.CreatedAt >= sixMonthsAgo)
             .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month })
             .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })

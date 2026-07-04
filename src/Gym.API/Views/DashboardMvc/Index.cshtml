@@ -126,19 +126,19 @@
                     var memberReco = string.Empty;
                     if (Model.Members.ExpiringThisWeek > 5)
                     {
-                        memberReco = "High number of members expiring this week — launch an urgency-based renewal campaign via SMS/email with a limited-time discount.";
+                        memberReco = "Dash_Reco_Member_Expiring";
                     }
                     else if (genderImbalance > 30)
                     {
-                        memberReco = "Significant gender imbalance detected — consider targeted marketing, women-specific classes, or referral incentives for the underrepresented segment.";
+                        memberReco = "Dash_Reco_Member_GenderImbalance";
                     }
                     else if (memberRetentionRate < 60)
                     {
-                        memberReco = "Active retention is below 60% — introduce a loyalty program, check-in rewards, or a mid-term checkup call to reduce churn.";
+                        memberReco = "Dash_Reco_Member_RetentionLow";
                     }
                     else
                     {
-                        memberReco = "Healthy member base with steady growth. Focus on referral programs and community events to accelerate acquisition.";
+                        memberReco = "Dash_Reco_Member_Healthy";
                     }
                 }
                 <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--table-row-border);display:flex;gap:0.5rem;align-items:flex-start;">
@@ -351,19 +351,19 @@
                     var attReco = string.Empty;
                     if (peakDay != null && lowDay != null && peakDay.Count > lowDay.Count * 2)
                     {
-                        attReco = "Wide variance between peak and slow days — offer off-peak discounts or weekday-only memberships to flatten traffic and improve member experience.";
+                        attReco = "Dash_Reco_Att_WideVariance";
                     }
                     else if (occupancyPct > 85)
                     {
-                        attReco = "Gym is near capacity right now. Consider capacity planning, off-peak incentives, or expanding floor hours to prevent overcrowding.";
+                        attReco = "Dash_Reco_Att_NearCapacity";
                     }
                     else if (attendanceUtilization < 40)
                     {
-                        attReco = "Daily utilization is below 40% of active members — run engagement campaigns, challenges, or free trial weeks to bring members back to the gym.";
+                        attReco = "Dash_Reco_Att_LowUtilization";
                     }
                     else
                     {
-                        attReco = "Attendance patterns are healthy. Maintain momentum with monthly challenges and member spotlights to keep engagement high.";
+                        attReco = "Dash_Reco_Att_Healthy";
                     }
                 }
                 <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--table-row-border);display:flex;gap:0.5rem;align-items:flex-start;">
@@ -548,19 +548,19 @@
                     var membReco = string.Empty;
                     if (churnRate > 30)
                     {
-                        membReco = "Churn rate exceeds 30% — implement a retention workflow: 7-day-before-expiry reminder, reactivation offer at expiry, and a win-back campaign for cancelled members.";
+                        membReco = "Dash_Reco_Memb_HighChurn";
                     }
                     else if (planConcentration > 60)
                     {
-                        membReco = "Heavy concentration on one plan — introduce tiered upgrades or bundle options to diversify. Cross-sell premium features to top-plan members.";
+                        membReco = "Dash_Reco_Memb_Concentration";
                     }
                     else if (frozenRatio > 15)
                     {
-                        membReco = "Frozen memberships are high — reach out to understand why. Offer flexible re-activation incentives or temporary plan downgrades to retain them.";
+                        membReco = "Dash_Reco_Memb_HighFrozen";
                     }
                     else
                     {
-                        membReco = "Membership health is stable. Focus on upselling active members to higher tiers and launching seasonal promotions to grow new sign-ups.";
+                        membReco = "Dash_Reco_Memb_Healthy";
                     }
                 }
                 <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--table-row-border);display:flex;gap:0.5rem;align-items:flex-start;">
@@ -781,23 +781,23 @@
                         var revReco = string.Empty;
                         if (outstandingPct > 20)
                         {
-                            revReco = "Outstanding payments exceed 20% of total revenue — automate payment reminders at 3, 7, and 14 days overdue. Consider late fees or prepay discounts to improve collection.";
+                            revReco = "Dash_Reco_Rev_OutstandingHigh";
                         }
                         else if (revenueConcentration > 60)
                         {
-                            revReco = "Revenue is heavily dependent on one plan — diversify with tiered pricing, add-on services (PT, nutrition, classes), and bundle upgrades to reduce risk.";
+                            revReco = "Dash_Reco_Rev_Concentration";
                         }
                         else if (revGrowth < 0)
                         {
-                            revReco = "Revenue is declining month-over-month — analyze churn reasons, review pricing competitiveness, and launch a limited-time promo to re-engage lapsed members.";
+                            revReco = "Dash_Reco_Rev_Declining";
                         }
                         else if (freezeRevenueImpact > 0)
                         {
-                            revReco = "Freezes are costing significant revenue — consider offering a lower-cost 'pause' plan instead of full freeze, or a credit system to retain cash flow.";
+                            revReco = "Dash_Reco_Rev_FreezeImpact";
                         }
                         else
                         {
-                            revReco = "Revenue is on a solid trajectory. Focus on increasing AOV through premium upgrades, add-ons, and multi-month prepay incentives.";
+                            revReco = "Dash_Reco_Rev_Healthy";
                         }
                     }
                     <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--table-row-border);display:flex;gap:0.5rem;align-items:flex-start;">
@@ -1319,19 +1319,19 @@
                     var subReco = string.Empty;
                     if (overallRenewal < 30)
                     {
-                        subReco = "Renewal rate is critically low — audit the member experience at renewal touchpoints, offer a 'renew early' discount, and implement an automated reminder sequence starting 2 weeks before expiry.";
+                        subReco = "Dash_Reco_Sub_LowRenewal";
                     }
                     else if (totalFreezeImpact > 0 && worstRenewalPlan != null)
                     {
-                        subReco = $"Freezes are costing {totalFreezeImpact.ToString("N2")} in lost revenue and \"{worstRenewalPlan.PlanName}\" has the lowest renewal rate. Review pricing and value perception for this plan, and offer a temporary downgrade option instead of freeze.";
+                        subReco = string.Format(SharedLocalizer["Dash_Reco_Sub_FreezeImpact"].Value, totalFreezeImpact.ToString("N2"), worstRenewalPlan.PlanName);
                     }
                     else if (Model.Subscriptions.ExpiringNext7Days > 10)
                     {
-                        subReco = "Over 10 subscriptions expiring within 7 days — deploy an urgent SMS/email campaign with a time-sensitive offer to maximize renewals before they lapse.";
+                        subReco = "Dash_Reco_Sub_ManyExpiring";
                     }
                     else
                     {
-                        subReco = "Subscription health is stable. Drive growth by promoting multi-month prepaid plans (higher lock-in) and referral rewards that give both parties a free month.";
+                        subReco = "Dash_Reco_Sub_Healthy";
                     }
                 }
                 <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--table-row-border);display:flex;gap:0.5rem;align-items:flex-start;">

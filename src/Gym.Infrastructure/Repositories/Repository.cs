@@ -20,10 +20,10 @@ public class Repository<T> : IRepository<T> where T : class
         => await _dbSet.FindAsync([id], cancellationToken);
 
     public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _dbSet.ToListAsync(cancellationToken);
+        => await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _dbSet.Where(predicate).ToListAsync(cancellationToken);
+        => await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
 
     public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
@@ -55,5 +55,5 @@ public class Repository<T> : IRepository<T> where T : class
         => _dbSet.RemoveRange(entities);
 
     public IQueryable<T> Query()
-        => _dbSet.AsQueryable();
+        => _dbSet.AsNoTracking();
 }

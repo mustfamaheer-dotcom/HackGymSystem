@@ -48,41 +48,58 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 
     public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
-        var receiptNumber = GenerateReceiptNumber();
+        const int maxRetries = 3;
 
-        var lastCode = await _repository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
-
-        var member = new Member(
-            receiptNumber,
-            request.FullName,
-            request.PhoneNumber,
-            DateTime.UtcNow
-        )
+        for (int attempt = 0; attempt < maxRetries; attempt++)
         {
-            Code = lastCode + 1,
-            Email = request.Email,
-            DateOfBirth = request.DateOfBirth,
-            Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true),
-            Notes = request.Notes,
-            Nationality = request.Nationality,
-            NationalId = request.NationalId,
-            Company = request.Company,
-            Address = request.Address,
-            Weight = request.Weight,
-            HasDisease = request.HasDisease,
-            DiseaseType = request.HasDisease ? request.DiseaseType : null,
-            ReferralSource = request.ReferralSource,
-            PackageId = request.PackageId,
-            FingerprintDeviceId = request.FingerprintDeviceId,
-            MemberSignature = request.MemberSignature,
-            AdminSignature = request.AdminSignature,
-            ImagePath = request.ImagePath
-        };
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        await _repository.AddAsync(member, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+                var receiptNumber = GenerateReceiptNumber();
+                var lastCode = await _repository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
 
-        return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
+                var member = new Member(
+                    receiptNumber,
+                    request.FullName,
+                    request.PhoneNumber,
+                    DateTime.UtcNow
+                )
+                {
+                    Code = lastCode + 1,
+                    Email = request.Email,
+                    DateOfBirth = request.DateOfBirth,
+                    Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true),
+                    Notes = request.Notes,
+                    Nationality = request.Nationality,
+                    NationalId = request.NationalId,
+                    Company = request.Company,
+                    Address = request.Address,
+                    Weight = request.Weight,
+                    HasDisease = request.HasDisease,
+                    DiseaseType = request.HasDisease ? request.DiseaseType : null,
+                    ReferralSource = request.ReferralSource,
+                    PackageId = request.PackageId,
+                    FingerprintDeviceId = request.FingerprintDeviceId,
+                    MemberSignature = request.MemberSignature,
+                    AdminSignature = request.AdminSignature,
+                    ImagePath = request.ImagePath
+                };
+
+                await _repository.AddAsync(member, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _unitOfWork.CommitAsync(cancellationToken);
+
+                return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
+            }
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
+            {
+                await _unitOfWork.ResetAsync(cancellationToken);
+                continue;
+            }
+        }
+
+        return Result<Guid>.Failure(_localizer["Failed to create member. Please try again."]);
     }
 
     private static string GenerateReceiptNumber()

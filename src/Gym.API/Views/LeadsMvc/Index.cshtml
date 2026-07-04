@@ -286,22 +286,22 @@
             function formatOffer(o) {
                 var lines = ['▸ ' + o.OfferTitle];
                 var details = [];
-                if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                if (o.OfferPrice != null) details.push('@SharedLocalizer["Price"]: ' + Number(o.OfferPrice).toLocaleString() + ' @SharedLocalizer["EGP"]');
                 if (o.OfferType === 'FixedPrice') {
-                    details.push('Type: Fixed Price');
+                    details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Fixed Price"]');
                 } else if (o.OfferType === 'BonusDuration') {
                     var bonus = [];
-                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
-                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
-                    if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
-                    details.push('Type: Bonus Duration');
+                    if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' @SharedLocalizer["month(s)"]');
+                    if (o.BonusDays) bonus.push('+' + o.BonusDays + ' @SharedLocalizer["day(s)"]');
+                    if (bonus.length) details.push('@SharedLocalizer["Bonus"]: ' + bonus.join(' + '));
+                    details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Bonus Duration"]');
                 } else if (o.OfferType === 'FreeRegistration') {
-                    details.push('Type: Free Registration');
+                    details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Free Registration"]');
                 } else if (o.OfferType === 'ExtraFreeze') {
-                    if (o.ExtraFreezeDays) details.push('Extra Freeze: +' + o.ExtraFreezeDays + ' day' + (o.ExtraFreezeDays > 1 ? 's' : ''));
-                    details.push('Type: Extra Freeze');
+                    if (o.ExtraFreezeDays) details.push('@SharedLocalizer["Extra Freeze"]: +' + o.ExtraFreezeDays + ' @SharedLocalizer["day(s)"]');
+                    details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Extra Freeze"]');
                 } else if (o.OfferType === 'Custom') {
-                    details.push('Type: Custom');
+                    details.push('@SharedLocalizer["Type"]: @SharedLocalizer["Custom"]');
                 }
                 if (details.length) lines.push('  ' + details.join(' | '));
                 return lines.join('\n');

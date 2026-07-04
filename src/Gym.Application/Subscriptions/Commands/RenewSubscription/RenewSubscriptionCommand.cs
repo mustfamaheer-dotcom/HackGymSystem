@@ -47,6 +47,35 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
 
     public async Task<Result<Guid>> Handle(RenewSubscriptionCommand request, CancellationToken cancellationToken)
     {
+        const int maxRetries = 3;
+
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+                var result = await HandleCoreAsync(request, cancellationToken);
+
+                if (result.IsSuccess)
+                    await _unitOfWork.CommitAsync(cancellationToken);
+                else
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+
+                return result;
+            }
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
+            {
+                await _unitOfWork.ResetAsync(cancellationToken);
+                continue;
+            }
+        }
+
+        return Result<Guid>.Failure(_localizer["Failed to renew subscription. Please try again."]);
+    }
+
+    private async Task<Result<Guid>> HandleCoreAsync(RenewSubscriptionCommand request, CancellationToken cancellationToken)
+    {
         var previous = await _subscriptionRepo.Query()
             .Include(s => s.Member)
             .FirstOrDefaultAsync(s => s.Id == request.PreviousSubscriptionId, cancellationToken);
@@ -91,13 +120,17 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
 
         int durationDays = plan.DurationDays;
         int freeMonths = 0;
+        int freeDays = 0;
         if (offer != null && offer.OfferType == OfferType.BonusDuration)
         {
-            if (offer.BonusMonths.HasValue) freeMonths = offer.BonusMonths.Value;
-            else if (offer.BonusDays.HasValue) durationDays += offer.BonusDays.Value;
+            freeMonths = offer.BonusMonths ?? 0;
+            freeDays = offer.BonusDays ?? 0;
         }
 
-        var expirationDate = request.StartDate.AddDays(durationDays).AddMonths(freeMonths);
+        var expirationDate = request.StartDate
+            .AddDays(durationDays)
+            .AddMonths(freeMonths)
+            .AddDays(freeDays);
 
         var lastReceipt = await _subscriptionRepo.Query()
             .OrderByDescending(s => s.ReceiptNumber)

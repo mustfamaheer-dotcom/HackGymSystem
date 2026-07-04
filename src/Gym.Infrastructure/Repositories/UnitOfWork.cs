@@ -44,6 +44,18 @@ public class UnitOfWork : IUnitOfWork
             await _transaction.RollbackAsync(cancellationToken);
     }
 
+    public async Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction is not null)
+        {
+            await _transaction.RollbackAsync(cancellationToken);
+            _transaction.Dispose();
+            _transaction = null;
+        }
+        _context.ChangeTracker.Clear();
+        await Task.CompletedTask;
+    }
+
     public void Dispose()
     {
         if (!_disposed)

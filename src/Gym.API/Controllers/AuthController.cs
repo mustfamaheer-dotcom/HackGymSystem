@@ -33,7 +33,7 @@ public class AuthController : BaseController
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
-            Secure = false,
+            Secure = Request.IsHttps,
             MaxAge = TimeSpan.FromDays(7)
         });
 
