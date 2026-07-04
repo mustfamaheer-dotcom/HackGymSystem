@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using Gym.API;
 using Gym.Application.Common.DTOs;
+using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Middleware;
 
@@ -25,11 +27,15 @@ public class ExceptionMiddleware
         catch (ValidationException ex)
         {
             _logger.LogWarning("Validation failed: {Errors}", string.Join("; ", ex.Errors.Select(e => e.ErrorMessage)));
-            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, "Validation failed", ex.Errors.Select(e => e.ErrorMessage).ToArray());
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResources>>();
+            var message = localizer?["Validation failed"].Value ?? "Validation failed";
+            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, message, ex.Errors.Select(e => e.ErrorMessage).ToArray());
         }
         catch (UnauthorizedAccessException)
         {
-            await HandleExceptionAsync(context, HttpStatusCode.Unauthorized, "Unauthorized");
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResources>>();
+            var message = localizer?["Unauthorized"].Value ?? "Unauthorized";
+            await HandleExceptionAsync(context, HttpStatusCode.Unauthorized, message);
         }
         catch (KeyNotFoundException ex)
         {
@@ -45,7 +51,9 @@ public class ExceptionMiddleware
 
             if (context.Request.Path.StartsWithSegments("/api"))
             {
-                await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, "An error occurred. Please try again later.");
+                var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResources>>();
+                var message = localizer?["An error occurred. Please try again later."].Value ?? "An error occurred. Please try again later.";
+                await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, message);
             }
             else
             {

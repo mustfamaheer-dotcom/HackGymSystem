@@ -26,33 +26,24 @@ cd ..
 
 ## 2. Database Setup
 
-### Option A — SQL Script (recommended for first run)
-
-Open `database/init.sql` in SQL Server Management Studio (SSMS) or run:
-
-```bash
-sqlcmd -S "(localdb)\MSSQLLocalDB" -i database\init.sql
-```
-
-This creates the `GymManagementDb` database with all tables, indexes, foreign keys, and seed data.
-
-### Option B — EF Core Migrations
-
-Update the connection string in `src/Gym.API/appsettings.json`:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
-
-Then apply migrations:
+The database schema is owned by **Entity Framework Core migrations** under
+`src/Gym.Infrastructure/Migrations/`. The API applies any pending migrations
+automatically on first launch, so for a normal local install you do not need to
+run anything manually — just start `start-system.bat` or:
 
 ```bash
 dotnet ef database update --project src/Gym.Infrastructure --startup-project src/Gym.API
 ```
+
+If `dotnet ef` is not installed, install it once:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+The startup migration creates the `GymManagementDb` database with all tables,
+indexes, foreign keys, and seed data (admin user, default roles,
+permissions, settings).
 
 ## 3. Configuration
 

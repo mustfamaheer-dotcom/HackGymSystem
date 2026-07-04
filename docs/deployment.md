@@ -188,7 +188,9 @@ Apply migrations on deploy:
 dotnet ef database update --project src/Gym.Infrastructure --startup-project src/Gym.API
 ```
 
-Or run `database/init.sql` against the target database (idempotent — uses `IF NOT EXISTS` checks).
+The startup code in `Gym.API/Program.cs` also calls `MigrateAsync()` on boot,
+so a deploy that omits the manual step will still bring the schema up-to-date
+on first launch (provided the connection string and SQL login are correct).
 
 ## 5. Hangfire Dashboard
 
@@ -278,6 +280,6 @@ Backups logged in `BackupLogs` table with status and file path.
 |---|---|---|
 | 401 on API calls | Expired token | Refresh token via `/api/auth/refresh` |
 | Device not connecting | Wrong IP/port or zkemkeeper.dll not registered | Verify network, run `regsvr32 zkemkeeper.dll` |
-| Migration fails | Connection string or permissions | Verify SQL Server access, run `init.sql` |
+| Migration fails | Connection string or permissions | Verify SQL Server access; rerun `dotnet ef database update` |
 | WhatsApp messages not sending | Invalid API token | Check WhatsApp Business API credentials |
 | Hangfire jobs not running | Service not started or DB not accessible | Check Windows Service status, verify DB connection |

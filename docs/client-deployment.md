@@ -232,7 +232,7 @@ taskkill /PID LAST_COLUMN /F
 C:\GymManagement\
 ├── start-system.bat          ← Double-click to start
 ├── database\
-│   └── init.sql              ← SQL setup script
+│   └── README.md              ← Schema is owned by EF Core migrations
 ├── src\
 │   ├── Gym.API\              ← Backend API
 │   │   └── wwwroot\           ← Frontend (copied from gym-web\dist)

@@ -1,5 +1,6 @@
 using Gym.Application.Members.DTOs;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Localization;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -9,6 +10,7 @@ namespace Gym.API.Services;
 public class ReceiptPdfService
 {
     private readonly IWebHostEnvironment _env;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
     private static readonly Color PrimaryColor = Color.FromHex("#1a365d");
     private static readonly Color AccentColor = Color.FromHex("#2b6cb0");
@@ -17,9 +19,10 @@ public class ReceiptPdfService
     private static readonly Color SuccessColor = Color.FromHex("#10B981");
     private static readonly Color WarningColor = Color.FromHex("#F59E0B");
 
-    public ReceiptPdfService(IWebHostEnvironment env)
+    public ReceiptPdfService(IWebHostEnvironment env, IStringLocalizer<SharedResources> localizer)
     {
         _env = env;
+        _localizer = localizer;
     }
 
     public byte[] GenerateReceipt(MemberDto member)
@@ -68,13 +71,13 @@ public class ReceiptPdfService
 
                 row.RelativeItem().PaddingLeft(8).Column(headerCol =>
                 {
-                    headerCol.Item().Text("HACK GYM").Bold().FontSize(20).FontColor(PrimaryColor);
-                    headerCol.Item().Text("PAYMENT HISTORY").FontSize(10).FontColor(AccentColor);
+                    headerCol.Item().Text(_localizer["HACK GYM"].Value).Bold().FontSize(20).FontColor(PrimaryColor);
+                    headerCol.Item().Text(_localizer["Payment History"].Value).FontSize(10).FontColor(AccentColor);
                 });
 
                 row.ConstantItem(120).AlignRight().Column(infoCol =>
                 {
-                    infoCol.Item().AlignRight().Text($"Member #{memberCode}").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                    infoCol.Item().AlignRight().Text($"{_localizer["Member #"].Value}{memberCode}").SemiBold().FontSize(10).FontColor(PrimaryColor);
                     infoCol.Item().AlignRight().Text(memberName).FontSize(9).FontColor(Colors.Grey.Darken1);
                 });
             });
@@ -93,15 +96,15 @@ public class ReceiptPdfService
 
             col.Item().Background(LightBg).Padding(6).Row(summary =>
             {
-                summary.RelativeItem().Text($"Total Payments: {payments.Count}").SemiBold().FontSize(10).FontColor(PrimaryColor);
-                summary.RelativeItem().AlignRight().Text($"Total Amount: {totalPaid:N2} EGP").SemiBold().FontSize(10).FontColor(SuccessColor);
+                summary.RelativeItem().Text($"{_localizer["Total Payments"].Value}: {payments.Count}").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                summary.RelativeItem().AlignRight().Text($"{_localizer["Total Amount"].Value}: {totalPaid:N2} EGP").SemiBold().FontSize(10).FontColor(SuccessColor);
             });
 
             col.Item().PaddingVertical(4);
 
             if (payments.Count == 0)
             {
-                col.Item().Padding(10).AlignCenter().Text("No payment records found.").FontSize(10).FontColor(Colors.Grey.Darken2);
+                col.Item().Padding(10).AlignCenter().Text(_localizer["No payment records found."].Value).FontSize(10).FontColor(Colors.Grey.Darken2);
             }
             else
             {
@@ -122,12 +125,12 @@ public class ReceiptPdfService
                     {
                         Func<IContainer, IContainer> headerStyle = x => x.Background(PrimaryColor);
                         header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("#").SemiBold().FontSize(8).FontColor(Colors.White).AlignCenter();
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Date").SemiBold().FontSize(8).FontColor(Colors.White);
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Plan / Receipt").SemiBold().FontSize(8).FontColor(Colors.White);
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Method").SemiBold().FontSize(8).FontColor(Colors.White).AlignCenter();
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Amount").SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Balance").SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
-                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Recorded By").SemiBold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Date"].Value).SemiBold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Plan / Receipt"].Value).SemiBold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Method"].Value).SemiBold().FontSize(8).FontColor(Colors.White).AlignCenter();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Amount"].Value).SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Balance"].Value).SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text(_localizer["Recorded By"].Value).SemiBold().FontSize(8).FontColor(Colors.White);
                     });
 
                     for (int i = 0; i < payments.Count; i++)
@@ -141,7 +144,7 @@ public class ReceiptPdfService
                         table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Column(d =>
                         {
                             d.Item().Text(p.PlanName).FontSize(8).SemiBold();
-                            d.Item().Text($"Receipt: {p.SubscriptionReceipt}").FontSize(7).FontColor(Colors.Grey.Darken2);
+                            d.Item().Text($"{_localizer["Receipt"].Value}: {p.SubscriptionReceipt}").FontSize(7).FontColor(Colors.Grey.Darken2);
                         });
                         table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text(p.PaymentMethod).FontSize(8).AlignCenter();
                         table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text($"{p.Amount:N2}").FontSize(8).Bold().AlignRight().FontColor(SuccessColor);
@@ -157,8 +160,8 @@ public class ReceiptPdfService
 
             col.Item().Background(LightBg).Padding(6).Row(sig =>
             {
-                sig.RelativeItem().Text("Member: " + memberName).FontSize(8).FontColor(Colors.Grey.Darken1);
-                sig.RelativeItem().AlignRight().Text("Phone: " + memberPhone).FontSize(8).FontColor(Colors.Grey.Darken1);
+                sig.RelativeItem().Text(_localizer["Member: "].Value + memberName).FontSize(8).FontColor(Colors.Grey.Darken1);
+                sig.RelativeItem().AlignRight().Text(_localizer["Phone: "].Value + memberPhone).FontSize(8).FontColor(Colors.Grey.Darken1);
             });
         });
     }
@@ -175,8 +178,8 @@ public class ReceiptPdfService
 
                 row.RelativeItem().PaddingLeft(8).Column(headerCol =>
                 {
-                    headerCol.Item().Text("HACK GYM").Bold().FontSize(18).FontColor(PrimaryColor);
-                    headerCol.Item().Text("RECEIPT VOUCHER").FontSize(9).FontColor(AccentColor);
+                    headerCol.Item().Text(_localizer["HACK GYM"].Value).Bold().FontSize(18).FontColor(PrimaryColor);
+                    headerCol.Item().Text(_localizer["Receipt Voucher"].Value).FontSize(9).FontColor(AccentColor);
                 });
 
                 row.ConstantItem(55).AlignCenter().Column(photoCol =>
@@ -202,7 +205,7 @@ public class ReceiptPdfService
 
                 row.RelativeItem().AlignRight().Column(infoCol =>
                 {
-                    infoCol.Item().AlignRight().Text($"Receipt # {member.Code}").SemiBold().FontSize(9).FontColor(AccentColor);
+                    infoCol.Item().AlignRight().Text($"{_localizer["Receipt #"].Value}{member.Code}").SemiBold().FontSize(9).FontColor(AccentColor);
                     infoCol.Item().AlignRight().Text(member.RegistrationDate.ToString("dd/MM/yyyy")).FontSize(8).FontColor(Colors.Grey.Darken1);
                 });
             });
@@ -225,7 +228,7 @@ public class ReceiptPdfService
 
                 table.Header(header =>
                 {
-                    header.Cell().PaddingBottom(2).Text("Member Information").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                    header.Cell().PaddingBottom(2).Text(_localizer["Member Information"].Value).SemiBold().FontSize(10).FontColor(PrimaryColor);
                     header.Cell().PaddingBottom(2).Text("");
                 });
 
@@ -235,22 +238,22 @@ public class ReceiptPdfService
                     table.Cell().PaddingVertical(1).Text(value ?? "-").FontSize(8).FontColor(Colors.Black);
                 }
 
-                AddRow("Receipt Number", member.ReceiptNumber);
-                AddRow("Phone", member.PhoneNumber);
-                AddRow("Nationality", member.Nationality);
-                AddRow("National ID", member.NationalId);
-                AddRow("Email", member.Email);
-                AddRow("Gender", member.Gender?.ToString());
-                AddRow("Date of Birth", member.DateOfBirth?.ToString("dd/MM/yyyy"));
-                AddRow("Membership Plan", member.PackageName);
-                AddRow("Company", member.Company);
-                AddRow("Address", member.Address);
-                AddRow("Referral Source", member.ReferralSource);
-                AddRow("Weight", member.Weight != null ? member.Weight.Value.ToString("N1") + " kg" : "-");
-                AddRow("Has Disease", member.HasDisease ? "Yes" : "No");
+                AddRow(_localizer["Receipt Number"].Value, member.ReceiptNumber);
+                AddRow(_localizer["Phone"].Value, member.PhoneNumber);
+                AddRow(_localizer["Nationality"].Value, member.Nationality);
+                AddRow(_localizer["National ID"].Value, member.NationalId);
+                AddRow(_localizer["Email"].Value, member.Email);
+                AddRow(_localizer["Gender"].Value, member.Gender?.ToString());
+                AddRow(_localizer["Date of Birth"].Value, member.DateOfBirth?.ToString("dd/MM/yyyy"));
+                AddRow(_localizer["Membership Plan"].Value, member.PackageName);
+                AddRow(_localizer["Company"].Value, member.Company);
+                AddRow(_localizer["Address"].Value, member.Address);
+                AddRow(_localizer["Referral Source"].Value, member.ReferralSource);
+                AddRow(_localizer["Weight"].Value, member.Weight != null ? member.Weight.Value.ToString("N1") + " kg" : "-");
+                AddRow(_localizer["Has Disease"].Value, member.HasDisease ? _localizer["Yes"].Value : _localizer["No"].Value);
                 if (member.HasDisease)
-                    AddRow("Disease Type", member.DiseaseType);
-                AddRow("Notes", member.Notes);
+                    AddRow(_localizer["Disease Type"].Value, member.DiseaseType);
+                AddRow(_localizer["Notes"].Value, member.Notes);
             });
 
             col.Item().PaddingVertical(3);
@@ -259,20 +262,20 @@ public class ReceiptPdfService
 
             col.Item().Background(LightBg).Padding(6).Column(sigCol =>
             {
-                sigCol.Item().PaddingBottom(3).Text("Signatures").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                sigCol.Item().PaddingBottom(3).Text(_localizer["Signatures"].Value).SemiBold().FontSize(10).FontColor(PrimaryColor);
 
                 sigCol.Item().Row(row =>
                 {
                     row.RelativeItem().PaddingRight(3).Border(1).BorderColor(BorderColor).Padding(6).Column(left =>
                     {
-                        left.Item().Text("Member Signature").FontSize(8).FontColor(Colors.Grey.Darken1);
+                        left.Item().Text(_localizer["Member Signature"].Value).FontSize(8).FontColor(Colors.Grey.Darken1);
                         left.Item().Height(20);
                         left.Item().Text(member.MemberSignature ?? "________________________").FontSize(7).FontColor(Colors.Grey.Darken2);
                     });
 
                     row.RelativeItem().PaddingLeft(3).Border(1).BorderColor(BorderColor).Padding(6).Column(right =>
                     {
-                        right.Item().Text("Admin Signature").FontSize(8).FontColor(Colors.Grey.Darken1);
+                        right.Item().Text(_localizer["Admin Signature"].Value).FontSize(8).FontColor(Colors.Grey.Darken1);
                         right.Item().Height(20);
                         right.Item().Text(member.AdminSignature ?? "________________________").FontSize(7).FontColor(Colors.Grey.Darken2);
                     });
@@ -288,10 +291,10 @@ public class ReceiptPdfService
             col.Item().LineHorizontal(1).LineColor(BorderColor);
             col.Item().PaddingVertical(2).Row(row =>
             {
-                row.RelativeItem().Text("Generated by Hack Gym Management System").FontSize(7).FontColor(Colors.Grey.Darken2);
+                row.RelativeItem().Text(_localizer["Generated by Hack Gym Management System"].Value).FontSize(7).FontColor(Colors.Grey.Darken2);
                 row.RelativeItem().AlignRight().Text(t =>
                 {
-                    t.Span("Page ").FontSize(7).FontColor(Colors.Grey.Darken2);
+                    t.Span(_localizer["Page "].Value).FontSize(7).FontColor(Colors.Grey.Darken2);
                     t.CurrentPageNumber().FontSize(7).FontColor(Colors.Grey.Darken2);
                 });
             });

@@ -185,7 +185,6 @@
                         <th style="width:10%;text-align:center;">@SharedLocalizer["Source"]</th>
                         <th style="width:10%;text-align:center;">@SharedLocalizer["Status"]</th>
                         <th style="width:12%;text-align:center;">@SharedLocalizer["Package"]</th>
-                        <th style="width:7%;text-align:center;white-space:nowrap;font-size:0.85rem;">@SharedLocalizer["Follow Ups"]</th>
                         <th style="width:9%;text-align:center;white-space:nowrap;font-size:0.85rem;">@SharedLocalizer["Created At"]</th>
                         <th style="width:10%;text-align:center;">@SharedLocalizer["Actions"]</th>
                     </tr>
@@ -228,7 +227,6 @@
                                 })">@SharedLocalizer[lead.Status.ToString()]</span>
                             </td>
                             <td style="text-align:center;">@(lead.InterestedPackageName ?? "-")</td>
-                            <td style="text-align:center;">@lead.FollowUpCount</td>
                             <td style="text-align:center;">@lead.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td style="text-align:center;">
                                 <div class="btn-group btn-group-sm">

@@ -5,7 +5,8 @@
     var dateFrom = ViewBag.DateFrom as string;
     var dateTo = ViewBag.DateTo as string;
     var expiresWithin = ViewBag.ExpiresWithinDays as int?;
-    var showFilters = !string.IsNullOrEmpty(searchTerm) || statusFilter.HasValue || !string.IsNullOrEmpty(dateFrom) || !string.IsNullOrEmpty(dateTo) || expiresWithin.HasValue;
+    var hasOutstanding = ViewBag.HasOutstandingBalance as bool?;
+    var showFilters = !string.IsNullOrEmpty(searchTerm) || statusFilter.HasValue || !string.IsNullOrEmpty(dateFrom) || !string.IsNullOrEmpty(dateTo) || expiresWithin.HasValue || hasOutstanding == true;
 }
 
 <div class="receipt-card">
@@ -91,6 +92,14 @@
                             <label class="form-label small fw-semibold text-muted mb-1">@SharedLocalizer["Expires Within (Days)"]</label>
                             <input type="number" name="ExpiresWithinDays" class="form-control" min="1" value="@expiresWithin" placeholder="@SharedLocalizer["e.g. 7"]" />
                         </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="HasOutstandingBalance" value="true" id="hasOutstandingCheck" class="form-check-input" checked="@(hasOutstanding == true ? true : null)" />
+                                <label class="form-check-label small" for="hasOutstandingCheck">
+                                    @SharedLocalizer["Show only members with remaining balance"]
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-12 d-flex gap-2">
@@ -153,9 +162,18 @@
                                     <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
                                        data-phone="@item.MemberPhone"
                                        data-member="@item.MemberName"
+                                       data-membercode="@item.MemberCode"
+                                       data-joindate="@item.MemberRegistrationDate.ToString("dd/MM/yyyy")"
                                        data-receipt="@item.ReceiptNumber"
+                                       data-startdate="@item.StartDate.ToString("dd/MM/yyyy")"
                                        data-expiration="@item.ExpirationDate.ToString("dd/MM/yyyy")"
                                        data-daysremaining="@((int)(item.ExpirationDate - DateTime.UtcNow).TotalDays)"
+                                       data-status="@item.Status.ToString()"
+                                       data-totalpaid="@item.TotalSubscriptionValue.ToString("N2")"
+                                       data-amountpaid="@item.AmountPaid.ToString("N2")"
+                                       data-remainingbalance="@item.RemainingBalance.ToString("N2")"
+                                       data-lastpaymentamount="@(item.LastPaymentAmount?.ToString("N2") ?? "0")"
+                                       data-lastpaymentdate="@(item.LastPaymentDate?.ToString("dd/MM/yyyy") ?? "")"
                                        data-offers="@(item.OfferTitle ?? "")"><i class="bi bi-whatsapp"></i></a>
                                 </div>
                             </td>
@@ -201,6 +219,34 @@
             var templateMap = {};
             templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
 
+            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            function formatOffers() {
+                if (!activeOffers || activeOffers.length === 0) return 'No offers available';
+                return activeOffers.map(function(o) {
+                    var lines = ['▸ ' + o.OfferTitle];
+                    var details = [];
+                    if (o.OfferPrice != null) details.push('Price: ' + Number(o.OfferPrice).toLocaleString() + ' EGP');
+                    if (o.OfferType === 'FixedPrice') {
+                        details.push('Type: Fixed Price');
+                    } else if (o.OfferType === 'BonusDuration') {
+                        var bonus = [];
+                        if (o.BonusMonths) bonus.push('+' + o.BonusMonths + ' month' + (o.BonusMonths > 1 ? 's' : ''));
+                        if (o.BonusDays) bonus.push('+' + o.BonusDays + ' day' + (o.BonusDays > 1 ? 's' : ''));
+                        if (bonus.length) details.push('Bonus: ' + bonus.join(' + '));
+                        details.push('Type: Bonus Duration');
+                    } else if (o.OfferType === 'FreeRegistration') {
+                        details.push('Type: Free Registration');
+                    } else if (o.OfferType === 'ExtraFreeze') {
+                        details.push('Extra Freeze: +' + (o.ExtraFreezeDays || 0) + ' days');
+                        details.push('Type: Extra Freeze');
+                    } else {
+                        details.push('Type: Custom');
+                    }
+                    if (details.length) lines.push('  ' + details.join(', '));
+                    return lines.join('\n');
+                }).join('\n\n');
+            }
+
             var select = document.getElementById('whatsappTemplate');
 
             document.addEventListener('click', function(e) {
@@ -217,10 +263,20 @@
                 var body = templateMap[tid] || '';
                 var msg = body
                     .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, btn.dataset.membercode || '')
+                    .replace(/\{JoinDate\}/g, btn.dataset.joindate || '')
                     .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
+                    .replace(/\{StartDate\}/g, btn.dataset.startdate || '')
                     .replace(/\{ExpirationDate\}/g, btn.dataset.expiration || '')
                     .replace(/\{DaysRemaining\}/g, btn.dataset.daysremaining || '')
-                    .replace(/\{Offers\}/g, btn.dataset.offers || '');
+                    .replace(/\{SubscriptionStatus\}/g, btn.dataset.status || '')
+                    .replace(/\{TotalSubscriptionValue\}/g, btn.dataset.totalpaid || '')
+                    .replace(/\{TotalPaid\}/g, btn.dataset.amountpaid || '')
+                    .replace(/\{AmountPaid\}/g, btn.dataset.amountpaid || '')
+                    .replace(/\{RemainingBalance\}/g, btn.dataset.remainingbalance || '')
+                    .replace(/\{LastPaymentAmount\}/g, btn.dataset.lastpaymentamount || '')
+                    .replace(/\{LastPaymentDate\}/g, btn.dataset.lastpaymentdate || '')
+                    .replace(/\{Offers\}/g, formatOffers());
 
                 var phone = (btn.dataset.phone || '').replace(/\D/g, '');
                 if (phone.startsWith('0')) phone = '20' + phone.substring(1);

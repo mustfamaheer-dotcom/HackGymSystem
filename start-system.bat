@@ -11,7 +11,6 @@ cd /d "%~dp0"
 set "PROJECT_ROOT=%~dp0"
 set "DB_NAME=GymManagementDb"
 set "BACKUP_DIR=%PROJECT_ROOT%backups"
-set "SQL_INIT=%PROJECT_ROOT%database\init.sql"
 set "API_PROJECT=%PROJECT_ROOT%src\Gym.API"
 set "INFRA_PROJECT=%PROJECT_ROOT%src\Gym.Infrastructure"
 set "FRONTEND_DIR=%PROJECT_ROOT%gym-web"
@@ -68,20 +67,18 @@ echo   [1]  Auto-migrate (EF Core) - Create/update schema
 if not defined NO_SQLCMD (
     echo   [2]  Restore from backup   - Recover from a .bak file
     echo   [3]  Backup current DB     - Save database to a .bak file
-    echo   [4]  Initialize from SQL   - Run database\init.sql
 )
-echo   [5]  Skip                  - Assume DB already exists
+echo   [4]  Skip                  - Assume DB already exists
 echo.
 set "DB_CHOICE="
 set /p DB_CHOICE="  Enter choice: "
 
 if "%DB_CHOICE%"=="1" goto db_migrate
-if "%DB_CHOICE%"=="5" goto db_done
+if "%DB_CHOICE%"=="4" goto db_done
 
 if not defined NO_SQLCMD (
     if "%DB_CHOICE%"=="2" goto db_restore
     if "%DB_CHOICE%"=="3" goto db_backup
-    if "%DB_CHOICE%"=="4" goto db_init_sql
 )
 
 echo.
@@ -243,31 +240,6 @@ if %ERRORLEVEL% EQU 0 (
     sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     goto db_menu
 )
-
-:: -------------------------------------------------
-:db_init_sql
-echo.
-if not exist "%SQL_INIT%" (
-    echo   ERROR: File not found: %SQL_INIT%
-    echo.
-    goto db_menu
-)
-echo   This will run the full schema + seed script: database\init.sql
-set "CONFIRM="
-set /p CONFIRM="  Type YES to continue: "
-if /i not "!CONFIRM!"=="YES" (
-    echo   Skipped.
-    echo.
-    goto db_menu
-)
-sqlcmd -S %DB_INSTANCE% -E -C -i "%SQL_INIT%"
-if %ERRORLEVEL% EQU 0 (
-    echo   SUCCESS: Database initialized.
-) else (
-    echo   ERROR: SQL script failed. Check SQL Server connectivity.
-)
-echo.
-goto db_menu
 
 :: -------------------------------------------------
 :db_migrate
