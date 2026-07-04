@@ -21,4 +21,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ApplicationResources.resx">
+      <LogicalName>Gym.Application.Resources.ApplicationResources.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ApplicationResources.ar.resx">
+      <LogicalName>Gym.Application.Resources.ApplicationResources.ar.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
