@@ -1,6 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Localization;
-using Gym.Application.Resources;
+using Gym.Application;
 using Gym.Application.Members.DTOs;
 
 namespace Gym.Application.Members.Validators;
@@ -27,10 +27,9 @@ public class CreateMemberDtoValidator : AbstractValidator<CreateMemberDto>
             .MaximumLength(100).WithMessage(_localizer["Nationality must not exceed 100 characters"]);
 
         RuleFor(x => x.NationalId)
-            .Length(14).When(x => !string.IsNullOrEmpty(x.NationalId))
-                .WithMessage(_localizer["National ID must be exactly 14 digits"])
-            .Matches(@"^\d{14}$").When(x => !string.IsNullOrEmpty(x.NationalId))
-                .WithMessage(_localizer["National ID must be 14 digits"]);
+            .NotEmpty().WithMessage(_localizer["National ID is required"])
+            .Length(14).WithMessage(_localizer["National ID must be exactly 14 digits"])
+            .Matches(@"^\d{14}$").WithMessage(_localizer["National ID must be 14 digits"]);
 
         RuleFor(x => x.ReferralSource)
             .Must(v => string.IsNullOrEmpty(v) || ValidReferralSources.Contains(v))

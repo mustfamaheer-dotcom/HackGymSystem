@@ -1,0 +1,79 @@
+@using Gym.Application.Members.DTOs
+@model MemberPaymentHistoryViewModel
+@{
+    var pdfUrl = Url.Action("PaymentHistoryPdf", "MembersMvc", new { id = Model.MemberId });
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-cash-coin"></i> @SharedLocalizer["Payment History"]</h4>
+        <div class="d-flex gap-2">
+            <a href="@pdfUrl" target="_blank" class="btn btn-outline-danger"><i class="bi bi-filetype-pdf"></i> @SharedLocalizer["Download PDF"]</a>
+            <a asp-action="Details" asp-route-id="@Model.MemberId" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back"]</a>
+        </div>
+    </div>
+
+    <div class="p-3 border-bottom bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <strong>@Model.MemberName</strong>
+                <small class="text-muted d-block">#@Model.MemberCode | @Model.MemberPhone</small>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span class="badge bg-success fs-6 me-2">@SharedLocalizer["Total Paid"]: @Model.TotalPaid.ToString("N2") EGP</span>
+                <span class="badge bg-info fs-6">@Model.PaymentCount @SharedLocalizer["payments"]</span>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Payments.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-wallet2" style="font-size: 3rem;"></i>
+            <p class="mt-2">@SharedLocalizer["No payment records found for this member."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@SharedLocalizer["Date"]</th>
+                        <th>@SharedLocalizer["Plan / Receipt"]</th>
+                        <th>@SharedLocalizer["Method"]</th>
+                        <th class="text-end">@SharedLocalizer["Amount"]</th>
+                        <th class="text-end">@SharedLocalizer["Balance"]</th>
+                        <th>@SharedLocalizer["Recorded By"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Payments.Count; i++)
+                    {
+                        var p = Model.Payments[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@p.PaymentDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="fw-semibold">@p.PlanName</span><br />
+                                <code style="font-size:0.75rem;">@p.SubscriptionReceipt</code>
+                            </td>
+                            <td>@p.PaymentMethod</td>
+                            <td class="text-end fw-bold text-success">@p.Amount.ToString("N2")</td>
+                            <td class="text-end @(p.RunningBalance > 0 ? "text-warning" : "text-muted")">@p.RunningBalance.ToString("N2")</td>
+                            <td>@(p.RecordedBy ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="table-active fw-bold">
+                        <td colspan="4" class="text-end">@SharedLocalizer["Total"]:</td>
+                        <td class="text-end text-success">@Model.TotalPaid.ToString("N2")</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+</div>

@@ -93,6 +93,10 @@
                     <a asp-action="Index" class="btn btn-sm btn-outline-danger ms-1"><i class="bi bi-x-lg"></i> @SharedLocalizer["Clear"]</a>
                 }
             </div>
+            <div>
+                <a asp-action="ExportExcel" class="btn btn-outline-success btn-sm rounded-pill"><i class="bi bi-download"></i> @SharedLocalizer["Export Excel"]</a>
+                <a asp-action="Import" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-upload"></i> @SharedLocalizer["Import Excel"]</a>
+            </div>
         </div>
         <form asp-action="Index" method="get" class="row g-2 align-items-end">
             <div class="collapse @(hasFilters ? "show" : "")" id="advancedFilters">
@@ -155,15 +159,6 @@
         </form>
     </div>
 
-    @if (TempData["Success"] is not null)
-    {
-        <div class="alert alert-success m-3">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] is not null)
-    {
-        <div class="alert alert-danger m-3">@TempData["Error"]</div>
-    }
-
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">
@@ -173,37 +168,44 @@
     }
     else
     {
+        <style>
+            .gender-male { color: #7DD3FC; font-weight: 600; text-shadow: 0 0 8px rgba(125,211,252,0.3); display: inline-flex; align-items: center; gap: 0.35rem; }
+            .gender-female { color: #F9A8D4; font-weight: 600; text-shadow: 0 0 8px rgba(249,168,212,0.3); display: inline-flex; align-items: center; gap: 0.35rem; }
+            .gender-male i, .gender-female i { font-size: 0.85rem; }
+            tr.wa-selected td { background-color: rgba(0, 0, 0, 0.2) !important; }
+            @@media (prefers-color-scheme: dark) { tr.wa-selected td { background-color: rgba(200, 200, 200, 0.25) !important; } }
+        </style>
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>@SharedLocalizer["Name"]</th>
-                        <th>@SharedLocalizer["Phone"] / @SharedLocalizer["Email"]</th>
-                        <th>@SharedLocalizer["Gender"]</th>
-                        <th>@SharedLocalizer["Source"]</th>
-                        <th>@SharedLocalizer["Status"]</th>
-                        <th>@SharedLocalizer["Package"]</th>
-                        <th>@SharedLocalizer["Follow Ups"]</th>
-                        <th>@SharedLocalizer["Created At"]</th>
-                        <th>@SharedLocalizer["Actions"]</th>
+                        <th style="width:16%;text-align:left;">@SharedLocalizer["Name"]</th>
+                        <th style="width:16%;text-align:left;">@SharedLocalizer["Phone"] / @SharedLocalizer["Email"]</th>
+                        <th style="width:8%;text-align:center;">@SharedLocalizer["Gender"]</th>
+                        <th style="width:10%;text-align:center;">@SharedLocalizer["Source"]</th>
+                        <th style="width:10%;text-align:center;">@SharedLocalizer["Status"]</th>
+                        <th style="width:12%;text-align:center;">@SharedLocalizer["Package"]</th>
+                        <th style="width:7%;text-align:center;white-space:nowrap;font-size:0.85rem;">@SharedLocalizer["Follow Ups"]</th>
+                        <th style="width:9%;text-align:center;white-space:nowrap;font-size:0.85rem;">@SharedLocalizer["Created At"]</th>
+                        <th style="width:10%;text-align:center;">@SharedLocalizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var lead in Model.Items)
                     {
                         <tr>
-                            <td class="fw-semibold">@lead.Name</td>
-                            <td>
+                            <td style="text-align:left;" class="fw-semibold">@lead.Name</td>
+                            <td style="text-align:left;">
                                 <div>@lead.Phone</div>
                                 @if (!string.IsNullOrEmpty(lead.Email))
                                 {
                                     <small class="text-muted">@lead.Email</small>
                                 }
                             </td>
-                            <td>
+                            <td style="text-align:center;">
                                 @if (lead.Gender.HasValue)
                                 {
-                                    <span class="badge @(lead.Gender == Gender.Male ? "bg-info" : "bg-pink")">
+                                    <span class="@(lead.Gender == Gender.Male ? "gender-male" : "gender-female")">
                                         <i class="bi @(lead.Gender == Gender.Male ? "bi-gender-male" : "bi-gender-female")"></i>
                                         @SharedLocalizer[lead.Gender.ToString()!]
                                     </span>
@@ -213,8 +215,8 @@
                                     <span class="text-muted">-</span>
                                 }
                             </td>
-                            <td>@SharedLocalizer[lead.Source.ToString()]</td>
-                            <td>
+                            <td style="text-align:center;">@SharedLocalizer[lead.Source.ToString()]</td>
+                            <td style="text-align:center;">
                                 <span class="badge-status @(lead.Status switch
                                 {
                                     LeadStatus.New => "badge-active",
@@ -225,10 +227,10 @@
                                     _ => ""
                                 })">@SharedLocalizer[lead.Status.ToString()]</span>
                             </td>
-                            <td>@(lead.InterestedPackageName ?? "-")</td>
-                            <td>@lead.FollowUpCount</td>
-                            <td>@lead.CreatedAt.ToString("dd/MM/yyyy")</td>
-                            <td>
+                            <td style="text-align:center;">@(lead.InterestedPackageName ?? "-")</td>
+                            <td style="text-align:center;">@lead.FollowUpCount</td>
+                            <td style="text-align:center;">@lead.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align:center;">
                                 <div class="btn-group btn-group-sm">
                                     <a asp-action="Details" asp-route-id="@lead.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
                                     @if (User.HasClaim("permission", "Leads.Edit"))
@@ -319,7 +321,7 @@
 
                 var tid = select ? select.value : '';
                 if (!tid) {
-                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
                     return;
                 }
 
@@ -330,6 +332,9 @@
                     .replace(/\{ExpirationDate\}/g, '')
                     .replace(/\{DaysRemaining\}/g, '')
                     .replace(/\{Offers\}/g, offersText);
+
+                var row = btn.closest('tr');
+                if (row) row.classList.add('wa-selected');
 
                 var phone = (btn.dataset.phone || '').replace(/\D/g, '');
                 if (phone.startsWith('0')) phone = '20' + phone.substring(1);

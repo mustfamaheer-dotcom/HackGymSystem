@@ -1,7 +1,5 @@
 @model DeviceDto
-@{
-    var error = TempData["Error"] as string;
-}
+
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="receipt-card text-center">
@@ -10,10 +8,6 @@
                 <span class="receipt-badge">@SharedLocalizer["Confirm"]</span>
             </div>
             <div class="receipt-body">
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="mb-4">
                     <i class="bi bi-hdd-stack text-danger" style="font-size: 4rem;"></i>
                 </div>

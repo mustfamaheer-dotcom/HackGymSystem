@@ -1,6 +1,4 @@
-@{
-    var error = TempData["Error"] as string;
-}
+
 
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -11,11 +9,6 @@
             </div>
 
             <div class="receipt-body">
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
-
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle"></i>
                     @SharedLocalizer["Upload an <strong>.xlsx</strong> file with the following columns:"]

@@ -1,7 +1,7 @@
 @using Gym.Application.Leads.DTOs
 @model LeadDto
 @{
-    var error = TempData["Error"] as string;
+
     var plans = ViewBag.Plans as IReadOnlyList<PlanDto> ?? new List<PlanDto>();
 }
 <div class="row justify-content-center">
@@ -13,10 +13,6 @@
             </div>
             <form asp-action="Convert" asp-route-id="@Model.Id" method="post" class="receipt-body">
                 <input type="hidden" name="LeadId" value="@Model.Id" />
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="mb-4 p-3 bg-light rounded">
                     <h6 class="fw-bold">@SharedLocalizer["Lead Information"]</h6>
                     <p class="mb-1">@SharedLocalizer["Name"]: @Model.Name</p>

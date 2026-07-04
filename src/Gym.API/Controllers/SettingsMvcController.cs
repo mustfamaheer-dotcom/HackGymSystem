@@ -7,7 +7,7 @@ using Gym.Application.Settings.Queries.GetSettingById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -62,11 +62,10 @@ public class SettingsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Setting created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Setting '{0}' has been created successfully"].Value, command.Key);
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet("edit/{id}")]
     [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

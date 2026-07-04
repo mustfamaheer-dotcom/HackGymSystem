@@ -1,7 +1,5 @@
 @model UpdatePlanCommand
-@{
-    var error = TempData["Error"] as string;
-}
+
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="receipt-card">
@@ -11,10 +9,6 @@
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
                 <input type="hidden" asp-for="Id" />
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="row g-3">
                     <div class="col-md-12 d-flex align-items-center gap-3 mb-2">
                         <label class="form-label mb-0">@SharedLocalizer["Status"]</label>

@@ -1,4 +1,4 @@
-using Gym.API.Resources;
+using Gym.API;
 using Gym.Application.WhatsAppTemplates.Commands.CreateTemplate;
 using Gym.Application.WhatsAppTemplates.Commands.UpdateTemplate;
 using Gym.Application.WhatsAppTemplates.Queries.GetAllTemplates;

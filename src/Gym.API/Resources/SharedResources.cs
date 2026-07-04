@@ -1,4 +1,4 @@
-namespace Gym.API.Resources;
+namespace Gym.API;
 
 public class SharedResources
 {

@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Gym.API.Filters;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -79,7 +79,7 @@ public class UsersMvcController : Controller
             return View(command);
         }
 
-        TempData["Success"] = _localizer["User created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["User '{0}' has been created successfully"].Value, command.Username);
         return RedirectToAction(nameof(Index));
     }
 

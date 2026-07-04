@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Gym.API.Middleware;
-using Gym.API.Resources;
+using Gym.API;
 using Gym.API.Services;
 using Gym.Application;
 using Gym.Infrastructure;

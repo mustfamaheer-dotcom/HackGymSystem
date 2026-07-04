@@ -8,7 +8,7 @@ using Gym.Application.MembershipPlans.Queries.GetPlanById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -63,11 +63,10 @@ public class PlansMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Plan created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Plan '{0}' has been created successfully"].Value, command.Name);
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet("edit/{id}")]
     [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

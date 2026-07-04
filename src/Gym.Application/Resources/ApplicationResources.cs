@@ -1,4 +1,4 @@
-namespace Gym.Application.Resources;
+namespace Gym.Application;
 
 public class ApplicationResources
 {

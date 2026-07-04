@@ -1,4 +1,4 @@
-using Gym.API.Resources;
+using Gym.API;
 using Gym.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;

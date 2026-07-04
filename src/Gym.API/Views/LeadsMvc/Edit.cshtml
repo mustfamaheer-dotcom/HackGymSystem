@@ -1,7 +1,7 @@
 @using Gym.Application.Leads.Commands.UpdateLead
 @model UpdateLeadCommand
 @{
-    var error = TempData["Error"] as string;
+
     var plans = ViewBag.Plans as IReadOnlyList<PlanDto> ?? new List<PlanDto>();
 }
 <div class="row justify-content-center">
@@ -13,10 +13,6 @@
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
                 <input type="hidden" asp-for="Id" />
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label asp-for="Name" class="form-label"></label>

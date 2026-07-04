@@ -1,7 +1,5 @@
 @model MemberSearchViewModel
-@{
-    var error = TempData["Error"] as string;
-}
+
 
 <div class="receipt-card">
     <div class="receipt-header">
@@ -10,11 +8,6 @@
     </div>
 
     <form asp-action="Search" method="get" class="receipt-body">
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <div class="alert alert-danger">@error</div>
-        }
-
         <div class="section-title"><i class="bi bi-funnel"></i> @SharedLocalizer["Filters"]</div>
         <div class="row g-3">
             <div class="col-md-4">

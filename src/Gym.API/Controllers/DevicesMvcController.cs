@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Gym.API.Filters;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -63,7 +63,7 @@ public class DevicesMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Device created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Device '{0}' has been added successfully"].Value, command.Name);
         return RedirectToAction(nameof(Index));
     }
 

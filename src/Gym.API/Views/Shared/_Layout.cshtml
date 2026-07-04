@@ -7,6 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <title>@SharedLocalizer[ViewData["Title"]?.ToString() ?? ""] - @SharedLocalizer["Hack Gym"]</title>
     @if (isRtl)
     {
@@ -753,6 +754,9 @@
                 <span class="page-title">@SharedLocalizer[ViewData["Title"]?.ToString() ?? ""]</span>
             </div>
             <div class="d-flex align-items-center gap-2">
+                <button type="button" class="theme-toggle" id="themeToggle" title="@SharedLocalizer["Toggle theme"]">
+                    <i id="themeIcon" class="bi bi-sun-fill"></i>
+                </button>
                 <form method="post" action="/Account/SetLanguage" class="m-0">
                     @{
                         var currentCulture = CultureInfo.CurrentUICulture.Name;
@@ -765,9 +769,6 @@
                         <i class="bi bi-globe2"></i> @targetLabel
                     </button>
                 </form>
-                <button type="button" class="theme-toggle" id="themeToggle" title="@SharedLocalizer["Toggle theme"]">
-                    <i id="themeIcon" class="bi bi-sun-fill"></i>
-                </button>
                 <form method="post" action="/logout" class="m-0">
                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
                         <i class="bi bi-box-arrow-right"></i> @SharedLocalizer["Logout"]
@@ -783,7 +784,40 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+        (function() {
+            var el = document.getElementById('appNotificationModal');
+            if (el) { new bootstrap.Modal(el).show(); }
+        })();
+    </script>
+
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow:hidden;">
+                <div style="background:linear-gradient(135deg,#2563EB,#3B82F6);padding:1.5rem;text-align:center;">
+                    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;">
+                        <i class="bi bi-info-circle" style="font-size:1.75rem;color:white;"></i>
+                    </div>
+                    <h5 style="color:white;font-weight:700;margin:0;" id="alertModalTitle">@SharedLocalizer["Notice"]</h5>
+                </div>
+                <div class="modal-body" style="padding:1.25rem;">
+                    <p style="margin:0;font-size:0.95rem;color:var(--text-primary);text-align:center;" id="alertModalMessage"></p>
+                </div>
+                <div class="modal-footer" style="border:none;justify-content:center;padding:0 1.25rem 1.25rem;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="background:#2563EB;color:white;border-radius:10px;padding:0.5rem 2rem;font-weight:600;min-width:100px;">@SharedLocalizer["OK"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAlertModal(message) {
+            var msgEl = document.getElementById('alertModalMessage');
+            if (msgEl) { msgEl.textContent = message; }
+            var modal = new bootstrap.Modal('#alertModal');
+            modal.show();
+        }
         (function() {
             const html = document.documentElement;
             const toggle = document.getElementById('themeToggle');

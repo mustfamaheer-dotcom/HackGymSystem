@@ -1,7 +1,5 @@
 @model CreateSettingCommand
-@{
-    var error = TempData["Error"] as string;
-}
+
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="receipt-card">
@@ -11,10 +9,6 @@
             </div>
             <form asp-action="Create" method="post" class="receipt-body">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label asp-for="Key" class="form-label"></label>

@@ -60,15 +60,6 @@
         </a>
     </div>
 
-    @if (TempData["Success"] is not null)
-    {
-        <div class="alert alert-success m-3">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] is not null)
-    {
-        <div class="alert alert-danger m-3">@TempData["Error"]</div>
-    }
-
     <div class="receipt-body">
         @* Summary Cards *@
         <div class="row g-3 mb-4">
@@ -142,15 +133,14 @@
                         <th>@SharedLocalizer["Date"]</th>
                         <th>@SharedLocalizer["Amount"]</th>
                         <th>@SharedLocalizer["Method"]</th>
-                        <th>@SharedLocalizer["Reference"]</th>
                         <th>@SharedLocalizer["Running Balance"]</th>
-                        <th>@SharedLocalizer["Notes"]</th>
+                        <th>@SharedLocalizer["Recorded By"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.Payments.Count == 0)
                     {
-                        <tr><td colspan="6" class="text-center text-muted py-3">@SharedLocalizer["No payments recorded."]</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-3">@SharedLocalizer["No payments recorded."]</td></tr>
                     }
                     @foreach (var p in Model.Payments)
                     {
@@ -158,9 +148,8 @@
                             <td>@p.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td class="fw-semibold text-success">+@p.Amount.ToString("N2")</td>
                             <td>@SharedLocalizer[p.PaymentMethod.ToString()]</td>
-                            <td>@(p.ReferenceNumber ?? "-")</td>
                             <td>@p.RunningBalance.ToString("N2")</td>
-                            <td>@(p.Notes ?? "-")</td>
+                            <td>@(p.EmployeeName ?? "-")</td>
                         </tr>
                     }
                 </tbody>
@@ -294,14 +283,6 @@
                     <label class="form-label">@SharedLocalizer["Payment Method"] <span class="text-danger">*</span></label>
                     <select name="PaymentMethod" class="form-select" asp-items="ViewBag.PaymentMethods"></select>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">@SharedLocalizer["Reference Number"]</label>
-                    <input type="text" name="ReferenceNumber" class="form-control" placeholder="@SharedLocalizer["Optional"]" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">@SharedLocalizer["Notes"]</label>
-                    <textarea name="Notes" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional"]"></textarea>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
@@ -348,7 +329,7 @@
             btn.addEventListener('click', function(e) {
                 if (!select.value) {
                     e.preventDefault();
-                    alert('@SharedLocalizer["Please select a template first"]');
+                    showAlertModal('@SharedLocalizer["Please select a template first"]');
                 }
             });
         })();
@@ -393,10 +374,6 @@
                     <div class="col-md-6">
                         <label class="form-label">@SharedLocalizer["Admin Signature"]</label>
                         <input type="text" name="AdminSignature" class="form-control" placeholder="@SharedLocalizer["Optional"]" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">@SharedLocalizer["Notes"]</label>
-                        <textarea name="Notes" class="form-control" rows="2" placeholder="@SharedLocalizer["Optional"]"></textarea>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 using Gym.API.Extensions;
 using Gym.API.Filters;
-using Gym.API.Resources;
+using Gym.API;
 using Gym.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,7 +63,7 @@ public class RolesMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Role created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Role '{0}' has been created successfully"].Value, dto.Name);
         return RedirectToAction(nameof(Index));
     }
 

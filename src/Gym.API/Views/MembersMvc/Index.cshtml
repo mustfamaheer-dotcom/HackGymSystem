@@ -58,15 +58,6 @@
         </form>
     </div>
 
-    @if (TempData["Success"] is not null)
-    {
-        <div class="alert alert-success m-3">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] is not null)
-    {
-        <div class="alert alert-danger m-3">@TempData["Error"]</div>
-    }
-
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">
@@ -112,6 +103,7 @@
                                 <div class="btn-group btn-group-sm">
                                     <a asp-action="Details" asp-route-id="@member.Id" class="btn btn-outline-primary" title="@SharedLocalizer["View"]"><i class="bi bi-eye"></i></a>
                                     <a asp-action="Edit" asp-route-id="@member.Id" class="btn btn-outline-secondary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="PaymentHistory" asp-route-id="@member.Id" class="btn btn-outline-info" title="@SharedLocalizer["Payment History"]"><i class="bi bi-cash-coin"></i></a>
                                     <a asp-action="Delete" asp-route-id="@member.Id" class="btn btn-outline-danger" title="@SharedLocalizer["Delete"]"><i class="bi bi-trash"></i></a>
                                     <a href="#" class="btn btn-success wa-btn" title="@SharedLocalizer["WhatsApp"]"
                                         data-phone="@member.PhoneNumber"
@@ -155,6 +147,11 @@
         </div>
     }
 </div>
+
+<style>
+    tr.wa-selected td { background-color: rgba(0, 0, 0, 0.2) !important; }
+    @@media (prefers-color-scheme: dark) { tr.wa-selected td { background-color: rgba(200, 200, 200, 0.25) !important; } }
+</style>
 
 @section Scripts {
     <script>
@@ -200,7 +197,7 @@
 
                 var tid = select ? select.value : '';
                 if (!tid) {
-                    alert('@SharedLocalizer["Please select a WhatsApp template first"]');
+                    showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
                     return;
                 }
 
@@ -222,6 +219,9 @@
                     .replace(/\{Offers\}/g, offersText)
                     .replace(/\{OfferName\}/g, '')
                     .replace(/\{PdfLink\}/g, btn.dataset.pdflink || '');
+
+                var row = btn.closest('tr');
+                if (row) row.classList.add('wa-selected');
 
                 var phone = (btn.dataset.phone || '').replace(/\D/g, '');
                 if (phone.startsWith('0')) phone = '20' + phone.substring(1);

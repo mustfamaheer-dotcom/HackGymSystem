@@ -14,6 +14,8 @@ public class ReceiptPdfService
     private static readonly Color AccentColor = Color.FromHex("#2b6cb0");
     private static readonly Color LightBg = Color.FromHex("#f7fafc");
     private static readonly Color BorderColor = Color.FromHex("#e2e8f0");
+    private static readonly Color SuccessColor = Color.FromHex("#10B981");
+    private static readonly Color WarningColor = Color.FromHex("#F59E0B");
 
     public ReceiptPdfService(IWebHostEnvironment env)
     {
@@ -35,6 +37,130 @@ public class ReceiptPdfService
                 page.Footer().Element(ComposeFooter);
             });
         }).GeneratePdf();
+    }
+
+    public byte[] GeneratePaymentHistory(string memberName, int memberCode, string memberPhone, List<MemberPaymentDto> payments)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(20);
+                page.DefaultTextStyle(x => x.FontSize(9).FontColor(Colors.Black));
+
+                page.Header().Element(c => ComposePaymentHeader(c, memberName, memberCode));
+                page.Content().Element(c => ComposePaymentContent(c, memberName, memberPhone, payments));
+                page.Footer().Element(ComposeFooter);
+            });
+        }).GeneratePdf();
+    }
+
+    private void ComposePaymentHeader(IContainer container, string memberName, int memberCode)
+    {
+        container.Column(col =>
+        {
+            col.Item().Row(row =>
+            {
+                var logo = LoadLogo();
+                if (logo != null)
+                    row.ConstantItem(80).AlignLeft().Image(logo);
+
+                row.RelativeItem().PaddingLeft(8).Column(headerCol =>
+                {
+                    headerCol.Item().Text("HACK GYM").Bold().FontSize(20).FontColor(PrimaryColor);
+                    headerCol.Item().Text("PAYMENT HISTORY").FontSize(10).FontColor(AccentColor);
+                });
+
+                row.ConstantItem(120).AlignRight().Column(infoCol =>
+                {
+                    infoCol.Item().AlignRight().Text($"Member #{memberCode}").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                    infoCol.Item().AlignRight().Text(memberName).FontSize(9).FontColor(Colors.Grey.Darken1);
+                });
+            });
+
+            col.Item().PaddingVertical(3);
+            col.Item().LineHorizontal(1.5f).LineColor(PrimaryColor);
+            col.Item().PaddingVertical(3);
+        });
+    }
+
+    private void ComposePaymentContent(IContainer container, string memberName, string memberPhone, List<MemberPaymentDto> payments)
+    {
+        container.Column(col =>
+        {
+            var totalPaid = payments.Sum(p => p.Amount);
+
+            col.Item().Background(LightBg).Padding(6).Row(summary =>
+            {
+                summary.RelativeItem().Text($"Total Payments: {payments.Count}").SemiBold().FontSize(10).FontColor(PrimaryColor);
+                summary.RelativeItem().AlignRight().Text($"Total Amount: {totalPaid:N2} EGP").SemiBold().FontSize(10).FontColor(SuccessColor);
+            });
+
+            col.Item().PaddingVertical(4);
+
+            if (payments.Count == 0)
+            {
+                col.Item().Padding(10).AlignCenter().Text("No payment records found.").FontSize(10).FontColor(Colors.Grey.Darken2);
+            }
+            else
+            {
+                col.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(25);
+                        c.ConstantColumn(65);
+                        c.RelativeColumn();
+                        c.ConstantColumn(50);
+                        c.ConstantColumn(50);
+                        c.ConstantColumn(50);
+                        c.ConstantColumn(65);
+                    });
+
+                    table.Header(header =>
+                    {
+                        Func<IContainer, IContainer> headerStyle = x => x.Background(PrimaryColor);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("#").SemiBold().FontSize(8).FontColor(Colors.White).AlignCenter();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Date").SemiBold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Plan / Receipt").SemiBold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Method").SemiBold().FontSize(8).FontColor(Colors.White).AlignCenter();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Amount").SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Balance").SemiBold().FontSize(8).FontColor(Colors.White).AlignRight();
+                        header.Cell().Element(headerStyle).PaddingVertical(4).PaddingHorizontal(2).Text("Recorded By").SemiBold().FontSize(8).FontColor(Colors.White);
+                    });
+
+                    for (int i = 0; i < payments.Count; i++)
+                    {
+                        var p = payments[i];
+                        var rowBg = i % 2 == 0 ? Colors.White : LightBg;
+                        Func<IContainer, IContainer> cellStyle = x => x.Background(rowBg);
+
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text((i + 1).ToString()).FontSize(8).AlignCenter();
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text(p.PaymentDate.ToString("dd/MM/yyyy")).FontSize(8);
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Column(d =>
+                        {
+                            d.Item().Text(p.PlanName).FontSize(8).SemiBold();
+                            d.Item().Text($"Receipt: {p.SubscriptionReceipt}").FontSize(7).FontColor(Colors.Grey.Darken2);
+                        });
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text(p.PaymentMethod).FontSize(8).AlignCenter();
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text($"{p.Amount:N2}").FontSize(8).Bold().AlignRight().FontColor(SuccessColor);
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text($"{p.RunningBalance:N2}").FontSize(8).AlignRight().FontColor(p.RunningBalance > 0 ? WarningColor : Colors.Grey.Darken1);
+                        table.Cell().Element(cellStyle).PaddingVertical(2).PaddingHorizontal(2).Text(p.RecordedBy ?? "-").FontSize(8);
+                    }
+                });
+            }
+
+            col.Item().PaddingVertical(6);
+            col.Item().LineHorizontal(0.5f).LineColor(BorderColor);
+            col.Item().PaddingVertical(3);
+
+            col.Item().Background(LightBg).Padding(6).Row(sig =>
+            {
+                sig.RelativeItem().Text("Member: " + memberName).FontSize(8).FontColor(Colors.Grey.Darken1);
+                sig.RelativeItem().AlignRight().Text("Phone: " + memberPhone).FontSize(8).FontColor(Colors.Grey.Darken1);
+            });
+        });
     }
 
     private void ComposeHeader(IContainer container, MemberDto member)

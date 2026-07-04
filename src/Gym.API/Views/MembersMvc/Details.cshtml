@@ -247,6 +247,7 @@
     <div class="receipt-footer" style="justify-content:space-between;">
         <div class="d-flex gap-2">
             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]</a>
+            <a asp-action="PaymentHistory" asp-route-id="@Model.Id" class="btn btn-outline-info"><i class="bi bi-cash-coin"></i> @SharedLocalizer["Payments"]</a>
             <a href="@pdfUrl" target="_blank" class="btn btn-outline-danger"><i class="bi bi-filetype-pdf"></i> @SharedLocalizer["Print PDF"]</a>
         </div>
         <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> @SharedLocalizer["Back"]</a>
@@ -318,7 +319,7 @@
             btn.addEventListener('click', function(e) {
                 if (!select.value) {
                     e.preventDefault();
-                    alert('@SharedLocalizer["Please select a template first"]');
+                    showAlertModal('@SharedLocalizer["Please select a template first"]');
                 }
             });
         })();

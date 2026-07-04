@@ -6,7 +6,7 @@ using Gym.Shared.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Gym.Application.Resources;
+using Gym.Application;
 
 namespace Gym.Infrastructure.Services;
 

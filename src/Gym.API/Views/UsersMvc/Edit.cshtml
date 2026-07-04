@@ -1,6 +1,6 @@
 @model UpdateUserCommand
 @{
-    var error = TempData["Error"] as string;
+
     var roles = ViewBag.Roles as IReadOnlyList<RoleDto> ?? new List<RoleDto>();
 }
 
@@ -12,11 +12,6 @@
 
     <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
         <input type="hidden" asp-for="Id" />
-
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <div class="alert alert-danger">@error</div>
-        }
 
         <div class="row g-3">
             <div class="col-md-6">

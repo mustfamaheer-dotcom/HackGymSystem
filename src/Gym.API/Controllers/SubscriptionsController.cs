@@ -1,5 +1,5 @@
 using Gym.API.Filters;
-using Gym.API.Resources;
+using Gym.API;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Subscriptions.Commands.CreateSubscription;
 using Gym.Application.Subscriptions.Commands.FreezeSubscription;

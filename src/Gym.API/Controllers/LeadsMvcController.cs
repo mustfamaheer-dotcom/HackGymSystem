@@ -14,7 +14,7 @@ using Gym.Application.Leads.Queries.GetLeadById;
 using Gym.Application.Leads.Queries.GetLeadStats;
 using Gym.Application.MembershipPlans.DTOs;
 using Gym.Application.MembershipPlans.Queries.GetAllPlans;
-using Gym.API.Resources;
+using Gym.API;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
@@ -131,11 +131,10 @@ public class LeadsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Lead created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Lead '{0}' has been added successfully"].Value, command.Name);
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet("edit/{id}")]
     [RequirePermission("Leads.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -173,7 +172,7 @@ public class LeadsMvcController : Controller
             TempData["Error"] = result.Message;
             return View(command);
         }
-        TempData["Success"] = _localizer["Lead updated successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Lead '{0}' has been updated successfully"].Value, command.Name);
         return RedirectToAction(nameof(Index));
     }
 

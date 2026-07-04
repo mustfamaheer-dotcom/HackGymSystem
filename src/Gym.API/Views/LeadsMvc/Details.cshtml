@@ -167,7 +167,7 @@
             btn.addEventListener('click', function(e) {
                 if (!select.value) {
                     e.preventDefault();
-                    alert('@SharedLocalizer["Please select a template first"]');
+                    showAlertModal('@SharedLocalizer["Please select a template first"]');
                 }
             });
         })();

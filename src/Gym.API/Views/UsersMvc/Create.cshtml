@@ -1,6 +1,6 @@
 @model CreateUserCommand
 @{
-    var error = TempData["Error"] as string;
+
     var roles = ViewBag.Roles as IReadOnlyList<RoleDto> ?? new List<RoleDto>();
 }
 
@@ -12,11 +12,6 @@
 
     <form asp-action="Create" method="post" class="receipt-body">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <div class="alert alert-danger">@error</div>
-        }
 
         <div class="row g-3">
             <div class="col-md-6">

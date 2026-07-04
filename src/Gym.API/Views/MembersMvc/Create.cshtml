@@ -1,7 +1,5 @@
 @model CreateMemberDto
-@{
-    var error = TempData["Error"] as string;
-}
+
 
 <div class="receipt-card">
     <div class="receipt-header">
@@ -10,12 +8,6 @@
     </div>
 
     <form asp-action="Create" method="post" enctype="multipart/form-data" class="receipt-body">
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
-
         <div class="section-title"><i class="bi bi-person-badge"></i> @SharedLocalizer["Basic Information"]</div>
         <div class="row g-3">
             <div class="col-md-4">
@@ -88,7 +80,7 @@
                         <span asp-validation-for="Nationality" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="NationalId" class="form-label">@SharedLocalizer["National ID"] <small class="text-muted">(@SharedLocalizer["optional"])</small></label>
+                        <label asp-for="NationalId" class="form-label">@SharedLocalizer["National ID"] <span class="text-danger">*</span></label>
                         <input asp-for="NationalId" class="form-control" placeholder="@SharedLocalizer["14-digit ID"]" maxlength="14" />
                         <span asp-validation-for="NationalId" class="text-danger small"></span>
                     </div>

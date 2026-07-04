@@ -7,7 +7,7 @@
 <div class="dash-container" style="max-width:1600px;margin:0 auto;">
     <div class="dash-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
         <h2 style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--charcoal);margin:0;font-size:1.35rem;">
-            <i style="color:var(--amber);margin-right:0.5rem;" class="bi bi-bar-chart-fill"></i> @SharedLocalizer["Dashboard Analysis"]
+            <i style="color:var(--amber);" class="bi bi-bar-chart-fill dash-icon-spacing"></i> @SharedLocalizer["Dashboard Analysis"]
         </h2>
         <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Updated"] @now.ToString("dd MMM yyyy, HH:mm")</span>
     </div>
@@ -42,7 +42,7 @@
     @* === GROUP: Members === *@
     <div class="group-section" id="group-members">
         @* --- Members Business Analysis --- *@
-        <div class="dash-card mb-4" style="border-left:4px solid #F59E0B;">
+        <div class="dash-card mb-4" style="" class="dash-border-amber">
             <div class="dash-card-body">
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
                     <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#F59E0B;"><i class="bi bi-graph-up-arrow"></i></div>
@@ -264,7 +264,7 @@
     @* === GROUP: Attendance === *@
     <div class="group-section" id="group-attendance" style="display:none;">
         @* --- Attendance Business Analysis --- *@
-        <div class="dash-card mb-4" style="border-left:4px solid #10B981;">
+        <div class="dash-card mb-4" style="" class="dash-border-green">
             <div class="dash-card-body">
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
                     <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#10B981;"><i class="bi bi-clock-history"></i></div>
@@ -463,7 +463,7 @@
     @* === GROUP: Memberships === *@
     <div class="group-section" id="group-memberships" style="display:none;">
         @* --- Memberships Business Analysis --- *@
-        <div class="dash-card mb-4" style="border-left:4px solid #F59E0B;">
+        <div class="dash-card mb-4" style="" class="dash-border-amber">
             <div class="dash-card-body">
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
                     <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#F59E0B;"><i class="bi bi-box-seam"></i></div>
@@ -682,7 +682,7 @@
         @* === GROUP: Revenue === *@
         <div class="group-section" id="group-revenue" style="display:none;">
             @* --- Revenue Business Analysis --- *@
-            <div class="dash-card mb-4" style="border-left:4px solid #10B981;">
+            <div class="dash-card mb-4" style="" class="dash-border-green">
                 <div class="dash-card-body">
                     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
                         <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#10B981;"><i class="bi bi-cash-stack"></i></div>
@@ -861,7 +861,7 @@
 
             @if (!string.IsNullOrEmpty(Model.TopRevenuePackage.PlanName))
             {
-                <div class="dash-card mb-4" style="border-left:4px solid #10B981;">
+                <div class="dash-card mb-4" style="" class="dash-border-green">
                     <div class="dash-card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
                         <div style="display:flex;align-items:center;gap:1rem;">
                             <div style="width:48px;height:48px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;">
@@ -1220,7 +1220,7 @@
     @* === GROUP: Subscriptions === *@
     <div class="group-section" id="group-subscriptions" style="display:none;">
         @* --- Subscriptions Business Analysis --- *@
-        <div class="dash-card mb-4" style="border-left:4px solid #8B5CF6;">
+        <div class="dash-card mb-4" style="" class="dash-border-purple">
             <div class="dash-card-body">
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
                     <div style="width:40px;height:40px;border-radius:12px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#8B5CF6;"><i class="bi bi-arrow-repeat"></i></div>

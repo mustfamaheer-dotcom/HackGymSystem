@@ -11,8 +11,9 @@ public class CreateMemberDto
     [StringLength(100, ErrorMessage = "Nationality must not exceed 100 characters")]
     public string? Nationality { get; set; }
 
-    [StringLength(14, ErrorMessage = "National ID must be exactly 14 digits")]
-    public string? NationalId { get; set; }
+    [Required(ErrorMessage = "National ID is required")]
+    [StringLength(14, MinimumLength = 14, ErrorMessage = "National ID must be exactly 14 digits")]
+    public string NationalId { get; set; }
 
     [Required(ErrorMessage = "Phone number is required")]
     [StringLength(11, MinimumLength = 11, ErrorMessage = "Phone number must be exactly 11 digits")]

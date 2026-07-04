@@ -1,6 +1,6 @@
 @model UpdateSettingCommand
 @{
-    var error = TempData["Error"] as string;
+
     var settingKey = ViewBag.SettingKey as string;
     var settingGroup = ViewBag.SettingGroup as string;
 }
@@ -13,10 +13,6 @@
             </div>
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="receipt-body">
                 <input type="hidden" asp-for="Id" />
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger">@error</div>
-                }
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="detail-label">@SharedLocalizer["Key"]</div>

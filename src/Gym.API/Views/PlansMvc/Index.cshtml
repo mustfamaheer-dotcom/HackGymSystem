@@ -25,14 +25,6 @@
             </div>
         </form>
     </div>
-    @if (TempData["Success"] is not null)
-    {
-        <div class="alert alert-success m-3">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] is not null)
-    {
-        <div class="alert alert-danger m-3">@TempData["Error"]</div>
-    }
     @if (Model is null || Model.Items.Count == 0)
     {
         <div class="text-center py-5 text-muted">

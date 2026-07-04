@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.Localization;
-using Gym.Application.Resources;
+using Gym.Application.Common.Interfaces;
+using Gym.Application;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
@@ -13,24 +14,25 @@ namespace Gym.Application.Subscriptions.Commands.RecordSubscriptionPayment;
 public record RecordSubscriptionPaymentCommand(
     Guid SubscriptionId,
     decimal Amount,
-    PaymentMethod PaymentMethod,
-    string? ReferenceNumber,
-    string? Notes) : IRequest<Result>;
+    PaymentMethod PaymentMethod) : IRequest<Result>;
 
 public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSubscriptionPaymentCommand, Result>
 {
     private readonly IRepository<Domain.Entities.Subscription> _subscriptionRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStringLocalizer<ApplicationResources> _localizer;
+    private readonly ICurrentUserService _currentUser;
 
     public RecordSubscriptionPaymentCommandHandler(
         IRepository<Domain.Entities.Subscription> subscriptionRepo,
         IUnitOfWork unitOfWork,
-        IStringLocalizer<ApplicationResources> localizer)
+        IStringLocalizer<ApplicationResources> localizer,
+        ICurrentUserService currentUser)
     {
         _subscriptionRepo = subscriptionRepo;
         _unitOfWork = unitOfWork;
         _localizer = localizer;
+        _currentUser = currentUser;
     }
 
     public async Task<Result> Handle(RecordSubscriptionPaymentCommand request, CancellationToken cancellationToken)
@@ -52,7 +54,7 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
 
         var payment = new SubscriptionPayment(
             subscription.Id, request.Amount, request.PaymentMethod,
-            subscription.RemainingBalance, request.ReferenceNumber, null, request.Notes);
+            subscription.RemainingBalance, employeeId: _currentUser.UserId);
         await _unitOfWork.Repository<SubscriptionPayment>().AddAsync(payment, cancellationToken);
 
         var log = new SubscriptionTransactionLog(

@@ -1,7 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.Localization;
-using Gym.Application.Resources;
+using Gym.Application;
 using Gym.Application.Common.DTOs;
 using Gym.Application.Common.Mappings;
 using Gym.Domain.Entities;

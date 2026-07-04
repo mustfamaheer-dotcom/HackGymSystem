@@ -7,7 +7,7 @@ using Gym.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -77,11 +77,10 @@ public class OffersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Offer created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Offer '{0}' has been created successfully"].Value, dto.OfferTitle);
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet("edit/{id}")]
     [RequirePermission("Offers.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

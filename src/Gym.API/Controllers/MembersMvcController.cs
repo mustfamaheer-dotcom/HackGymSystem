@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Gym.API.Filters;
-using Gym.API.Resources;
+using Gym.API;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -132,7 +132,7 @@ public class MembersMvcController : Controller
             await _memberService.UpdateImagePathAsync(result.Data, path, cancellationToken);
         }
 
-        TempData["Success"] = _localizer["Member created successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Member '{0}' has been registered successfully"].Value, dto.FullName);
         return RedirectToAction(nameof(Index));
     }
 
@@ -232,7 +232,7 @@ public class MembersMvcController : Controller
             return View(dto);
         }
 
-        TempData["Success"] = _localizer["Member updated successfully"].Value;
+        TempData["Success"] = string.Format(_localizer["Member '{0}' has been updated successfully"].Value, dto.FullName);
         return RedirectToAction(nameof(Index));
     }
 
@@ -268,6 +268,97 @@ public class MembersMvcController : Controller
         ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         return View(result.Data);
+    }
+
+    [RequirePermission("Members.View")]
+    [HttpGet("payment-history/{id}")]
+    public async Task<IActionResult> PaymentHistory(Guid id, CancellationToken cancellationToken)
+    {
+        ViewData["Title"] = _localizer["Payment History"];
+
+        var memberResult = await _memberService.GetByIdAsync(id, cancellationToken);
+        if (memberResult.IsFailure)
+        {
+            TempData["Error"] = memberResult.Message;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var member = memberResult.Data!;
+        var subscriptions = await _subscriptionRepo.Query()
+            .Include(s => s.Payments).ThenInclude(p => p.Employee)
+            .Include(s => s.Plan)
+            .Where(s => s.MemberId == id)
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var payments = subscriptions
+            .SelectMany(s => s.Payments.Select(p => new MemberPaymentDto
+            {
+                PaymentId = p.Id,
+                PaymentDate = p.CreatedAt,
+                SubscriptionReceipt = s.ReceiptNumber,
+                PlanName = s.Plan.Name,
+                Amount = p.Amount,
+                PaymentMethod = p.PaymentMethod.ToString(),
+                RunningBalance = p.RunningBalance,
+                RecordedBy = p.Employee?.FullName
+            }))
+            .OrderByDescending(p => p.PaymentDate)
+            .ToList();
+
+        var viewModel = new MemberPaymentHistoryViewModel
+        {
+            MemberId = member.Id,
+            MemberCode = member.Code,
+            MemberName = member.FullName,
+            MemberPhone = member.PhoneNumber,
+            TotalPaid = payments.Sum(p => p.Amount),
+            PaymentCount = payments.Count,
+            Payments = payments
+        };
+
+        return View(viewModel);
+    }
+
+    [RequirePermission("Members.View")]
+    [HttpGet("payment-history-pdf/{id}")]
+    public async Task<IActionResult> PaymentHistoryPdf(Guid id, CancellationToken cancellationToken)
+    {
+        var memberResult = await _memberService.GetByIdAsync(id, cancellationToken);
+        if (memberResult.IsFailure)
+            return NotFound();
+
+        var member = memberResult.Data!;
+        var subscriptions = await _subscriptionRepo.Query()
+            .Include(s => s.Payments).ThenInclude(p => p.Employee)
+            .Include(s => s.Plan)
+            .Where(s => s.MemberId == id)
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var payments = subscriptions
+            .SelectMany(s => s.Payments.Select(p => new MemberPaymentDto
+            {
+                PaymentId = p.Id,
+                PaymentDate = p.CreatedAt,
+                SubscriptionReceipt = s.ReceiptNumber,
+                PlanName = s.Plan.Name,
+                Amount = p.Amount,
+                PaymentMethod = p.PaymentMethod.ToString(),
+                RunningBalance = p.RunningBalance,
+                RecordedBy = p.Employee?.FullName
+            }))
+            .OrderByDescending(p => p.PaymentDate)
+            .ToList();
+
+        var pdfDir = @"E:\WORK\FreeLance\ORBiT\SYSTEMS\GYMS\C. Amir - Hack Gym\Phase 1\System\Payments History";
+        Directory.CreateDirectory(pdfDir);
+        var pdfFileName = $"payment-history-{member.Code}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.pdf";
+        var pdfFilePath = Path.Combine(pdfDir, pdfFileName);
+        var pdfBytes = _pdfService.GeneratePaymentHistory(member.FullName, member.Code, member.PhoneNumber, payments);
+        System.IO.File.WriteAllBytes(pdfFilePath, pdfBytes);
+        TempData["Success"] = string.Format(_localizer["Payment history saved to {0}"].Value, pdfFilePath);
+        return File(pdfBytes, "application/pdf", pdfFileName);
     }
 
     [RequirePermission("Members.View")]

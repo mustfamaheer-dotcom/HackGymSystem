@@ -58,235 +58,58 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Additional days must be greater than zero" xml:space="preserve">
-    <value>Additional days must be greater than zero</value>
+    <value>يجب أن تكون الأيام الإضافية أكبر من صفر</value>
   </data>
   <data name="Additional visits must be zero or greater" xml:space="preserve">
-    <value>Additional visits must be zero or greater</value>
+    <value>يجب أن تكون الزيارات الإضافية صفراً أو أكثر</value>
   </data>
   <data name="Amount must be greater than 0" xml:space="preserve">
-    <value>Amount must be greater than 0</value>
+    <value>يجب أن يكون المبلغ أكبر من 0</value>
   </data>
   <data name="Amount paid must be 0 or greater" xml:space="preserve">
-    <value>Amount paid must be 0 or greater</value>
+    <value>يجب أن يكون المبلغ المدفوع 0 أو أكثر</value>
   </data>
   <data name="Bonus days must be null for fixed price offers" xml:space="preserve">
-    <value>Bonus days must be null for fixed price offers</value>
+    <value>يجب أن تكون أيام المكافأة فارغة لعروض السعر الثابت</value>
   </data>
   <data name="Bonus months must be null for fixed price offers" xml:space="preserve">
-    <value>Bonus months must be null for fixed price offers</value>
+    <value>يجب أن تكون أشهر المكافأة فارغة لعروض السعر الثابت</value>
   </data>
   <data name="Bonus months or bonus days must be provided" xml:space="preserve">
-    <value>Bonus months or bonus days must be provided</value>
+    <value>يجب توفير أشهر المكافأة أو أيام المكافأة</value>
   </data>
   <data name="Disease type is required when HasDisease is true" xml:space="preserve">
-    <value>Disease type is required when HasDisease is true</value>
+    <value>نوع المرض مطلوب في حالة وجود مرض</value>
   </data>
   <data name="Email is not valid" xml:space="preserve">
-    <value>Email is not valid</value>
-  </data>
-  <data name="Email must not exceed 200 characters" xml:space="preserve">
-    <value>Email must not exceed 200 characters</value>
-  </data>
-  <data name="End date must be after start date" xml:space="preserve">
-    <value>End date must be after start date</value>
-  </data>
-  <data name="Extra freeze days is required" xml:space="preserve">
-    <value>Extra freeze days is required</value>
-  </data>
-  <data name="Extra freeze days must be positive" xml:space="preserve">
-    <value>Extra freeze days must be positive</value>
-  </data>
-  <data name="Free months must be 0 or greater" xml:space="preserve">
-    <value>Free months must be 0 or greater</value>
-  </data>
-  <data name="Freeze days must be 0 or greater" xml:space="preserve">
-    <value>Freeze days must be 0 or greater</value>
-  </data>
-  <data name="Freeze days must be greater than 0" xml:space="preserve">
-    <value>Freeze days must be greater than 0</value>
-  </data>
-  <data name="Freeze days must be greater than zero" xml:space="preserve">
-    <value>Freeze days must be greater than zero</value>
-  </data>
-  <data name="Freeze days must not exceed 90" xml:space="preserve">
-    <value>Freeze days must not exceed 90</value>
-  </data>
-  <data name="Full name is required" xml:space="preserve">
-    <value>Full name is required</value>
-  </data>
-  <data name="Full name must not exceed 200 characters" xml:space="preserve">
-    <value>Full name must not exceed 200 characters</value>
-  </data>
-  <data name="Gender must be 'Male' or 'Female'" xml:space="preserve">
-    <value>Gender must be 'Male' or 'Female'</value>
-  </data>
-  <data name="Id is required" xml:space="preserve">
-    <value>Id is required</value>
-  </data>
-  <data name="Invalid IP address format" xml:space="preserve">
-    <value>Invalid IP address format</value>
-  </data>
-  <data name="Invalid payment method" xml:space="preserve">
-    <value>Invalid payment method</value>
-  </data>
-  <data name="Member ID is required" xml:space="preserve">
-    <value>Member ID is required</value>
-  </data>
-  <data name="Member is required" xml:space="preserve">
-    <value>Member is required</value>
-  </data>
-  <data name="Membership ID is required" xml:space="preserve">
-    <value>Membership ID is required</value>
-  </data>
-  <data name="Message body is required" xml:space="preserve">
-    <value>Message body is required</value>
-  </data>
-  <data name="Message body must not exceed 2000 characters" xml:space="preserve">
-    <value>Message body must not exceed 2000 characters</value>
-  </data>
-  <data name="Name is required" xml:space="preserve">
-    <value>Name is required</value>
-  </data>
-  <data name="Name must not exceed 200 characters" xml:space="preserve">
-    <value>Name must not exceed 200 characters</value>
-  </data>
-  <data name="National ID is required" xml:space="preserve">
-    <value>National ID is required</value>
-  </data>
-  <data name="National ID must be 14 digits" xml:space="preserve">
-    <value>National ID must be 14 digits</value>
-  </data>
-  <data name="National ID must be exactly 14 digits" xml:space="preserve">
-    <value>National ID must be exactly 14 digits</value>
-  </data>
-  <data name="Nationality is required" xml:space="preserve">
-    <value>Nationality is required</value>
-  </data>
-  <data name="Nationality must not exceed 100 characters" xml:space="preserve">
-    <value>Nationality must not exceed 100 characters</value>
-  </data>
-  <data name="New end date is required" xml:space="preserve">
-    <value>New end date is required</value>
-  </data>
-  <data name="New end date must be in the future" xml:space="preserve">
-    <value>New end date must be in the future</value>
-  </data>
-  <data name="Offer is required when no plan is selected" xml:space="preserve">
-    <value>Offer is required when no plan is selected</value>
-  </data>
-  <data name="Offer price is required" xml:space="preserve">
-    <value>Offer price is required</value>
-  </data>
-  <data name="Offer price must be null for bonus duration offers" xml:space="preserve">
-    <value>Offer price must be null for bonus duration offers</value>
-  </data>
-  <data name="Offer price must be null for free registration" xml:space="preserve">
-    <value>Offer price must be null for free registration</value>
-  </data>
-  <data name="Offer price must be positive" xml:space="preserve">
-    <value>Offer price must be positive</value>
-  </data>
-  <data name="Offer title is required" xml:space="preserve">
-    <value>Offer title is required</value>
-  </data>
-  <data name="Paid amount cannot exceed subscription price" xml:space="preserve">
-    <value>Paid amount cannot exceed subscription price</value>
-  </data>
-  <data name="Paid amount must be 0 or greater" xml:space="preserve">
-    <value>Paid amount must be 0 or greater</value>
-  </data>
-  <data name="Phone number is required" xml:space="preserve">
-    <value>Phone number is required</value>
-  </data>
-  <data name="Phone number must be 11 digits" xml:space="preserve">
-    <value>Phone number must be 11 digits</value>
-  </data>
-  <data name="Phone number must be exactly 11 digits" xml:space="preserve">
-    <value>Phone number must be exactly 11 digits</value>
-  </data>
-  <data name="Plan is required" xml:space="preserve">
-    <value>Plan is required</value>
-  </data>
-  <data name="Plan is required when no offer is selected" xml:space="preserve">
-    <value>Plan is required when no offer is selected</value>
-  </data>
-  <data name="Previous subscription ID is required" xml:space="preserve">
-    <value>Previous subscription ID is required</value>
-  </data>
-  <data name="Referral source must be one of: " xml:space="preserve">
-    <value>Referral source must be one of: </value>
-  </data>
-  <data name="Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other" xml:space="preserve">
-    <value>Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other</value>
-  </data>
-  <data name="Start date is required" xml:space="preserve">
-    <value>Start date is required</value>
-  </data>
-  <data name="Subscription duration must be greater than 0 months" xml:space="preserve">
-    <value>Subscription duration must be greater than 0 months</value>
-  </data>
-  <data name="Subscription ID is required" xml:space="preserve">
-    <value>Subscription ID is required</value>
-  </data>
-  <data name="Subscription price must be 0 or greater" xml:space="preserve">
-    <value>Subscription price must be 0 or greater</value>
-  </data>
-  <data name="Subscription start date is required" xml:space="preserve">
-    <value>Subscription start date is required</value>
-  </data>
-  <data name="Additional days must be greater than zero" xml:space="preserve">
-    <value>الأيام الإضافية يجب أن تكون أكبر من صفر</value>
-  </data>
-  <data name="Additional visits must be zero or greater" xml:space="preserve">
-    <value>الزيارات الإضافية يجب أن تكون صفر أو أكثر</value>
-  </data>
-  <data name="Amount must be greater than 0" xml:space="preserve">
-    <value>المبلغ يجب أن يكون أكبر من 0</value>
-  </data>
-  <data name="Amount paid must be 0 or greater" xml:space="preserve">
-    <value>المبلغ المدفوع يجب أن يكون 0 أو أكثر</value>
-  </data>
-  <data name="Bonus days must be null for fixed price offers" xml:space="preserve">
-    <value>يجب أن تكون أيام المكافأة فارغة للعروض ذات السعر الثابت</value>
-  </data>
-  <data name="Bonus months must be null for fixed price offers" xml:space="preserve">
-    <value>يجب أن تكون أشهر المكافأة فارغة للعروض ذات السعر الثابت</value>
-  </data>
-  <data name="Bonus months or bonus days must be provided" xml:space="preserve">
-    <value>يجب توفير أشهر أو أيام المكافأة</value>
-  </data>
-  <data name="Disease type is required when HasDisease is true" xml:space="preserve">
-    <value>نوع المرض مطلوب عند وجود مرض</value>
-  </data>
-  <data name="Email is not valid" xml:space="preserve">
-    <value>البريد الإلكتروني غير صحيح</value>
+    <value>البريد الإلكتروني غير صالح</value>
   </data>
   <data name="Email must not exceed 200 characters" xml:space="preserve">
     <value>يجب ألا يتجاوز البريد الإلكتروني 200 حرف</value>
   </data>
   <data name="End date must be after start date" xml:space="preserve">
-    <value>تاريخ الانتهاء يجب أن يكون بعد تاريخ البداية</value>
+    <value>يجب أن يكون تاريخ النهاية بعد تاريخ البداية</value>
   </data>
   <data name="Extra freeze days is required" xml:space="preserve">
     <value>أيام التجميد الإضافية مطلوبة</value>
   </data>
   <data name="Extra freeze days must be positive" xml:space="preserve">
-    <value>أيام التجميد الإضافية يجب أن تكون موجبة</value>
+    <value>يجب أن تكون أيام التجميد الإضافية موجبة</value>
   </data>
   <data name="Free months must be 0 or greater" xml:space="preserve">
-    <value>الأشهر المجانية يجب أن تكون 0 أو أكثر</value>
+    <value>يجب أن تكون الأشهر المجانية 0 أو أكثر</value>
   </data>
   <data name="Freeze days must be 0 or greater" xml:space="preserve">
-    <value>أيام التجميد يجب أن تكون 0 أو أكثر</value>
+    <value>يجب أن تكون أيام التجميد 0 أو أكثر</value>
   </data>
   <data name="Freeze days must be greater than 0" xml:space="preserve">
     <value>أيام التجميد يجب أن تكون أكبر من 0</value>
   </data>
   <data name="Freeze days must be greater than zero" xml:space="preserve">
-    <value>أيام التجميد يجب أن تكون أكبر من صفر</value>
+    <value>يجب أن تكون أيام التجميد أكبر من صفر</value>
   </data>
   <data name="Freeze days must not exceed 90" xml:space="preserve">
-    <value>أيام التجميد يجب ألا تتجاوز 90</value>
+    <value>يجب ألا تتجاوز أيام التجميد 90 يوماً</value>
   </data>
   <data name="Full name is required" xml:space="preserve">
     <value>الاسم الكامل مطلوب</value>
@@ -307,7 +130,7 @@
     <value>طريقة الدفع غير صالحة</value>
   </data>
   <data name="Member ID is required" xml:space="preserve">
-    <value>معرف العضو مطلوب</value>
+    <value>رقم العضو مطلوب</value>
   </data>
   <data name="Member is required" xml:space="preserve">
     <value>العضو مطلوب</value>
@@ -331,10 +154,10 @@
     <value>الرقم القومي مطلوب</value>
   </data>
   <data name="National ID must be 14 digits" xml:space="preserve">
-    <value>الرقم القومي يجب أن يكون 14 رقماً</value>
+    <value>يجب أن يكون الرقم القومي 14 رقماً</value>
   </data>
   <data name="National ID must be exactly 14 digits" xml:space="preserve">
-    <value>يجب أن يتكون الرقم القومي من 14 رقماً بالضبط</value>
+    <value>الرقم القومي يجب أن يتكون من 14 رقماً</value>
   </data>
   <data name="Nationality is required" xml:space="preserve">
     <value>الجنسية مطلوبة</value>
@@ -343,13 +166,13 @@
     <value>يجب ألا تتجاوز الجنسية 100 حرف</value>
   </data>
   <data name="New end date is required" xml:space="preserve">
-    <value>تاريخ الانتهاء الجديد مطلوب</value>
+    <value>تاريخ النهاية الجديد مطلوب</value>
   </data>
   <data name="New end date must be in the future" xml:space="preserve">
-    <value>تاريخ الانتهاء الجديد يجب أن يكون في المستقبل</value>
+    <value>يجب أن يكون تاريخ النهاية الجديد في المستقبل</value>
   </data>
   <data name="Offer is required when no plan is selected" xml:space="preserve">
-    <value>العرض مطلوب عند عدم اختيار باقة</value>
+    <value>العرض مطلوب عند عدم اختيار خطة</value>
   </data>
   <data name="Offer price is required" xml:space="preserve">
     <value>سعر العرض مطلوب</value>
@@ -361,7 +184,7 @@
     <value>يجب أن يكون سعر العرض فارغاً للتسجيل المجاني</value>
   </data>
   <data name="Offer price must be positive" xml:space="preserve">
-    <value>سعر العرض يجب أن يكون موجباً</value>
+    <value>يجب أن يكون سعر العرض موجباً</value>
   </data>
   <data name="Offer title is required" xml:space="preserve">
     <value>عنوان العرض مطلوب</value>
@@ -370,45 +193,104 @@
     <value>المبلغ المدفوع لا يمكن أن يتجاوز سعر الاشتراك</value>
   </data>
   <data name="Paid amount must be 0 or greater" xml:space="preserve">
-    <value>المبلغ المدفوع يجب أن يكون 0 أو أكثر</value>
+    <value>يجب أن يكون المبلغ المدفوع 0 أو أكثر</value>
   </data>
   <data name="Phone number is required" xml:space="preserve">
     <value>رقم الهاتف مطلوب</value>
   </data>
   <data name="Phone number must be 11 digits" xml:space="preserve">
-    <value>رقم الهاتف يجب أن يكون 11 رقماً</value>
+    <value>يجب أن يكون رقم الهاتف 11 رقماً</value>
   </data>
   <data name="Phone number must be exactly 11 digits" xml:space="preserve">
-    <value>يجب أن يتكون رقم الهاتف من 11 رقماً بالضبط</value>
+    <value>رقم الهاتف يجب أن يتكون من 11 رقماً</value>
   </data>
   <data name="Plan is required" xml:space="preserve">
-    <value>الباقة مطلوبة</value>
+    <value>الخطة مطلوبة</value>
   </data>
   <data name="Plan is required when no offer is selected" xml:space="preserve">
-    <value>الباقة مطلوبة عند عدم اختيار عرض</value>
+    <value>الخطة مطلوبة عند عدم اختيار عرض</value>
   </data>
   <data name="Previous subscription ID is required" xml:space="preserve">
     <value>معرف الاشتراك السابق مطلوب</value>
   </data>
   <data name="Referral source must be one of: " xml:space="preserve">
-    <value>مصدر الإحالة يجب أن يكون واحداً من: </value>
+    <value>مصدر التحويل يجب أن يكون واحداً من: </value>
   </data>
   <data name="Referral source must be one of: Social Media, Friend, Walk-in, Advertisement, Other" xml:space="preserve">
-    <value>مصدر الإحالة يجب أن يكون: وسائل التواصل الاجتماعي، صديق، زائر، إعلان، أخرى</value>
+    <value>مصدر التحويل يجب أن يكون واحداً من: وسائل التواصل، صديق، زيارة مباشرة، إعلان، غير ذلك</value>
   </data>
   <data name="Start date is required" xml:space="preserve">
     <value>تاريخ البداية مطلوب</value>
   </data>
   <data name="Subscription duration must be greater than 0 months" xml:space="preserve">
-    <value>مدة الاشتراك يجب أن تكون أكبر من 0 شهر</value>
+    <value>يجب أن تكون مدة الاشتراك أكبر من 0 أشهر</value>
   </data>
   <data name="Subscription ID is required" xml:space="preserve">
     <value>معرف الاشتراك مطلوب</value>
   </data>
   <data name="Subscription price must be 0 or greater" xml:space="preserve">
-    <value>سعر الاشتراك يجب أن يكون 0 أو أكثر</value>
+    <value>يجب أن يكون سعر الاشتراك 0 أو أكثر</value>
   </data>
   <data name="Subscription start date is required" xml:space="preserve">
-    <value>تاريخ بدء الاشتراك مطلوب</value>
+    <value>تاريخ بداية الاشتراك مطلوب</value>
   </data>
-<data name="Lead not found" xml:space="preserve"><value>العميل المتوقع غير موجود</value></data><data name="Lead created successfully" xml:space="preserve"><value>تم إنشاء العميل المتوقع بنجاح</value></data><data name="Lead updated successfully" xml:space="preserve"><value>تم تحديث العميل المتوقع بنجاح</value></data><data name="Lead deleted successfully" xml:space="preserve"><value>تم حذف العميل المتوقع بنجاح</value></data><data name="Lead converted to member successfully" xml:space="preserve"><value>تم تحويل العميل المتوقع إلى عضو بنجاح</value></data><data name="Follow-up added successfully" xml:space="preserve"><value>تم إضافة المتابعة بنجاح</value></data><data name="Plan not found" xml:space="preserve"><value>الباقة غير موجودة</value></data><data name="Member status updated successfully" xml:space="preserve"><value>تم تحديث حالة العضو بنجاح</value></data><data name="Member not found" xml:space="preserve"><value>العضو غير موجود</value></data><data name="National ID is already registered to another member" xml:space="preserve"><value>الرقم القومي مسجل بالفعل لعضو آخر</value></data><data name="Phone number is already registered to another member" xml:space="preserve"><value>رقم الهاتف مسجل بالفعل لعضو آخر</value></data><data name="Member created successfully" xml:space="preserve"><value>تم إنشاء العضو بنجاح</value></data><data name="Member updated successfully" xml:space="preserve"><value>تم تحديث العضو بنجاح</value></data><data name="Member deleted successfully" xml:space="preserve"><value>تم حذف العضو بنجاح</value></data><data name="Member restored successfully" xml:space="preserve"><value>تم استعادة العضو بنجاح</value></data><data name="Offer not found" xml:space="preserve"><value>العرض غير موجود</value></data><data name="Offer price is required and must be positive" xml:space="preserve"><value>سعر العرض مطلوب ويجب أن يكون موجباً</value></data><data name="Offer created successfully" xml:space="preserve"><value>تم إنشاء العرض بنجاح</value></data><data name="Offer updated successfully" xml:space="preserve"><value>تم تحديث العرض بنجاح</value></data><data name="Offer deleted successfully" xml:space="preserve"><value>تم حذف العرض بنجاح</value></data><data name="Offer activated" xml:space="preserve"><value>تم تفعيل العرض</value></data><data name="Offer deactivated" xml:space="preserve"><value>تم إلغاء تفعيل العرض</value></data><data name="Offer has expired and cannot be applied" xml:space="preserve"><value>العرض منتهي الصلاحية ولا يمكن تطبيقه</value></data><data name="Free registration - price set to 0" xml:space="preserve"><value>تسجيل مجاني - تم تعيين السعر إلى 0</value></data><data name="Custom offer applied" xml:space="preserve"><value>تم تطبيق عرض مخصص</value></data><data name="Duration: {0} months ({1} base + {2} bonus)" xml:space="preserve"><value>المدة: {0} أشهر ({1} أساسي + {2} مكافأة)</value></data><data name="Fixed price: {0:N2} EGP (original: {1:N2} EGP)" xml:space="preserve"><value>سعر ثابت: {0:N2} ج.م (الأصلي: {1:N2} ج.م)</value></data><data name="Extra freeze days: +{0} days" xml:space="preserve"><value>أيام تجميد إضافية: +{0} أيام</value></data><data name="Invalid username or password." xml:space="preserve"><value>اسم المستخدم أو كلمة المرور غير صحيحة.</value></data><data name="Invalid or expired refresh token." xml:space="preserve"><value>رمز التحديث غير صالح أو منتهي الصلاحية.</value></data><data name="User not found." xml:space="preserve"><value>المستخدم غير موجود.</value></data><data name="Logged out successfully." xml:space="preserve"><value>تم تسجيل الخروج بنجاح.</value></data><data name="User" xml:space="preserve"><value>مستخدم</value></data><data name="Role not found." xml:space="preserve"><value>الدور غير موجود.</value></data><data name="A role with this name already exists." xml:space="preserve"><value>يوجد دور بهذا الاسم بالفعل.</value></data><data name="Role updated successfully." xml:space="preserve"><value>تم تحديث الدور بنجاح.</value></data><data name="System roles cannot be deleted." xml:space="preserve"><value>لا يمكن حذف أدوار النظام.</value></data><data name="Cannot delete a role that is assigned to users." xml:space="preserve"><value>لا يمكن حذف دور تم تعيينه لمستخدمين.</value></data><data name="Cannot remove the last admin role." xml:space="preserve"><value>لا يمكن إزالة دور المشرف الأخير.</value></data><data name="Role deleted successfully." xml:space="preserve"><value>تم حذف الدور بنجاح.</value></data><data name="General" xml:space="preserve"><value>عام</value></data><data name="Role permissions updated successfully." xml:space="preserve"><value>تم تحديث صلاحيات الدور بنجاح.</value></data><data name="File must be an .xlsx file" xml:space="preserve"><value>يجب أن يكون الملف من نوع .xlsx</value></data><data name="Invalid payment method '{0}'. Use Cash, Visa, Instapay, or Wallet" xml:space="preserve"><value>طريقة الدفع '{0}' غير صالحة. استخدم نقدي، فيزا، إنستاباي، أو محفظة</value></data><data name="Duplicate National ID '{0}' - already registered" xml:space="preserve"><value>الرقم القومي '{0}' مكرر - مسجل بالفعل</value></data><data name="Duplicate phone number '{0}' - already registered" xml:space="preserve"><value>رقم الهاتف '{0}' مكرر - مسجل بالفعل</value></data><data name="Plan '{0}' not found" xml:space="preserve"><value>الخطة '{0}' غير موجودة</value></data><data name="Unexpected error: {0}" xml:space="preserve"><value>خطأ غير متوقع: {0}</value></data><data name="A template with this name already exists" xml:space="preserve"><value>يوجد قالب بهذا الاسم بالفعل</value></data><data name="Amount paid cannot exceed total subscription value" xml:space="preserve"><value>المبلغ المدفوع لا يمكن أن يتجاوز قيمة الاشتراك الإجمالية</value></data><data name="Another template with this name already exists" xml:space="preserve"><value>يوجد قالب آخر بهذا الاسم بالفعل</value></data><data name="Attendance not found" xml:space="preserve"><value>الحضور غير موجود</value></data><data name="Device not found" xml:space="preserve"><value>الجهاز غير موجود</value></data><data name="Either plan or offer must be selected" xml:space="preserve"><value>يجب اختيار خطة أو عرض</value></data><data name="Email already exists" xml:space="preserve"><value>البريد الإلكتروني موجود بالفعل</value></data><data name="Email already in use by another user" xml:space="preserve"><value>البريد الإلكتروني مستخدم بالفعل من قبل مستخدم آخر</value></data><data name="Follow-up added successfully" xml:space="preserve"><value>تمت إضافة المتابعة بنجاح</value></data><data name="Lead converted to member successfully" xml:space="preserve"><value>تم تحويل العميل المحتمل إلى عضو بنجاح</value></data><data name="Lead created successfully" xml:space="preserve"><value>تم إنشاء العميل المحتمل بنجاح</value></data><data name="Lead deleted successfully" xml:space="preserve"><value>تم حذف العميل المحتمل بنجاح</value></data><data name="Lead not found" xml:space="preserve"><value>العميل المحتمل غير موجود</value></data><data name="Lead updated successfully" xml:space="preserve"><value>تم تحديث العميل المحتمل بنجاح</value></data><data name="Linked plan is not active" xml:space="preserve"><value>الخطة المرتبطة غير نشطة</value></data><data name="Linked plan not found" xml:space="preserve"><value>الخطة المرتبطة غير موجودة</value></data><data name="Member already has an active subscription" xml:space="preserve"><value>العضو لديه اشتراك نشط بالفعل</value></data><data name="Member status updated successfully" xml:space="preserve"><value>تم تحديث حالة العضو بنجاح</value></data><data name="No active plan found to link the offer to" xml:space="preserve"><value>لم يتم العثور على خطة نشطة لربط العرض بها</value></data><data name="Offer is not active" xml:space="preserve"><value>العرض غير نشط</value></data><data name="Offer is not applicable to the selected plan" xml:space="preserve"><value>العرض لا ينطبق على الخطة المحددة</value></data><data name="Offer is not valid" xml:space="preserve"><value>العرض غير صالح</value></data><data name="Only active subscriptions can be frozen" xml:space="preserve"><value>فقط الاشتراكات النشطة يمكن تجميدها</value></data><data name="Only frozen subscriptions can be unfrozen" xml:space="preserve"><value>فقط الاشتراكات المجمدة يمكن إلغاء تجميدها</value></data><data name="Payment amount exceeds remaining balance" xml:space="preserve"><value>المبلغ المدفوع يتجاوز الرصيد المتبقي</value></data><data name="Payment amount must be greater than zero" xml:space="preserve"><value>المبلغ المدفوع يجب أن يكون أكبر من الصفر</value></data><data name="Payment recorded successfully" xml:space="preserve"><value>تم تسجيل الدفعة بنجاح</value></data><data name="Plan is not active" xml:space="preserve"><value>الخطة غير نشطة</value></data><data name="Plan not found" xml:space="preserve"><value>الخطة غير موجودة</value></data><data name="Previous subscription not found" xml:space="preserve"><value>الاشتراك السابق غير موجود</value></data><data name="Setting not found" xml:space="preserve"><value>الإعداد غير موجود</value></data><data name="Subscription created successfully" xml:space="preserve"><value>تم إنشاء الاشتراك بنجاح</value></data><data name="Subscription extended with offer successfully" xml:space="preserve"><value>تم تمديد الاشتراك مع العرض بنجاح</value></data><data name="Subscription frozen successfully" xml:space="preserve"><value>تم تجميد الاشتراك بنجاح</value></data><data name="Subscription is already frozen" xml:space="preserve"><value>الاشتراك مجمد بالفعل</value></data><data name="Subscription not found" xml:space="preserve"><value>الاشتراك غير موجود</value></data><data name="Subscription renewed successfully" xml:space="preserve"><value>تم تجديد الاشتراك بنجاح</value></data><data name="Subscription unfrozen successfully" xml:space="preserve"><value>تم إلغاء تجميد الاشتراك بنجاح</value></data><data name="Template created successfully" xml:space="preserve"><value>تم إنشاء القالب بنجاح</value></data><data name="Template not found" xml:space="preserve"><value>القالب غير موجود</value></data><data name="Template updated successfully" xml:space="preserve"><value>تم تحديث القالب بنجاح</value></data><data name="User deleted successfully" xml:space="preserve"><value>تم حذف المستخدم بنجاح</value></data><data name="User updated successfully" xml:space="preserve"><value>تم تحديث المستخدم بنجاح</value></data><data name="Username already exists" xml:space="preserve"><value>اسم المستخدم موجود بالفعل</value></data><data name="An error occurred" xml:space="preserve"><value>حدث خطأ</value></data><data name="Converted from Lead" xml:space="preserve"><value>تم التحويل من عميل محتمل</value></data><data name="Maximum freeze days for this plan is {0}" xml:space="preserve"><value>أقصى أيام تجميد لهذه الخطة هو {value}</value></data><data name="unknown" xml:space="preserve"><value>غير معروف</value></data><data name="Create" xml:space="preserve"><value>إنشاء</value></data><data name="Update" xml:space="preserve"><value>تحديث</value></data><data name="UpdatePermissions" xml:space="preserve"><value>تحديث الصلاحيات</value></data><data name="Offer ID is required" xml:space="preserve"><value>معرف العرض مطلوب</value></data><data name="Invalid offer type" xml:space="preserve"><value>نوع العرض غير صالح</value></data></root>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+<data name="Lead not found" xml:space="preserve"><value>العميل المحتمل غير موجود</value></data><data name="Lead created successfully" xml:space="preserve"><value>تم إنشاء العميل المحتمل بنجاح</value></data><data name="Lead updated successfully" xml:space="preserve"><value>تم تحديث العميل المحتمل بنجاح</value></data><data name="Lead deleted successfully" xml:space="preserve"><value>تم حذف العميل المحتمل بنجاح</value></data><data name="Lead converted to member successfully" xml:space="preserve"><value>تم تحويل العميل المحتمل إلى عضو بنجاح</value></data><data name="Follow-up added successfully" xml:space="preserve"><value>تمت إضافة المتابعة بنجاح</value></data><data name="Plan not found" xml:space="preserve"><value>الخطة غير موجودة</value></data><data name="Member status updated successfully" xml:space="preserve"><value>تم تحديث حالة العضو بنجاح</value></data><data name="Member not found" xml:space="preserve"><value>العضو غير موجود</value></data><data name="National ID is already registered to another member" xml:space="preserve"><value>الرقم القومي مسجل بالفعل لعضو آخر</value></data><data name="Phone number is already registered to another member" xml:space="preserve"><value>رقم الهاتف مسجل بالفعل لعضو آخر</value></data><data name="Member created successfully" xml:space="preserve"><value>تم إنشاء العضو بنجاح</value></data><data name="Member updated successfully" xml:space="preserve"><value>تم تحديث العضو بنجاح</value></data><data name="Member deleted successfully" xml:space="preserve"><value>تم حذف العضو بنجاح</value></data><data name="Member restored successfully" xml:space="preserve"><value>تم استعادة العضو بنجاح</value></data><data name="Offer not found" xml:space="preserve"><value>العرض غير موجود</value></data><data name="Offer price is required and must be positive" xml:space="preserve"><value>سعر العرض مطلوب ويجب أن يكون موجباً</value></data><data name="Offer created successfully" xml:space="preserve"><value>تم إنشاء العرض بنجاح</value></data><data name="Offer updated successfully" xml:space="preserve"><value>تم تحديث العرض بنجاح</value></data><data name="Offer deleted successfully" xml:space="preserve"><value>تم حذف العرض بنجاح</value></data><data name="Offer activated" xml:space="preserve"><value>تم تفعيل العرض</value></data><data name="Offer deactivated" xml:space="preserve"><value>تم إلغاء تفعيل العرض</value></data><data name="Offer has expired and cannot be applied" xml:space="preserve"><value>العرض منتهي الصلاحية ولا يمكن تطبيقه</value></data><data name="Free registration - price set to 0" xml:space="preserve"><value>تسجيل مجاني - تم تعيين السعر إلى 0</value></data><data name="Custom offer applied" xml:space="preserve"><value>تم تطبيق عرض مخصص</value></data><data name="Duration: {0} months ({1} base + {2} bonus)" xml:space="preserve"><value>المدة: {0} أشهر ({1} أساسي + {2} مكافأة)</value></data><data name="Fixed price: {0:N2} EGP (original: {1:N2} EGP)" xml:space="preserve"><value>سعر ثابت: {0:N2} ج.م (الأصلي: {1:N2} ج.م)</value></data><data name="Extra freeze days: +{0} days" xml:space="preserve"><value>أيام تجميد إضافية: +{0} أيام</value></data><data name="Invalid username or password." xml:space="preserve"><value>اسم المستخدم أو كلمة المرور غير صحيحة</value></data><data name="Invalid or expired refresh token." xml:space="preserve"><value>رمز التحديث غير صالح أو منتهي الصلاحية</value></data><data name="User not found." xml:space="preserve"><value>المستخدم غير موجود</value></data><data name="Logged out successfully." xml:space="preserve"><value>تم تسجيل الخروج بنجاح</value></data><data name="User" xml:space="preserve"><value>مستخدم</value></data><data name="Role not found." xml:space="preserve"><value>الدور غير موجود</value></data><data name="A role with this name already exists." xml:space="preserve"><value>يوجد دور بهذا الاسم بالفعل</value></data><data name="Role updated successfully." xml:space="preserve"><value>تم تحديث الدور بنجاح</value></data><data name="System roles cannot be deleted." xml:space="preserve"><value>لا يمكن حذف أدوار النظام</value></data><data name="Cannot delete a role that is assigned to users." xml:space="preserve"><value>لا يمكن حذف دور تم تعيينه لمستخدمين</value></data><data name="Cannot remove the last admin role." xml:space="preserve"><value>لا يمكن إزالة دور المشرف الأخير</value></data><data name="Role deleted successfully." xml:space="preserve"><value>تم حذف الدور بنجاح</value></data><data name="General" xml:space="preserve"><value>عام</value></data><data name="Role permissions updated successfully." xml:space="preserve"><value>تم تحديث صلاحيات الدور بنجاح</value></data><data name="File must be an .xlsx file" xml:space="preserve"><value>يجب أن يكون الملف من نوع .xlsx</value></data><data name="Invalid payment method '{0}'. Use Cash, Visa, Instapay, or Wallet" xml:space="preserve"><value>طريقة الدفع '{0}' غير صالحة. استخدم نقدي، فيزا، إنستاباي، أو محفظة</value></data><data name="Duplicate National ID '{0}' - already registered" xml:space="preserve"><value>الرقم القومي '{0}' مكرر - مسجل بالفعل</value></data><data name="Duplicate phone number '{0}' - already registered" xml:space="preserve"><value>رقم الهاتف '{0}' مكرر - مسجل بالفعل</value></data><data name="Plan '{0}' not found" xml:space="preserve"><value>الخطة '{0}' غير موجودة</value></data><data name="Unexpected error: {0}" xml:space="preserve"><value>خطأ غير متوقع: {0}</value></data><data name="A template with this name already exists" xml:space="preserve"><value>يوجد قالب بهذا الاسم بالفعل</value></data><data name="Amount paid cannot exceed total subscription value" xml:space="preserve"><value>المبلغ المدفوع لا يمكن أن يتجاوز قيمة الاشتراك الإجمالية</value></data><data name="Another template with this name already exists" xml:space="preserve"><value>يوجد قالب آخر بهذا الاسم بالفعل</value></data><data name="Attendance not found" xml:space="preserve"><value>الحضور غير موجود</value></data><data name="Device not found" xml:space="preserve"><value>الجهاز غير موجود</value></data><data name="Either plan or offer must be selected" xml:space="preserve"><value>يجب اختيار خطة أو عرض</value></data><data name="Email already exists" xml:space="preserve"><value>البريد الإلكتروني موجود بالفعل</value></data><data name="Email already in use by another user" xml:space="preserve"><value>البريد الإلكتروني مستخدم بالفعل من قبل مستخدم آخر</value></data><data name="Linked plan is not active" xml:space="preserve"><value>الخطة المرتبطة غير نشطة</value></data><data name="Linked plan not found" xml:space="preserve"><value>الخطة المرتبطة غير موجودة</value></data><data name="Member already has an active subscription" xml:space="preserve"><value>العضو لديه اشتراك نشط بالفعل</value></data><data name="No active plan found to link the offer to" xml:space="preserve"><value>لم يتم العثور على خطة نشطة لربط العرض بها</value></data><data name="Offer is not active" xml:space="preserve"><value>العرض غير نشط</value></data><data name="Offer is not applicable to the selected plan" xml:space="preserve"><value>العرض لا ينطبق على الخطة المحددة</value></data><data name="Offer is not valid" xml:space="preserve"><value>العرض غير صالح</value></data><data name="Only active subscriptions can be frozen" xml:space="preserve"><value>فقط الاشتراكات النشطة يمكن تجميدها</value></data><data name="Only frozen subscriptions can be unfrozen" xml:space="preserve"><value>فقط الاشتراكات المجمدة يمكن إلغاء تجميدها</value></data><data name="Payment amount exceeds remaining balance" xml:space="preserve"><value>المبلغ المدفوع يتجاوز الرصيد المتبقي</value></data><data name="Payment amount must be greater than zero" xml:space="preserve"><value>يجب أن يكون المبلغ المدفوع أكبر من صفر</value></data><data name="Payment recorded successfully" xml:space="preserve"><value>تم تسجيل الدفعة بنجاح</value></data><data name="Plan is not active" xml:space="preserve"><value>الخطة غير نشطة</value></data><data name="Previous subscription not found" xml:space="preserve"><value>الاشتراك السابق غير موجود</value></data><data name="Setting not found" xml:space="preserve"><value>الإعداد غير موجود</value></data><data name="Subscription created successfully" xml:space="preserve"><value>تم إنشاء الاشتراك بنجاح</value></data><data name="Subscription extended with offer successfully" xml:space="preserve"><value>تم تمديد الاشتراك مع العرض بنجاح</value></data><data name="Subscription frozen successfully" xml:space="preserve"><value>تم تجميد الاشتراك بنجاح</value></data><data name="Subscription is already frozen" xml:space="preserve"><value>الاشتراك مجمد بالفعل</value></data><data name="Subscription not found" xml:space="preserve"><value>الاشتراك غير موجود</value></data><data name="Subscription renewed successfully" xml:space="preserve"><value>تم تجديد الاشتراك بنجاح</value></data><data name="Subscription unfrozen successfully" xml:space="preserve"><value>تم إلغاء تجميد الاشتراك بنجاح</value></data><data name="Template created successfully" xml:space="preserve"><value>تم إنشاء القالب بنجاح</value></data><data name="Template not found" xml:space="preserve"><value>القالب غير موجود</value></data><data name="Template updated successfully" xml:space="preserve"><value>تم تحديث القالب بنجاح</value></data><data name="User deleted successfully" xml:space="preserve"><value>تم حذف المستخدم بنجاح</value></data><data name="User updated successfully" xml:space="preserve"><value>تم تحديث المستخدم بنجاح</value></data><data name="Username already exists" xml:space="preserve"><value>اسم المستخدم موجود بالفعل</value></data><data name="An error occurred" xml:space="preserve"><value>حدث خطأ</value></data><data name="Converted from Lead" xml:space="preserve"><value>تم التحويل من عميل محتمل</value></data><data name="Maximum freeze days for this plan is {0}" xml:space="preserve"><value>أقصى أيام تجميد لهذه الخطة هو {0}</value></data><data name="unknown" xml:space="preserve"><value>غير معروف</value></data><data name="Create" xml:space="preserve"><value>إنشاء</value></data><data name="Update" xml:space="preserve"><value>تحديث</value></data><data name="UpdatePermissions" xml:space="preserve"><value>تحديث الصلاحيات</value></data><data name="Offer ID is required" xml:space="preserve"><value>معرف العرض مطلوب</value></data><data name="Invalid offer type" xml:space="preserve"><value>نوع العرض غير صالح</value></data></root>
