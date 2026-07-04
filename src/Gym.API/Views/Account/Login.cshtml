@@ -466,6 +466,7 @@
                 }
 
                 <form method="post" action="/Account/Login" id="loginForm" novalidate>
+                    @Html.AntiForgeryToken()
                     <div class="form-group">
                         <label for="username" class="sr-only">@SharedLocalizer["Username"]</label>
                         <div class="input-wrap">

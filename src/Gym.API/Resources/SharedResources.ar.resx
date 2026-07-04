@@ -2394,4 +2394,7 @@
   <data name="Dash_Reco_Sub_Healthy" xml:space="preserve">
     <value>صحة الاشتراك مستقرة. عزز النمو بالترويج للخطط المدفوعة مسبقاً متعددة الأشهر (ارتباط أعلى) ومكافآت الإحالة التي تمنح الطرفين شهراً مجانياً.</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>يدوي</value>
+  </data>
 </root>

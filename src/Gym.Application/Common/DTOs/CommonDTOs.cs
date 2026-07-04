@@ -13,8 +13,10 @@ public class PaginatedResult<T>
 
 public record PaginationRequest
 {
+    public static int DefaultPageSize { get; set; } = 20;
+
     public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    public int PageSize { get; set; } = DefaultPageSize;
     public string? SearchTerm { get; set; }
     public string? SortBy { get; set; }
     public bool SortDescending { get; set; }

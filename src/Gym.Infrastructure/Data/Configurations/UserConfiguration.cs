@@ -40,6 +40,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.RefreshToken)
             .HasMaxLength(500);
 
+        builder.Property(x => x.PreviousRefreshTokenHash)
+            .HasMaxLength(500);
+
         builder.HasOne(x => x.Role)
             .WithMany(r => r.Users)
             .HasForeignKey(x => x.RoleId)

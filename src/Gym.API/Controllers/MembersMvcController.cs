@@ -447,6 +447,7 @@ public class MembersMvcController : Controller
     }
 
     [RequirePermission("Members.View")]
+    [RequirePermission("Members.View")]
     [HttpGet("import")]
     public IActionResult Import()
     {
@@ -454,7 +455,7 @@ public class MembersMvcController : Controller
         return View();
     }
 
-    [RequirePermission("Members.View")]
+    [RequirePermission("Members.Create")]
     [HttpPost("import")]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
@@ -589,10 +590,12 @@ public class MembersMvcController : Controller
         var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
         Directory.CreateDirectory(exportDir);
         var filePath = Path.Combine(exportDir, fileName);
-        workbook.SaveAs(filePath);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        await System.IO.File.WriteAllBytesAsync(filePath, stream.ToArray(), cancellationToken);
         stream.Position = 0;
 
         TempData["Success"] = string.Format(_localizer["Members exported to {0}"].Value, filePath);
@@ -619,12 +622,20 @@ public class MembersMvcController : Controller
         }).ToList();
     }
 
+    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"
+    };
+
     private async Task<string> SaveMemberImageAsync(Guid memberId, IFormFile imageFile)
     {
+        var ext = Path.GetExtension(imageFile.FileName);
+        if (string.IsNullOrEmpty(ext) || !AllowedImageExtensions.Contains(ext))
+            throw new InvalidOperationException("Only image files (jpg, jpeg, png, gif, webp, bmp) are allowed.");
+
         var uploadsDir = Path.Combine(_env.WebRootPath, "Media-images", memberId.ToString());
         Directory.CreateDirectory(uploadsDir);
 
-        var ext = Path.GetExtension(imageFile.FileName);
         var fileName = $"{Guid.NewGuid()}{ext}";
         var filePath = Path.Combine(uploadsDir, fileName);
 

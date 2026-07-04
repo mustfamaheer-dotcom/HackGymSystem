@@ -48,6 +48,19 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
 
     public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
+        if (!string.IsNullOrEmpty(request.NationalId))
+        {
+            var existingNationalId = await _repository.Query()
+                .AnyAsync(m => m.NationalId == request.NationalId, cancellationToken);
+            if (existingNationalId)
+                return Result<Guid>.Failure(_localizer["A member with this National ID already exists"]);
+        }
+
+        var existingPhone = await _repository.Query()
+            .AnyAsync(m => m.PhoneNumber == request.PhoneNumber, cancellationToken);
+        if (existingPhone)
+            return Result<Guid>.Failure(_localizer["A member with this phone number already exists"]);
+
         const int maxRetries = 3;
 
         for (int attempt = 0; attempt < maxRetries; attempt++)

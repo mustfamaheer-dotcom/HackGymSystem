@@ -12,7 +12,7 @@ public class UserListItemDto : IMapFrom<User>
     public string Email { get; set; }
     public string? Phone { get; set; }
     public string RoleName { get; set; }
-    public string RoleId { get; set; }
+    public Guid RoleId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
@@ -20,7 +20,6 @@ public class UserListItemDto : IMapFrom<User>
     public void Mapping(Profile profile)
     {
         profile.CreateMap<User, UserListItemDto>()
-            .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.Role.Name))
-            .ForMember(d => d.RoleId, opt => opt.MapFrom(s => s.RoleId.ToString()));
+            .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.Role.Name));
     }
 }

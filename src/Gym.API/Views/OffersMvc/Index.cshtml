@@ -69,7 +69,15 @@
                             <td>@offer.StartDate.ToString("dd/MM/yyyy")</td>
                             <td>@offer.EndDate.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <span class="badge-status @(offer.IsActive ? "badge-active" : "badge-expired")">@(offer.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input offer-toggle" type="checkbox" role="switch"
+                                               data-offer-id="@offer.Id"
+                                               data-offer-name="@offer.OfferTitle"
+                                               @(offer.IsActive ? "checked" : "") />
+                                    </div>
+                                    <span class="offer-status-text badge-status @(offer.IsActive ? "badge-active" : "badge-expired")">@(offer.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</span>
+                                </div>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
@@ -103,4 +111,71 @@
             </nav>
         </div>
     }
+    @Html.AntiForgeryToken()
 </div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;';
+                document.body.appendChild(container);
+            }
+            var toast = document.createElement('div');
+            toast.className = 'alert alert-' + type + ' alert-dismissible fade show mb-0 shadow-sm';
+            toast.style.cssText = 'border-radius:12px;padding:0.6rem 1rem;font-size:0.85rem;min-width:260px;animation:slideIn 0.25s ease;';
+            toast.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:0.7rem;"></button>';
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        document.querySelectorAll('.offer-toggle').forEach(function(toggle) {
+            toggle.addEventListener('change', function() {
+                var checkbox = this;
+                var offerId = checkbox.dataset.offerId;
+                var offerName = checkbox.dataset.offerName;
+                var isActive = checkbox.checked;
+                var row = checkbox.closest('tr');
+                var statusText = row.querySelector('.offer-status-text');
+
+                checkbox.disabled = true;
+
+                fetch('/Offers/toggle/' + offerId + '?isActive=' + isActive, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        if (isActive) {
+                            statusText.textContent = '@SharedLocalizer["Active"]';
+                            statusText.className = 'offer-status-text badge-status badge-active';
+                        } else {
+                            statusText.textContent = '@SharedLocalizer["Inactive"]';
+                            statusText.className = 'offer-status-text badge-status badge-expired';
+                        }
+                        showToast(data.message, 'success');
+                    } else {
+                        checkbox.checked = !isActive;
+                        showToast(data.message || '@SharedLocalizer["An error occurred"]', 'danger');
+                    }
+                })
+                .catch(function() {
+                    checkbox.checked = !isActive;
+                    showToast('@SharedLocalizer["An error occurred"]', 'danger');
+                })
+                .finally(function() {
+                    checkbox.disabled = false;
+                });
+            });
+        });
+    </script>
+}

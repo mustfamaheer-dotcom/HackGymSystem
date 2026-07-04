@@ -276,13 +276,15 @@
 </div>
 
 @section Scripts {
+    <script type="application/json" id="leadsIndex-templateData">@(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
+    <script type="application/json" id="leadsIndex-activeOffers">@(ViewBag.ActiveOffersJson ?? "[]")</script>
     <script>
         (function() {
-            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateData = JSON.parse(document.getElementById('leadsIndex-templateData').textContent);
             var templateMap = {};
             templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
 
-            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            var activeOffers = JSON.parse(document.getElementById('leadsIndex-activeOffers').textContent);
             function formatOffer(o) {
                 var lines = ['▸ ' + o.OfferTitle];
                 var details = [];

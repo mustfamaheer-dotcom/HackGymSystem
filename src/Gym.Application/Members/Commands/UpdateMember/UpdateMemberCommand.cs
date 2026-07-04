@@ -7,6 +7,7 @@ using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using Gym.Shared.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Members.Commands.UpdateMember;
 
@@ -58,6 +59,22 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
         var member = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (member is null)
             return Result.Failure(_localizer["Member not found"]);
+
+        if (!string.IsNullOrEmpty(request.NationalId) && request.NationalId != member.NationalId)
+        {
+            var existingNationalId = await _repository.Query()
+                .AnyAsync(m => m.NationalId == request.NationalId && m.Id != request.Id, cancellationToken);
+            if (existingNationalId)
+                return Result.Failure(_localizer["A member with this National ID already exists"]);
+        }
+
+        if (request.PhoneNumber != member.PhoneNumber)
+        {
+            var existingPhone = await _repository.Query()
+                .AnyAsync(m => m.PhoneNumber == request.PhoneNumber && m.Id != request.Id, cancellationToken);
+            if (existingPhone)
+                return Result.Failure(_localizer["A member with this phone number already exists"]);
+        }
 
         member.UpdateBasicInfo(
             request.FullName,

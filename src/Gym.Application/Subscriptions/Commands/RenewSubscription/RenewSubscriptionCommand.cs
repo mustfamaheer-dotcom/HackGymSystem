@@ -82,11 +82,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         if (previous == null)
             return Result<Guid>.Failure(_localizer["Previous subscription not found"]);
 
-        previous.Renew(
-            request.NewPlanId ?? previous.PlanId,
-            request.OfferId,
-            0, 0, request.PaymentMethod,
-            request.StartDate, DateTime.UtcNow, "");
+        previous.MarkRenewed();
 
         var planId = request.NewPlanId ?? previous.PlanId;
         var plan = await _planRepo.GetByIdAsync(planId, cancellationToken);
@@ -110,9 +106,12 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
             if (offer.LinkedPackageId.HasValue && offer.LinkedPackageId != planId)
                 return Result<Guid>.Failure(_localizer["Offer is not applicable to the selected plan"]);
 
-            totalValue = offer.OfferType == OfferType.FixedPrice
-                ? (offer.OfferPrice ?? plan.Price)
-                : plan.Price;
+            totalValue = offer.OfferType switch
+            {
+                OfferType.FixedPrice => offer.OfferPrice ?? plan.Price,
+                OfferType.FreeRegistration => 0,
+                _ => plan.Price
+            };
         }
 
         if (request.AmountPaid > totalValue)
@@ -121,7 +120,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         int durationDays = plan.DurationDays;
         int freeMonths = 0;
         int freeDays = 0;
-        if (offer != null && offer.OfferType == OfferType.BonusDuration)
+        if (offer != null)
         {
             freeMonths = offer.BonusMonths ?? 0;
             freeDays = offer.BonusDays ?? 0;

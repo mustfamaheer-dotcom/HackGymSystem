@@ -67,6 +67,7 @@ public class PlansMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("edit/{id}")]
     [RequirePermission("Plans.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

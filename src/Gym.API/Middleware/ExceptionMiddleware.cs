@@ -37,13 +37,17 @@ public class ExceptionMiddleware
             var message = localizer?["Unauthorized"].Value ?? "Unauthorized";
             await HandleExceptionAsync(context, HttpStatusCode.Unauthorized, message);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            await HandleExceptionAsync(context, HttpStatusCode.NotFound, ex.Message);
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResources>>();
+            var message = localizer?["Resource not found"].Value ?? "Resource not found";
+            await HandleExceptionAsync(context, HttpStatusCode.NotFound, message);
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, ex.Message);
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResources>>();
+            var message = localizer?["Invalid request"].Value ?? "Invalid request";
+            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, message);
         }
         catch (Exception ex)
         {

@@ -312,7 +312,11 @@ public class ReceiptPdfService
         if (string.IsNullOrEmpty(member.ImagePath))
             return null;
 
-        var photoPath = Path.Combine(_env.WebRootPath, member.ImagePath);
-        return File.Exists(photoPath) ? File.ReadAllBytes(photoPath) : null;
+        var fullPath = Path.GetFullPath(Path.Combine(_env.WebRootPath, member.ImagePath));
+        var webRoot = Path.GetFullPath(_env.WebRootPath);
+        if (!fullPath.StartsWith(webRoot, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return File.Exists(fullPath) ? File.ReadAllBytes(fullPath) : null;
     }
 }

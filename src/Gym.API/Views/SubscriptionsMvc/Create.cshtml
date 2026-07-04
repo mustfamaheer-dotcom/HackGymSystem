@@ -112,6 +112,28 @@
 .member-no-results { padding: 14px; text-align: center; color: #6b7280; font-size: 0.85rem; }
 </style>
 
+@{
+    var membersJson = System.Text.Json.JsonSerializer.Serialize(
+        ((System.Collections.IEnumerable)((SelectList)ViewBag.Members).Items)
+            .Cast<dynamic>()
+            .Select(m => new {
+                id = ((object)m.Id).ToString(),
+                name = (string)m.FullName,
+                code = (int)m.Code
+            }).ToList()
+    );
+    var offersJson = System.Text.Json.JsonSerializer.Serialize(
+        ((System.Collections.IEnumerable)ViewBag.OfferList)
+            .Cast<dynamic>()
+            .Select(o => new {
+                id = ((object)o.Id).ToString(),
+                linkedPackageId = o.LinkedPackageId?.ToString(),
+                    offerType = o.OfferType.ToString()
+            }).ToList()
+    );
+}
+<script type="application/json" id="subscriptionsCreate-membersData">@Html.Raw(membersJson)</script>
+<script type="application/json" id="subscriptionsCreate-offersData">@Html.Raw(offersJson)</script>
 <script>
 (function() {
     const searchInput = document.getElementById('memberSearch');
@@ -123,28 +145,8 @@
     let selectedId = null;
     let activeIndex = -1;
 
-    @{
-        var membersJson = System.Text.Json.JsonSerializer.Serialize(
-            ((System.Collections.IEnumerable)((SelectList)ViewBag.Members).Items)
-                .Cast<dynamic>()
-                .Select(m => new {
-                    id = ((object)m.Id).ToString(),
-                    name = (string)m.FullName,
-                    code = (int)m.Code
-                }).ToList()
-        );
-        var offersJson = System.Text.Json.JsonSerializer.Serialize(
-            ((System.Collections.IEnumerable)ViewBag.OfferList)
-                .Cast<dynamic>()
-                .Select(o => new {
-                    id = ((object)o.Id).ToString(),
-                    linkedPackageId = o.LinkedPackageId?.ToString(),
-                        offerType = o.OfferType.ToString()
-                }).ToList()
-        );
-    }
-    members = @Html.Raw(membersJson);
-    var offers = @Html.Raw(offersJson);
+    members = JSON.parse(document.getElementById('subscriptionsCreate-membersData').textContent);
+    var offers = JSON.parse(document.getElementById('subscriptionsCreate-offersData').textContent);
 
     // --- Offer filtering by plan ---
     function filterOffersByPlan() {

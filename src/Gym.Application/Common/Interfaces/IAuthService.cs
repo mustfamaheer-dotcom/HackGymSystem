@@ -27,5 +27,6 @@ public class UserDto
     public string? Phone { get; set; }
     public string Role { get; set; } = string.Empty;
     public Guid RoleId { get; set; }
+    public bool IsPasswordChangeRequired { get; set; }
     public List<string> Permissions { get; set; } = new();
 }

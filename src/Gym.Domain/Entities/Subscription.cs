@@ -71,8 +71,7 @@ public class Subscription : BaseEntity
         MarkUpdated();
     }
 
-    public void Renew(Guid newPlanId, Guid? newOfferId, decimal newTotalValue, decimal newAmountPaid,
-        PaymentMethod newPaymentMethod, DateTime newStartDate, DateTime newExpirationDate, string newReceiptNumber)
+    public void MarkRenewed()
     {
         Status = SubscriptionStatus.Renewed;
         MarkUpdated();

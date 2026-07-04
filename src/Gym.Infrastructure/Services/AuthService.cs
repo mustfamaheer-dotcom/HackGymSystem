@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
@@ -76,7 +78,24 @@ public class AuthService : IAuthService
             .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && u.IsActive, cancellationToken);
 
-        if (user is null || user.RefreshTokenExpiry <= DateTime.UtcNow)
+        if (user is null)
+        {
+            var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
+            var replayUser = await _unitOfWork.Repository<User>()
+                .Query()
+                .FirstOrDefaultAsync(u => u.PreviousRefreshTokenHash == tokenHash && u.IsActive, cancellationToken);
+
+            if (replayUser != null)
+            {
+                replayUser.UpdateRefreshToken(null, null);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return Result<AuthResponse>.Failure(_localizer["Refresh token has been compromised. Please login again."]);
+            }
+
+            return Result<AuthResponse>.Failure(_localizer["Invalid or expired refresh token."]);
+        }
+
+        if (user.RefreshTokenExpiry <= DateTime.UtcNow)
             return Result<AuthResponse>.Failure(_localizer["Invalid or expired refresh token."]);
 
         var permissions = user.Role.RolePermissions?
@@ -103,6 +122,7 @@ public class AuthService : IAuthService
                 Phone = user.Phone,
                 Role = user.Role?.Name ?? _localizer["User"],
                 RoleId = user.RoleId,
+                IsPasswordChangeRequired = user.IsPasswordChangeRequired,
                 Permissions = permissions
             }
         });
@@ -147,6 +167,7 @@ public class AuthService : IAuthService
             Phone = user.Phone,
             Role = user.Role?.Name ?? _localizer["User"],
             RoleId = user.RoleId,
+            IsPasswordChangeRequired = user.IsPasswordChangeRequired,
             Permissions = permissions
         });
     }

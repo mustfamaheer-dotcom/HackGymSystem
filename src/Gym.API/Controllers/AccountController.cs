@@ -1,5 +1,6 @@
 using Gym.API;
 using Gym.Application.Common.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,13 @@ public class AccountController : Controller
 {
     private readonly IAuthService _authService;
     private readonly IStringLocalizer<SharedResources> _localizer;
+    private readonly IMediator _mediator;
 
-    public AccountController(IAuthService authService, IStringLocalizer<SharedResources> localizer)
+    public AccountController(IAuthService authService, IStringLocalizer<SharedResources> localizer, IMediator mediator)
     {
         _authService = authService;
         _localizer = localizer;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -59,6 +62,65 @@ public class AccountController : Controller
             MaxAge = TimeSpan.FromDays(7)
         });
 
+        Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Secure = Request.IsHttps,
+            MaxAge = TimeSpan.FromDays(30)
+        });
+
+        if (response.User.IsPasswordChangeRequired)
+            return RedirectToAction("ChangePassword", "Account");
+
+        return RedirectToAction("Index", "HomeMvc");
+    }
+
+    [HttpGet("change-password")]
+    [Authorize]
+    public IActionResult ChangePassword()
+    {
+        ViewData["Title"] = _localizer["Change Password"];
+        return View();
+    }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword, CancellationToken cancellationToken)
+    {
+        ViewData["Title"] = _localizer["Change Password"];
+
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            ViewBag.Error = _localizer["Current password is required."];
+            return View();
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+        {
+            ViewBag.Error = _localizer["Password must be at least 6 characters."];
+            return View();
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            ViewBag.Error = _localizer["Passwords do not match."];
+            return View();
+        }
+
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId is null || !Guid.TryParse(userId, out var id))
+            return Unauthorized();
+
+        var result = await _mediator.Send(new Gym.Application.Users.Commands.ChangePassword.ChangePasswordCommand(id, currentPassword, newPassword), cancellationToken);
+
+        if (result.IsFailure)
+        {
+            ViewBag.Error = result.Message;
+            return View();
+        }
+
+        TempData["Success"] = _localizer["Password changed successfully."].Value;
         return RedirectToAction("Index", "HomeMvc");
     }
 
@@ -71,11 +133,13 @@ public class AccountController : Controller
             await _authService.LogoutAsync(id, cancellationToken);
 
         Response.Cookies.Delete("accessToken");
+        Response.Cookies.Delete("refreshToken");
         return RedirectToAction("Login");
     }
 
     [HttpPost]
     [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
     public IActionResult SetLanguage(string culture, string returnUrl = "/")
     {
         if (culture != "ar" && culture != "en")

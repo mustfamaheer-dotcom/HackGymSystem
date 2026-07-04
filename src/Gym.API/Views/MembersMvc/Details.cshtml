@@ -255,13 +255,15 @@
 </div>
 
 @section Scripts {
+    <script type="application/json" id="membersDetails-templateData">@Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
+    <script type="application/json" id="membersDetails-activeOffers">@Html.Raw(ViewBag.ActiveOffersJson ?? "[]")</script>
     <script>
         (function() {
-            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateData = JSON.parse(document.getElementById('membersDetails-templateData').textContent);
             var templateMap = {};
             templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
 
-            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            var activeOffers = JSON.parse(document.getElementById('membersDetails-activeOffers').textContent);
             function formatOffer(o) {
                 var lines = ['▸ ' + o.OfferTitle];
                 var details = [];

@@ -5,6 +5,7 @@ using System.Text;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Entities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gym.Infrastructure.Security;
@@ -12,10 +13,12 @@ namespace Gym.Infrastructure.Security;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<TokenService> _logger;
 
-    public TokenService(IConfiguration configuration)
+    public TokenService(IConfiguration configuration, ILogger<TokenService> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<(string accessToken, string refreshToken, DateTime expiresAt)> GenerateTokensAsync(User user)
@@ -60,8 +63,9 @@ public class TokenService : ITokenService
 
             return null;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Token validation failed");
             return null;
         }
     }

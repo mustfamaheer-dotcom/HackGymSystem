@@ -12,7 +12,9 @@ public class User : BaseEntity
     public string? Phone { get; set; }
     public Guid RoleId { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsPasswordChangeRequired { get; set; } = true;
     public string? RefreshToken { get; set; }
+    public string? PreviousRefreshTokenHash { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
     public DateTime? LastLoginAt { get; set; }
 
@@ -31,14 +33,18 @@ public class User : BaseEntity
         RoleId = roleId;
     }
 
-    public void UpdatePassword(string newPasswordHash)
+    public void MarkPasswordChanged(string newPasswordHash)
     {
         PasswordHash = newPasswordHash;
+        IsPasswordChangeRequired = false;
         MarkUpdated();
     }
 
     public void UpdateRefreshToken(string? token, DateTime? expiry)
     {
+        PreviousRefreshTokenHash = !string.IsNullOrEmpty(RefreshToken)
+            ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(RefreshToken)))
+            : null;
         RefreshToken = token;
         RefreshTokenExpiry = expiry;
     }

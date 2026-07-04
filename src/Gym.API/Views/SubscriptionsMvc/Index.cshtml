@@ -213,13 +213,15 @@
 </div>
 
 @section Scripts {
+    <script type="application/json" id="subscriptionsIndex-templateData">@(ViewBag.WhatsAppTemplateJson ?? "[]")</script>
+    <script type="application/json" id="subscriptionsIndex-activeOffers">@(ViewBag.ActiveOffersJson ?? "[]")</script>
     <script>
         (function() {
-            var templateData = @Html.Raw(ViewBag.WhatsAppTemplateJson ?? "[]");
+            var templateData = JSON.parse(document.getElementById('subscriptionsIndex-templateData').textContent);
             var templateMap = {};
             templateData.forEach(function(t) { templateMap[t.Id] = t.MessageBody; });
 
-            var activeOffers = @Html.Raw(ViewBag.ActiveOffersJson ?? "[]");
+            var activeOffers = JSON.parse(document.getElementById('subscriptionsIndex-activeOffers').textContent);
             function formatOffers() {
                 if (!activeOffers || activeOffers.length === 0) return '@SharedLocalizer["No offers available"]';
                 return activeOffers.map(function(o) {

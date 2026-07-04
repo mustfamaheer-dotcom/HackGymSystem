@@ -39,6 +39,7 @@ public class LeadsMvcController : Controller
     private readonly IRepository<WhatsAppTemplate> _templateRepo;
     private readonly IRepository<Offer> _offerRepo;
     private readonly IWebHostEnvironment _env;
+    private IReadOnlyList<PlanDto>? _cachedPlans;
 
     public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IExcelImportService excelImportService, IRepository<Lead> leadRepository, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo, IWebHostEnvironment env)
     {
@@ -49,6 +50,16 @@ public class LeadsMvcController : Controller
         _templateRepo = templateRepo;
         _offerRepo = offerRepo;
         _env = env;
+    }
+
+    private async Task<IReadOnlyList<PlanDto>> GetPlansAsync(CancellationToken cancellationToken)
+    {
+        if (_cachedPlans == null)
+        {
+            var result = await _mediator.Send(new GetAllPlansQuery { PageSize = int.MaxValue }, cancellationToken);
+            _cachedPlans = result.IsSuccess ? result.Data?.Items ?? [] : [];
+        }
+        return _cachedPlans;
     }
 
     [HttpGet]
@@ -100,8 +111,7 @@ public class LeadsMvcController : Controller
         var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
         ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
 
-        var allPlans = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = allPlans.IsSuccess ? allPlans.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
 
         return View(result.Data);
     }
@@ -111,8 +121,7 @@ public class LeadsMvcController : Controller
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Lead"];
-        var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
         return View();
     }
 
@@ -121,8 +130,7 @@ public class LeadsMvcController : Controller
     public async Task<IActionResult> Create(CreateLeadCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Lead"];
-        var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
         if (!ModelState.IsValid)
             return View(command);
         var result = await _mediator.Send(command, cancellationToken);
@@ -135,6 +143,7 @@ public class LeadsMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("edit/{id}")]
     [RequirePermission("Leads.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -146,8 +155,7 @@ public class LeadsMvcController : Controller
             return RedirectToAction(nameof(Index));
         }
         var dto = result.Data!;
-        var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
         var command = new UpdateLeadCommand(dto.Id, dto.Name, dto.Phone, dto.Source, dto.InterestedPackageId, dto.Status, dto.NextFollowUpDate, dto.Notes, dto.Email, dto.Gender);
         return View(command);
     }
@@ -162,8 +170,7 @@ public class LeadsMvcController : Controller
             TempData["Error"] = _localizer["Route ID and form ID do not match"].Value;
             return View(command);
         }
-        var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
         if (!ModelState.IsValid)
             return View(command);
         var result = await _mediator.Send(command, cancellationToken);
@@ -239,8 +246,7 @@ public class LeadsMvcController : Controller
             TempData["Error"] = leadResult.Message;
             return RedirectToAction(nameof(Index));
         }
-        var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-        ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+        ViewBag.Plans = await GetPlansAsync(cancellationToken);
         return View(leadResult.Data);
     }
 
@@ -257,8 +263,7 @@ public class LeadsMvcController : Controller
         if (!ModelState.IsValid)
         {
             var leadResult = await _mediator.Send(new GetLeadByIdQuery(id), cancellationToken);
-            var plansResult = await _mediator.Send(new GetAllPlansQuery { PageSize = 1000 }, cancellationToken);
-            ViewBag.Plans = plansResult.IsSuccess ? plansResult.Data?.Items ?? new List<PlanDto>() : new List<PlanDto>();
+            ViewBag.Plans = await GetPlansAsync(cancellationToken);
             return View(leadResult.Data);
         }
         var result = await _mediator.Send(command, cancellationToken);
@@ -279,7 +284,7 @@ public class LeadsMvcController : Controller
         return View();
     }
 
-    [RequirePermission("Leads.View")]
+    [RequirePermission("Leads.Create")]
     [HttpPost("import")]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
@@ -365,10 +370,12 @@ public class LeadsMvcController : Controller
         var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
         Directory.CreateDirectory(exportDir);
         var filePath = Path.Combine(exportDir, fileName);
-        workbook.SaveAs(filePath);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        await System.IO.File.WriteAllBytesAsync(filePath, stream.ToArray(), cancellationToken);
         stream.Position = 0;
 
         TempData["Success"] = string.Format(_localizer["Leads exported to {0}"].Value, filePath);

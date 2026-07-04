@@ -19,6 +19,8 @@ public record CreateUserCommand(
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
 {
+    private const int BcryptWorkFactor = 11;
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStringLocalizer<ApplicationResources> _localizer;
 
@@ -49,7 +51,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 
         var user = new User(
             request.Username,
-            BCrypt.Net.BCrypt.HashPassword(request.Password),
+            BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: BcryptWorkFactor),
             request.FullName,
             request.Email,
             request.Phone,

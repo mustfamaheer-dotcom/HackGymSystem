@@ -38,14 +38,14 @@ public class MemberService : IMemberService
         {
             var search = searchTerm.ToLower();
             query = query.Where(m =>
-                m.FullName.ToLower().Contains(search) ||
-                m.ReceiptNumber.ToLower().Contains(search) ||
+                m.FullName.Contains(search) ||
+                m.ReceiptNumber.Contains(search) ||
                 m.PhoneNumber.Contains(search));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        query = (sortBy?.ToLower()) switch
+        query = sortBy?.ToLowerInvariant() switch
         {
             "fullname" => sortDescending
                 ? query.OrderByDescending(m => m.FullName)
@@ -118,8 +118,8 @@ public class MemberService : IMemberService
         {
             var search = searchTerm.ToLower();
             query = query.Where(m =>
-                m.FullName.ToLower().Contains(search) ||
-                m.ReceiptNumber.ToLower().Contains(search) ||
+                m.FullName.Contains(search) ||
+                m.ReceiptNumber.Contains(search) ||
                 m.PhoneNumber.Contains(search) ||
                 m.NationalId.Contains(search));
         }
@@ -141,7 +141,7 @@ public class MemberService : IMemberService
         if (!string.IsNullOrWhiteSpace(name))
         {
             var n = name.ToLower();
-            query = query.Where(m => m.FullName.ToLower().Contains(n));
+            query = query.Where(m => m.FullName.Contains(n));
         }
 
         if (!string.IsNullOrWhiteSpace(nationalId))
@@ -156,7 +156,7 @@ public class MemberService : IMemberService
         if (!string.IsNullOrWhiteSpace(receiptNumber))
         {
             var r = receiptNumber.ToLower();
-            query = query.Where(m => m.ReceiptNumber.ToLower().Contains(r));
+            query = query.Where(m => m.ReceiptNumber.Contains(r));
         }
 
         if (packageId.HasValue)

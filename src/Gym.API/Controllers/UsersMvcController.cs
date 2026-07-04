@@ -103,7 +103,7 @@ public class UsersMvcController : Controller
         var user = result.Data!;
         var command = new UpdateUserCommand(
             user.Id, user.FullName, user.Email, user.Phone,
-            Guid.Parse(user.RoleId), user.IsActive);
+            user.RoleId, user.IsActive);
 
         return View(command);
     }

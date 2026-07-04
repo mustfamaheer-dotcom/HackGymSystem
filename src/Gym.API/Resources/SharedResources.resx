@@ -2410,4 +2410,7 @@
   <data name="Dash_Reco_Sub_Healthy" xml:space="preserve">
     <value>Subscription health is stable. Drive growth by promoting multi-month prepaid plans (higher lock-in) and referral rewards that give both parties a free month.</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
 </root>

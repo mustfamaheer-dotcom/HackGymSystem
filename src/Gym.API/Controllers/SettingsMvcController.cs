@@ -66,6 +66,7 @@ public class SettingsMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("edit/{id}")]
     [RequirePermission("Settings.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

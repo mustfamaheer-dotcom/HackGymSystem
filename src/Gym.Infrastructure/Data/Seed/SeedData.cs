@@ -131,15 +131,17 @@ public static class SeedData
             {
                 Id = Guid.Parse("D4E5F6A7-B8C9-0123-DEF4-567890123456"),
                 Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123", workFactor: 11),
                 FullName = "System Administrator",
                 Email = "admin@gym.com",
                 Phone = (string?)null,
                 RoleId = OwnerRoleId,
                 IsActive = true,
+                IsPasswordChangeRequired = true,
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null,
                 RefreshToken = (string?)null,
+                PreviousRefreshTokenHash = (string?)null,
                 RefreshTokenExpiry = (DateTime?)null,
                 LastLoginAt = (DateTime?)null
             }

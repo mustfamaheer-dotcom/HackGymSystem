@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Gym.Shared.Common;
 
 namespace Gym.Application.Common.Interfaces;
@@ -38,17 +39,29 @@ public class RoleDetailDto
 
 public class CreateRoleDto
 {
+    [Required(ErrorMessage = "Role name is required")]
+    [StringLength(100, ErrorMessage = "Role name must not exceed 100 characters")]
     public string Name { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Description must not exceed 500 characters")]
     public string? Description { get; set; }
+
     public bool IsActive { get; set; } = true;
     public List<Guid> PermissionIds { get; set; } = new();
 }
 
 public class UpdateRoleDto
 {
+    [Required(ErrorMessage = "Id is required")]
     public Guid Id { get; set; }
+
+    [Required(ErrorMessage = "Role name is required")]
+    [StringLength(100, ErrorMessage = "Role name must not exceed 100 characters")]
     public string Name { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Description must not exceed 500 characters")]
     public string? Description { get; set; }
+
     public bool IsActive { get; set; }
     public List<Guid> PermissionIds { get; set; } = new();
 }

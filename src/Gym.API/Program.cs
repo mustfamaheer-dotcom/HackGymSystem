@@ -27,7 +27,10 @@ builder.Host.UseSerilog();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
+})
     .AddViewLocalization()
     .AddDataAnnotationsLocalization()
     .AddJsonOptions(options =>
@@ -76,18 +79,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                {
-                    context.Token = accessToken;
-                }
-
-                if (string.IsNullOrEmpty(context.Token))
-                {
-                    context.Token = context.Request.Cookies["accessToken"];
-                }
-
+                context.Token = context.Request.Cookies["accessToken"];
                 return Task.CompletedTask;
             }
         };
@@ -129,6 +121,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
+
+Gym.Application.Common.DTOs.PaginationRequest.DefaultPageSize = app.Configuration.GetValue<int?>("Pagination:DefaultPageSize") ?? 20;
 
 using (var scope = app.Services.CreateScope())
 {

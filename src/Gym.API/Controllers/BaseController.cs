@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Gym.API.Controllers;
 
 [ApiController]
+[IgnoreAntiforgeryToken]
 [Route("api/[controller]")]
 public abstract class BaseController : ControllerBase
 {

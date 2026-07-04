@@ -18,49 +18,221 @@
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>@SharedLocalizer["Name"]</th>
-                        <th>@SharedLocalizer["Message Preview"]</th>
-                        <th class="text-center">@SharedLocalizer["Task"]</th>
-                        <th class="text-center">@SharedLocalizer["Active"]</th>
-                        <th class="text-center">@SharedLocalizer["Actions"]</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="fw-semibold">@item.Name</td>
-                            <td style="max-width:400px;">
-                                <code style="font-size:0.8rem;white-space:pre-wrap;word-break:break-word;color:var(--text-secondary);">@item.MessageBody</code>
-                            </td>
-                            <td class="text-center">
+        <div class="row g-3 p-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-xl-4 col-lg-6 col-md-6">
+                    <div class="template-card">
+                        <div class="template-card-header">
+                            <div class="template-card-title">@item.Name</div>
+                            <span class="badge-status @(item.IsActive ? "badge-active" : "badge-expired")">
+                                @(item.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])
+                            </span>
+                        </div>
+                        <div class="template-card-body">
+                            <div class="template-card-trigger">
                                 @if (item.TriggerType.HasValue)
                                 {
                                     <span class="badge-status badge-frozen">@SharedLocalizer[item.TriggerType.Value.ToString()]</span>
                                 }
                                 else
                                 {
-                                    <span class="text-muted small">@SharedLocalizer["None"]</span>
+                                    <span class="text-muted small">@SharedLocalizer["Manual"]</span>
                                 }
-                            </td>
-                            <td class="text-center">
-                                <span class="badge-status @(item.IsActive ? "badge-active" : "badge-expired")">
-                                    @(item.IsActive ? SharedLocalizer["Yes"] : SharedLocalizer["No"])
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="@SharedLocalizer["Edit"]"><i class="bi bi-pencil"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            </div>
+                            <div class="template-card-preview">
+                                <code>@item.MessageBody</code>
+                            </div>
+                            <div class="template-card-meta">
+                                <span><i class="bi bi-clock"></i> @item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="template-card-actions">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm" title="@SharedLocalizer["Edit"]">
+                                <i class="bi bi-pencil"></i> @SharedLocalizer["Edit"]
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm btn-view-template" title="@SharedLocalizer["View Details"]"
+                                    data-id="@item.Id"
+                                    data-name="@item.Name"
+                                    data-message="@item.MessageBody"
+                                    data-trigger="@(item.TriggerType?.ToString() ?? "")"
+                                    data-isactive="@item.IsActive"
+                                    data-created="@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")">
+                                <i class="bi bi-eye"></i> @SharedLocalizer["View"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
+
+@* Details Modal *@
+<div class="modal fade" id="templateDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"><i class="bi bi-whatsapp text-success me-1"></i> <span id="modalName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="detail-label">@SharedLocalizer["Task"]</div>
+                    <div class="detail-value" id="modalTrigger"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="detail-label">@SharedLocalizer["Status"]</div>
+                    <div class="detail-value" id="modalStatus"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="detail-label">@SharedLocalizer["Created"]</div>
+                    <div class="detail-value" id="modalCreated"></div>
+                </div>
+                <div>
+                    <div class="detail-label">@SharedLocalizer["Message Body"]</div>
+                    <div class="template-detail-message" id="modalMessage"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .template-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-solid);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .template-card:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+        border-color: var(--amber);
+    }
+    .template-card-header {
+        padding: 1rem 1.25rem 0.5rem;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+    .template-card-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--charcoal);
+        word-break: break-word;
+    }
+    .template-card-body {
+        padding: 0.25rem 1.25rem 0.75rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .template-card-trigger {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .template-card-preview {
+        background: var(--input-bg);
+        border: 1px solid var(--border-input);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        max-height: 100px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .template-card-preview code {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .template-card-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted-custom);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .template-card-meta i {
+        font-size: 0.7rem;
+    }
+    .template-card-actions {
+        padding: 0.75rem 1.25rem;
+        border-top: 1px solid var(--table-row-border);
+        display: flex;
+        gap: 0.5rem;
+    }
+    .template-card-actions .btn {
+        flex: 1;
+        border-radius: 8px;
+    }
+    .template-detail-message {
+        background: var(--input-bg);
+        border: 1px solid var(--border-input);
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: var(--bs-font-monospace);
+    }
+</style>
+
+<script type="application/json" id="whatsApp-triggerMap">
+    @Json.Serialize(Model.Where(m => m.TriggerType.HasValue)
+        .Select(m => m.TriggerType.Value.ToString()).Distinct()
+        .ToDictionary(k => k, k => SharedLocalizer[k].Value))
+</script>
+
+<script>
+    var triggerMap = JSON.parse(document.getElementById('whatsApp-triggerMap').textContent);
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-view-template');
+        if (!btn) return;
+
+        var id = btn.getAttribute('data-id');
+        var name = btn.getAttribute('data-name');
+        var message = btn.getAttribute('data-message');
+        var trigger = btn.getAttribute('data-trigger');
+        var isActive = btn.getAttribute('data-isactive');
+        var created = btn.getAttribute('data-created');
+
+        document.getElementById('modalName').textContent = name;
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('modalCreated').textContent = created;
+
+        var triggerEl = document.getElementById('modalTrigger');
+        if (trigger) {
+            triggerEl.textContent = triggerMap[trigger] || trigger;
+        } else {
+            triggerEl.textContent = '@SharedLocalizer["Manual"]';
+        }
+
+        var statusEl = document.getElementById('modalStatus');
+        if (isActive === 'True') {
+            statusEl.innerHTML = '<span class="badge-status badge-active">@SharedLocalizer["Active"]</span>';
+        } else {
+            statusEl.innerHTML = '<span class="badge-status badge-expired">@SharedLocalizer["Inactive"]</span>';
+        }
+
+        var modal = new bootstrap.Modal(document.getElementById('templateDetailsModal'));
+        modal.show();
+    });
+</script>

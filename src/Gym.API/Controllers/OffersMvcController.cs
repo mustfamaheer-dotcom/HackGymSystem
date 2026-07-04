@@ -81,6 +81,7 @@ public class OffersMvcController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("edit/{id}")]
     [RequirePermission("Offers.Edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
@@ -185,5 +186,17 @@ public class OffersMvcController : Controller
         }
         TempData["Success"] = _localizer["Offer deleted successfully"].Value;
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("toggle/{id}")]
+    [RequirePermission("Offers.Edit")]
+    public async Task<IActionResult> ToggleStatus(Guid id, bool isActive, CancellationToken cancellationToken)
+    {
+        var result = await _offerService.ToggleActiveAsync(id, isActive, cancellationToken);
+        if (result.IsFailure)
+            return Json(new { success = false, message = result.Message });
+
+        var statusKey = isActive ? "Active" : "Inactive";
+        return Json(new { success = true, message = _localizer[statusKey].Value });
     }
 }

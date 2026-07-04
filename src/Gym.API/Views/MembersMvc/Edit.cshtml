@@ -237,6 +237,27 @@
 </div>
 
 @section Scripts {
+    @{
+        var plansJson = System.Text.Json.JsonSerializer.Serialize(
+            ((IEnumerable<Gym.Domain.Entities.MembershipPlan>)ViewBag.Plans)
+                .Select(p => new {
+                    id = p.Id.ToString(),
+                    price = p.Price,
+                    durationDays = p.DurationDays
+                }).ToList()
+        );
+        var offersJson = System.Text.Json.JsonSerializer.Serialize(
+            ((IEnumerable<dynamic>)ViewBag.OfferList)
+                .Select(o => new {
+                    id = ((object)o.Id).ToString(),
+                    linkedPackageId = o.LinkedPackageId?.ToString(),
+                    offerType = o.OfferType.ToString(),
+                    offerPrice = o.OfferPrice != null ? (decimal?)o.OfferPrice : null
+                }).ToList()
+        );
+    }
+    <script type="application/json" id="membersEdit-plansData">@plansJson</script>
+    <script type="application/json" id="membersEdit-offersData">@offersJson</script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const hasDisease = document.getElementById('HasDisease');
@@ -296,27 +317,8 @@
             const paidInput = document.getElementById('paidAmount');
             const durationInput = document.getElementById('durationMonths');
 
-            @{
-                var plansJson = System.Text.Json.JsonSerializer.Serialize(
-                    ((IEnumerable<Gym.Domain.Entities.MembershipPlan>)ViewBag.Plans)
-                        .Select(p => new {
-                            id = p.Id.ToString(),
-                            price = p.Price,
-                            durationDays = p.DurationDays
-                        }).ToList()
-                );
-                var offersJson = System.Text.Json.JsonSerializer.Serialize(
-                    ((IEnumerable<dynamic>)ViewBag.OfferList)
-                        .Select(o => new {
-                            id = ((object)o.Id).ToString(),
-                            linkedPackageId = o.LinkedPackageId?.ToString(),
-                            offerType = o.OfferType.ToString(),
-                            offerPrice = o.OfferPrice != null ? (decimal?)o.OfferPrice : null
-                        }).ToList()
-                );
-            }
-            var plans = @Html.Raw(plansJson);
-            var offers = @Html.Raw(offersJson);
+            var plans = JSON.parse(document.getElementById('membersEdit-plansData').textContent);
+            var offers = JSON.parse(document.getElementById('membersEdit-offersData').textContent);
 
             function getPlanData(planId) {
                 return plans.find(function(p) { return p.id === planId; });
