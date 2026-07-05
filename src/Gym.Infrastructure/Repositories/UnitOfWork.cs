@@ -2,30 +2,25 @@ using Gym.Domain.Interfaces;
 using Gym.Infrastructure.Data;
 using Gym.Shared.Common;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Gym.Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
     private readonly GymDbContext _context;
+    private readonly IServiceProvider _serviceProvider;
     private IDbContextTransaction? _transaction;
-    private readonly Dictionary<Type, object> _repositories = new();
     private bool _disposed;
 
-    public UnitOfWork(GymDbContext context)
+    public UnitOfWork(GymDbContext context, IServiceProvider serviceProvider)
     {
         _context = context;
+        _serviceProvider = serviceProvider;
     }
 
     public IRepository<T> Repository<T>() where T : BaseEntity
-    {
-        var type = typeof(T);
-        if (!_repositories.ContainsKey(type))
-        {
-            _repositories[type] = new Repository<T>(_context);
-        }
-        return (IRepository<T>)_repositories[type];
-    }
+        => _serviceProvider.GetRequiredService<IRepository<T>>();
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);

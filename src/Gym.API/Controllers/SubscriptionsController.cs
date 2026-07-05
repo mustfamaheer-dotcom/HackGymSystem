@@ -36,7 +36,7 @@ public class SubscriptionsController : BaseController
     {
         var result = await _mediator.Send(query, cancellationToken);
         if (result.IsFailure)
-            return BadRequest(ApiResponse<PaginatedResult<SubscriptionDto>>.Fail(result.Message!));
+            return NotFound(ApiResponse<PaginatedResult<SubscriptionDto>>.Fail(result.Message!));
         return Ok(ApiResponse<PaginatedResult<SubscriptionDto>>.Ok(result.Data!));
     }
 
@@ -57,7 +57,7 @@ public class SubscriptionsController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
-        return Ok(ApiResponse<Guid>.Ok(result.Data!));
+        return CreatedAtAction(nameof(GetById), new { id = result.Data }, ApiResponse<Guid>.Ok(result.Data!));
     }
 
     [HttpPost("{id}/freeze")]

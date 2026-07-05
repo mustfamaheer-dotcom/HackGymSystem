@@ -88,17 +88,15 @@ public class ExcelImportService : IExcelImportService
             .Where(p => p.IsActive)
             .ToListAsync(cancellationToken);
 
-        var existingNationalIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var existingPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var existingPhones = new HashSet<string>(await _memberRepository.Query()
+            .Where(m => !string.IsNullOrEmpty(m.PhoneNumber))
+            .Select(m => m.PhoneNumber)
+            .ToListAsync(cancellationToken), StringComparer.OrdinalIgnoreCase);
 
-        var allMembers = await _memberRepository.GetAllAsync(cancellationToken);
-        foreach (var m in allMembers)
-        {
-            if (!string.IsNullOrEmpty(m.NationalId))
-                existingNationalIds.Add(m.NationalId);
-            if (!string.IsNullOrEmpty(m.PhoneNumber))
-                existingPhones.Add(m.PhoneNumber);
-        }
+        var existingNationalIds = new HashSet<string>(await _memberRepository.Query()
+            .Where(m => !string.IsNullOrEmpty(m.NationalId))
+            .Select(m => m.NationalId)
+            .ToListAsync(cancellationToken), StringComparer.OrdinalIgnoreCase);
 
         var seenNationalIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -297,13 +295,11 @@ public class ExcelImportService : IExcelImportService
             .Where(p => p.IsActive)
             .ToListAsync(cancellationToken);
 
-        var existingPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var allLeads = await _leadRepository.Query().IgnoreQueryFilters().ToListAsync(cancellationToken);
-        foreach (var l in allLeads)
-        {
-            if (!string.IsNullOrEmpty(l.Phone))
-                existingPhones.Add(l.Phone);
-        }
+        var existingPhones = new HashSet<string>(await _leadRepository.Query()
+            .IgnoreQueryFilters()
+            .Where(l => !string.IsNullOrEmpty(l.Phone))
+            .Select(l => l.Phone)
+            .ToListAsync(cancellationToken), StringComparer.OrdinalIgnoreCase);
 
         var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

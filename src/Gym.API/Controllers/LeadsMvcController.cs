@@ -40,7 +40,6 @@ public class LeadsMvcController : Controller
     private readonly IRepository<WhatsAppTemplate> _templateRepo;
     private readonly IRepository<Offer> _offerRepo;
     private readonly IWebHostEnvironment _env;
-    private IReadOnlyList<PlanDto>? _cachedPlans;
 
     public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IExcelImportService excelImportService, IRepository<Lead> leadRepository, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo, IWebHostEnvironment env)
     {
@@ -55,12 +54,8 @@ public class LeadsMvcController : Controller
 
     private async Task<IReadOnlyList<PlanDto>> GetPlansAsync(CancellationToken cancellationToken)
     {
-        if (_cachedPlans == null)
-        {
-            var result = await _mediator.Send(new GetAllPlansQuery { PageSize = int.MaxValue }, cancellationToken);
-            _cachedPlans = result.IsSuccess ? result.Data?.Items ?? [] : [];
-        }
-        return _cachedPlans;
+        var result = await _mediator.Send(new GetAllPlansQuery { PageSize = int.MaxValue }, cancellationToken);
+        return result.IsSuccess ? result.Data?.Items ?? [] : [];
     }
 
     [HttpGet]
@@ -292,6 +287,7 @@ public class LeadsMvcController : Controller
     [RequirePermission("Leads.Create")]
     [HttpPost("import")]
     [ValidateAntiForgeryToken]
+    [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Import Leads"];

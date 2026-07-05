@@ -217,7 +217,7 @@ public static class SeedData
             new { Id = Guid.Parse("B0C1D2E3-F4A5-6789-B012-345678901234"), Key = "GymName", Value = "My Gym", Group = "General", Description = "Gym display name", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("C1D2E3F4-A5B6-7890-C123-456789012345"), Key = "DeviceIP", Value = "192.168.1.201", Group = "Device", Description = "ZKTeco MB2000 IP address", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("D2E3F4A5-B6C7-8901-D234-567890123456"), Key = "DevicePort", Value = "4370", Group = "Device", Description = "ZKTeco MB2000 port", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
-            new { Id = Guid.Parse("E3F4A5B6-C7D8-9012-E345-678901234567"), Key = "BackupPath", Value = "C:\\Backups\\GymManagement", Group = "Backup", Description = "Database backup location", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
+            new { Id = Guid.Parse("E3F4A5B6-C7D8-9012-E345-678901234567"), Key = "BackupPath", Value = "backups", Group = "Backup", Description = "Database backup location", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("F4A5B6C7-D8E9-0123-F456-789012345678"), Key = "WorkingHoursStart", Value = "08:00", Group = "General", Description = "Gym opening time", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("A5B6C7D8-E9F0-1234-A567-890123456789"), Key = "WorkingHoursEnd", Value = "22:00", Group = "General", Description = "Gym closing time", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
 

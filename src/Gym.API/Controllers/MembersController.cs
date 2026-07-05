@@ -44,7 +44,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members"]));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members"]));
 
         return Ok(ApiResponse<PaginatedResult<MemberDto>>.Ok(result.Data!));
     }
@@ -70,7 +70,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Search failed"]));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Search failed"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -85,7 +85,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve expiring members"]));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve expiring members"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -98,7 +98,7 @@ public class MembersController : BaseController
         var result = await _mediator.Send(query, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members with outstanding balance"]));
+            return NotFound(ApiResponse.Fail(result.Message ?? _localizer["Failed to retrieve members with outstanding balance"]));
 
         return Ok(ApiResponse<List<MemberDto>>.Ok(result.Data!));
     }
@@ -112,7 +112,7 @@ public class MembersController : BaseController
         if (result.IsFailure)
             return BadRequest(ApiResponse.Fail(result.Message ?? _localizer["Failed to create member"]));
 
-        return Ok(ApiResponse<Guid>.Ok(result.Data!));
+        return CreatedAtAction(nameof(GetMemberById), new { id = result.Data }, ApiResponse<Guid>.Ok(result.Data!));
     }
 
     [HttpPut("{id}")]
