@@ -18,7 +18,10 @@ public class CaptchaService : ICaptchaService
 
     public async Task<Result> ValidateTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(_secretKey))
+        if (string.IsNullOrEmpty(_secretKey))
+            return Result.Success();
+
+        if (string.IsNullOrEmpty(token))
             return Result.Failure("CAPTCHA verification failed.");
 
         try

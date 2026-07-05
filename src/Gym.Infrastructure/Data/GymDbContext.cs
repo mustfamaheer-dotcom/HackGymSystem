@@ -4,6 +4,7 @@ using Gym.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gym.Infrastructure.Data;
@@ -43,9 +44,8 @@ public class GymDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var serviceProvider = this.GetInfrastructure<IServiceProvider>();
-        var currentUserService = serviceProvider.GetService<ICurrentUserService>();
-        var mediator = serviceProvider.GetService<IMediator>();
+        var currentUserService = this.Database.GetService<ICurrentUserService>();
+        var mediator = this.Database.GetService<IMediator>();
         var userId = currentUserService?.UserId;
 
         foreach (var entry in ChangeTracker.Entries<Shared.Common.BaseEntity>())

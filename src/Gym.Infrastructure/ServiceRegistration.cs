@@ -23,7 +23,8 @@ public static class ServiceRegistration
                     sqlOptions.MigrationsAssembly(typeof(GymDbContext).Assembly.FullName);
                     sqlOptions.EnableRetryOnFailure(3);
                     sqlOptions.CommandTimeout(60);
-                }));
+                })
+                );
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

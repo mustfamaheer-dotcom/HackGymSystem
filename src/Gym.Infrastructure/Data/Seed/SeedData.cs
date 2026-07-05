@@ -6,6 +6,8 @@ namespace Gym.Infrastructure.Data.Seed;
 
 public static class SeedData
 {
+    private static readonly DateTime SeedTimestamp = new(2026, 7, 5, 0, 0, 0, DateTimeKind.Utc);
+
     public static readonly Guid OwnerRoleId = Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF1234567890");
     public static readonly Guid ReceptionistRoleId = Guid.Parse("B2C3D4E5-F6A7-8901-BCDE-F12345678901");
     public static readonly Guid TrainerRoleId = Guid.Parse("C3D4E5F6-A7B8-9012-CDEF-123456789012");
@@ -119,7 +121,7 @@ public static class SeedData
 
     private static void SeedRoles(ModelBuilder builder)
     {
-        var now = DateTime.UtcNow;
+        var now = SeedTimestamp;
         builder.Entity<Role>().HasData(
             new { Id = OwnerRoleId, Name = "Owner", Description = "Full system access", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = ReceptionistRoleId, Name = "Receptionist", Description = "Front desk operations", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
@@ -129,7 +131,7 @@ public static class SeedData
 
     private static void SeedPermissions(ModelBuilder builder)
     {
-        var now = DateTime.UtcNow;
+        var now = SeedTimestamp;
         var data = AllPermissions.Select(p => new
         {
             Id = p.Id,
@@ -145,7 +147,7 @@ public static class SeedData
 
     private static void SeedRolePermissions(ModelBuilder builder)
     {
-        var now = DateTime.UtcNow;
+        var now = SeedTimestamp;
         var rolePermissions = new List<dynamic>();
 
         foreach (var (permId, _, _, _) in AllPermissions)
@@ -210,7 +212,7 @@ public static class SeedData
 
     private static void SeedSettings(ModelBuilder builder)
     {
-        var now = DateTime.UtcNow;
+        var now = SeedTimestamp;
         builder.Entity<Setting>().HasData(
             new { Id = Guid.Parse("B0C1D2E3-F4A5-6789-B012-345678901234"), Key = "GymName", Value = "My Gym", Group = "General", Description = "Gym display name", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = Guid.Parse("C1D2E3F4-A5B6-7890-C123-456789012345"), Key = "DeviceIP", Value = "192.168.1.201", Group = "Device", Description = "ZKTeco MB2000 IP address", IsEncrypted = false, CreatedAt = now, UpdatedAt = (DateTime?)null },
