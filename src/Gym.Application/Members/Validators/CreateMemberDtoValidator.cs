@@ -20,16 +20,15 @@ public class CreateMemberDtoValidator : AbstractValidator<CreateMemberDto>
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage(_localizer["Phone number is required"])
-            .Length(11).WithMessage(_localizer["Phone number must be exactly 11 digits"])
-            .Matches(@"^\d{11}$").WithMessage(_localizer["Phone number must be 11 digits"]);
+            .MinimumLength(7).WithMessage(_localizer["Phone number must be at least 7 digits"])
+            .Matches(@"^\d+$").WithMessage(_localizer["Phone number must contain only digits"]);
 
         RuleFor(x => x.Nationality)
             .MaximumLength(100).WithMessage(_localizer["Nationality must not exceed 100 characters"]);
 
         RuleFor(x => x.NationalId)
             .NotEmpty().WithMessage(_localizer["National ID is required"])
-            .Length(14).WithMessage(_localizer["National ID must be exactly 14 digits"])
-            .Matches(@"^\d{14}$").WithMessage(_localizer["National ID must be 14 digits"]);
+            .MinimumLength(5).WithMessage(_localizer["National ID must be at least 5 characters"]);
 
         RuleFor(x => x.ReferralSource)
             .Must(v => string.IsNullOrEmpty(v) || ValidReferralSources.Contains(v))

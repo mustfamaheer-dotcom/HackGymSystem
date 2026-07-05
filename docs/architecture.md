@@ -71,8 +71,10 @@ Gym.Web             (independent React SPA, consumes Gym.API via HTTP)
 ### Key Interfaces
 
 ```csharp
-IRepository<T>     // Generic repository (GetAll, GetById, Add, Update, Delete)
+IRepository<T>     // Generic repository (GetAll, GetById, Add, Update, Delete, Query)
+ISpecification<T>  // Specification pattern for reusable query definitions
 IUnitOfWork        // Transaction management (SaveChanges, Begin/Commit/Rollback)
+IDomainEvent       // Marker interface for domain events (queue/dispatch in SaveChanges)
 ```
 
 ## Application Layer (`Gym.Application`)
@@ -103,7 +105,11 @@ Dashboard      — Aggregate stats (members, revenue, attendance, activities)
 
 ### Pipeline Behaviour
 
-`ValidationBehavior` wraps MediatR pipeline to automatically run FluentValidation validators before each request handler.
+`ValidationBehavior` wraps MediatR pipeline to automatically run FluentValidation validators before each request handler. Instead of throwing `ValidationException`, it returns `Result<T>.Failure(string[])` for handlers returning `Result<T>`.
+
+### Caching
+
+`ICacheService` wraps `IMemoryCache` with a generic `GetAsync<T>/SetAsync<T>/RemoveAsync<T>` API and configurable TTL (default 10 min). Cache keys are defined in `CacheKeys` static class.
 
 ## Infrastructure Layer (`Gym.Infrastructure`)
 
@@ -116,7 +122,15 @@ Dashboard      — Aggregate stats (members, revenue, attendance, activities)
 
 ### Repository Pattern
 
-`Repository<T>` implements `IRepository<T>`. `UnitOfWork` manages a dictionary of cached repositories and provides transaction scope.
+`Repository<T>` implements `IRepository<T>`. Supports both lambda-based queries and `ISpecification<T>` for reusable query definitions. `UnitOfWork` manages a dictionary of cached repositories and provides transaction scope.
+
+### Domain Events
+
+`BaseEntity` carries a `List<IDomainEvent>`. `GymDbContext.SaveChangesAsync` clears events after persisting. Events are ready for MediatR dispatch in production.
+
+### Health Checks
+
+ASP.NET Core Health Checks registered with `AddDbContextCheck<GymDbContext>()` at `/health`. Includes connectivity check to SQL Server.
 
 ### Authentication
 
@@ -133,7 +147,15 @@ Scoped:   IUnitOfWork → UnitOfWork
 Scoped:   IAuthService → AuthService
 Scoped:   ITokenService → TokenService
 Scoped:   ICurrentUserService → CurrentUserService
+Scoped:   ICacheService → CacheService
+Singleton: IMemoryCache (via AddMemoryCache())
+Hosted:   SeedDataInitializer
+Health:   /health endpoint via MapHealthChecks()
 ```
+
+### Permission Constants
+
+Permissions are defined as `const string` fields in the `Permissions` static class (`Gym.Shared.Common.Permissions`) for compile-time safety instead of magic strings.
 
 ## API Layer (`Gym.API`)
 

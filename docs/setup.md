@@ -72,9 +72,20 @@ Edit `src/Gym.API/appsettings.json`:
 
 ### Default Admin Credentials
 
-| Username | Password |
-|---|---|
-| `admin` | `Admin@123` |
+The admin password must be set via the `Seed:AdminPassword` environment variable
+or user secrets before first run:
+
+```bash
+# Using .NET User Secrets (development)
+dotnet user-secrets set "Seed:AdminPassword" "<your-strong-password>" --project src/Gym.API
+
+# Or environment variable
+setx Seed__AdminPassword "<your-strong-password>"
+```
+
+| Username |
+|---|
+| `admin` |
 
 ## 4. Run Backend
 

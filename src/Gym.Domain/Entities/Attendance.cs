@@ -7,9 +7,7 @@ public class Attendance : BaseEntity
 {
     public Guid MemberId { get; set; }
     public Guid? DeviceId { get; set; }
-    public DateTime Date { get; set; }
-    public TimeSpan Time { get; set; }
-    public DateTime? CheckIn { get; set; }
+    public DateTime CheckIn { get; set; }
     public DateTime? CheckOut { get; set; }
     public bool IsManual { get; set; }
     public AttendanceSyncStatus SyncStatus { get; set; } = AttendanceSyncStatus.Synced;
@@ -19,13 +17,11 @@ public class Attendance : BaseEntity
 
     private Attendance() { }
 
-    public Attendance(Guid memberId, DateTime date, TimeSpan time, bool isManual = false)
+    public Attendance(Guid memberId, DateTime checkIn, bool isManual = false)
     {
         MemberId = memberId;
-        Date = date;
-        Time = time;
+        CheckIn = checkIn;
         IsManual = isManual;
-        CheckIn = date.Date + time;
     }
 
     public void SetCheckOut(DateTime checkOut)

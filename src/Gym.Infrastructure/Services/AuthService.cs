@@ -34,8 +34,22 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        {
+            if (user is not null)
+            {
+                user.FailedLoginAttempts++;
+                if (user.FailedLoginAttempts >= 5)
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
             return Result<AuthResponse>.Failure(_localizer["Invalid username or password."]);
+        }
 
+        if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+            return Result<AuthResponse>.Failure(_localizer["Account is temporarily locked. Please try again later."]);
+
+        user.FailedLoginAttempts = 0;
+        user.LockoutEnd = null;
         user.RecordLogin();
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -71,19 +85,20 @@ public class AuthService : IAuthService
 
     public async Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
+        var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
+
         var user = await _unitOfWork.Repository<User>()
             .Query()
             .Include(u => u.Role)
             .ThenInclude(r => r.RolePermissions)
             .ThenInclude(rp => rp.Permission)
-            .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && u.IsActive, cancellationToken);
+            .FirstOrDefaultAsync(u => u.RefreshToken == tokenHash && u.IsActive, cancellationToken);
 
         if (user is null)
         {
-            var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
             var replayUser = await _unitOfWork.Repository<User>()
                 .Query()
-                .FirstOrDefaultAsync(u => u.PreviousRefreshTokenHash == tokenHash && u.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(u => u.PreviousRefreshTokenHash == tokenHash, cancellationToken);
 
             if (replayUser != null)
             {

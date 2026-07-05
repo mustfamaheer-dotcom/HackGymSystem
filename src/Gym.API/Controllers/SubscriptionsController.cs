@@ -13,6 +13,7 @@ using Gym.Shared.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Gym.API.Controllers;
@@ -107,6 +108,8 @@ public class SubscriptionsController : BaseController
 
 public class FreezeSubscriptionRequest
 {
+    [Required]
+    [RangeAttribute(1, int.MaxValue, ErrorMessage = "Freeze days must be greater than zero")]
     public int FreezeDays { get; set; }
     public string? Reason { get; set; }
 }
@@ -115,8 +118,15 @@ public class RenewSubscriptionRequest
 {
     public Guid? NewPlanId { get; set; }
     public Guid? OfferId { get; set; }
+
+    [Required]
+    [RangeAttribute(0, double.MaxValue, ErrorMessage = "Amount paid must be zero or greater")]
     public decimal AmountPaid { get; set; }
+
+    [Required]
     public PaymentMethod PaymentMethod { get; set; }
+
+    [Required]
     public DateTime StartDate { get; set; }
     public string? AdminSignature { get; set; }
     public string? Notes { get; set; }

@@ -6,6 +6,7 @@ namespace Gym.Application.Common.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
+    where TResponse : class
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 
@@ -31,7 +32,14 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
         if (failures.Count != 0)
         {
             var errors = failures.Select(f => f.ErrorMessage).ToArray();
-            throw new ValidationException(failures);
+            if (typeof(TResponse).IsGenericType && typeof(TResponse).GetGenericTypeDefinition() == typeof(Result<>))
+            {
+                var failureMethod = typeof(Result<>).MakeGenericType(typeof(TResponse).GetGenericArguments()[0])
+                    .GetMethod(nameof(Result<object>.Failure), [typeof(string[])]);
+                if (failureMethod is not null)
+                    return (TResponse)failureMethod.Invoke(null, [new object[] { errors }])!;
+            }
+            return (TResponse)(object)Result.Failure(errors);
         }
 
         return await next();

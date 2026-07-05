@@ -37,7 +37,9 @@ public static class SeedData
     private static readonly Guid PermLeadsConvert = Guid.Parse("D1000006-0000-0000-0000-000000000004");
     private static readonly Guid PermLeadsDelete = Guid.Parse("D1000006-0000-0000-0000-000000000005");
     private static readonly Guid PermAttendanceView = Guid.Parse("D1000007-0000-0000-0000-000000000001");
-    private static readonly Guid PermAttendanceExport = Guid.Parse("D1000007-0000-0000-0000-000000000002");
+    private static readonly Guid PermAttendanceCreate = Guid.Parse("D1000007-0000-0000-0000-000000000002");
+    private static readonly Guid PermAttendanceManage = Guid.Parse("D1000007-0000-0000-0000-000000000003");
+    private static readonly Guid PermAttendanceExport = Guid.Parse("D1000007-0000-0000-0000-000000000004");
     private static readonly Guid PermWhatsAppSend = Guid.Parse("D1000008-0000-0000-0000-000000000001");
     private static readonly Guid PermWhatsAppBroadcast = Guid.Parse("D1000008-0000-0000-0000-000000000002");
     private static readonly Guid PermImportExportImport = Guid.Parse("D1000009-0000-0000-0000-000000000001");
@@ -85,6 +87,8 @@ public static class SeedData
         (PermLeadsConvert, "Leads.Convert", "Convert leads to members", "Leads"),
         (PermLeadsDelete, "Leads.Delete", "Delete leads", "Leads"),
         (PermAttendanceView, "Attendance.View", "View attendance", "Attendance"),
+        (PermAttendanceCreate, "Attendance.Create", "Record attendance (check-in/out)", "Attendance"),
+        (PermAttendanceManage, "Attendance.Manage", "Manage attendance records", "Attendance"),
         (PermAttendanceExport, "Attendance.Export", "Export attendance", "Attendance"),
         (PermWhatsAppSend, "WhatsApp.Send", "Send WhatsApp messages", "WhatsApp"),
         (PermWhatsAppBroadcast, "WhatsApp.Broadcast", "Manual broadcast via WhatsApp", "WhatsApp"),
@@ -108,7 +112,6 @@ public static class SeedData
     public static void Seed(ModelBuilder builder)
     {
         SeedRoles(builder);
-        SeedUsers(builder);
         SeedPermissions(builder);
         SeedRolePermissions(builder);
         SeedSettings(builder);
@@ -121,30 +124,6 @@ public static class SeedData
             new { Id = OwnerRoleId, Name = "Owner", Description = "Full system access", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = ReceptionistRoleId, Name = "Receptionist", Description = "Front desk operations", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = TrainerRoleId, Name = "Trainer", Description = "Trainer limited access", IsSystem = true, IsActive = false, CreatedAt = now, UpdatedAt = (DateTime?)null }
-        );
-    }
-
-    private static void SeedUsers(ModelBuilder builder)
-    {
-        builder.Entity<User>().HasData(
-            new
-            {
-                Id = Guid.Parse("D4E5F6A7-B8C9-0123-DEF4-567890123456"),
-                Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123", workFactor: 11),
-                FullName = "System Administrator",
-                Email = "admin@gym.com",
-                Phone = (string?)null,
-                RoleId = OwnerRoleId,
-                IsActive = true,
-                IsPasswordChangeRequired = true,
-                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                UpdatedAt = (DateTime?)null,
-                RefreshToken = (string?)null,
-                PreviousRefreshTokenHash = (string?)null,
-                RefreshTokenExpiry = (DateTime?)null,
-                LastLoginAt = (DateTime?)null
-            }
         );
     }
 
@@ -192,6 +171,8 @@ public static class SeedData
             PermLeadsConvert,
             PermLeadsDelete,
             PermAttendanceView,
+            PermAttendanceCreate,
+            PermAttendanceManage,
             PermAttendanceExport,
             PermWhatsAppSend,
             PermImportExportImport,

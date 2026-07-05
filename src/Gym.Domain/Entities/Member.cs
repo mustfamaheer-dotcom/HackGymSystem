@@ -37,6 +37,15 @@ public class Member : BaseEntity
 
     public Member(string receiptNumber, string fullName, string phoneNumber, DateTime registrationDate)
     {
+        if (string.IsNullOrWhiteSpace(receiptNumber))
+            throw new ArgumentException("Receipt number is required", nameof(receiptNumber));
+        if (string.IsNullOrWhiteSpace(fullName))
+            throw new ArgumentException("Full name is required", nameof(fullName));
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            throw new ArgumentException("Phone number is required", nameof(phoneNumber));
+        if (registrationDate == default)
+            throw new ArgumentException("Registration date is required", nameof(registrationDate));
+
         ReceiptNumber = receiptNumber;
         FullName = fullName;
         PhoneNumber = phoneNumber;

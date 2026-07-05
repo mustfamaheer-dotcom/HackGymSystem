@@ -102,6 +102,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Create")]
     [HttpPost("create")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateMemberDto dto, IFormFile? imageFile, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Member"];
@@ -201,6 +202,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Edit")]
     [HttpPost("edit/{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UpdateMemberDto dto, IFormFile? imageFile, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Member"];
@@ -254,8 +256,7 @@ public class MembersMvcController : Controller
         var attendances = await _attendanceRepository.Query()
             .Include(a => a.Device)
             .Where(a => a.MemberId == id)
-            .OrderByDescending(a => a.Date)
-            .ThenByDescending(a => a.Time)
+            .OrderByDescending(a => a.CheckIn)
             .Take(50)
             .ToListAsync(cancellationToken);
 
@@ -396,6 +397,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Delete")]
     [HttpPost("delete/{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
         var result = await _memberService.DeleteAsync(id, cancellationToken);
@@ -458,6 +460,7 @@ public class MembersMvcController : Controller
 
     [RequirePermission("Members.Create")]
     [HttpPost("import")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Import Members"];
@@ -588,18 +591,10 @@ public class MembersMvcController : Controller
         sheet.Columns().AdjustToContents();
 
         var fileName = $"Members_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
-        var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
-        Directory.CreateDirectory(exportDir);
-        var filePath = Path.Combine(exportDir, fileName);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         stream.Position = 0;
-
-        await System.IO.File.WriteAllBytesAsync(filePath, stream.ToArray(), cancellationToken);
-        stream.Position = 0;
-
-        TempData["Success"] = string.Format(_localizer["Members exported to {0}"].Value, filePath);
 
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName);

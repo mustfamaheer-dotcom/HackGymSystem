@@ -25,6 +25,8 @@ public class AttendanceDto : IMapFrom<Attendance>
     {
         profile.CreateMap<Attendance, AttendanceDto>()
             .ForMember(d => d.MemberName, opt => opt.MapFrom(s => s.Member.FullName))
-            .ForMember(d => d.DeviceName, opt => opt.MapFrom(s => s.Device != null ? s.Device.Name : null));
+            .ForMember(d => d.DeviceName, opt => opt.MapFrom(s => s.Device != null ? s.Device.Name : null))
+            .ForMember(d => d.Date, opt => opt.MapFrom(s => s.CheckIn.Date))
+            .ForMember(d => d.Time, opt => opt.MapFrom(s => s.CheckIn.TimeOfDay));
     }
 }

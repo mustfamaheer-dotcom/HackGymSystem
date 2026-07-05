@@ -25,5 +25,9 @@ obj/
 .idea/
 .vscode/
 
+# Secrets
+appsettings.Development.json
+appsettings.Production.json
+
 # OpenCode
 .opencode/

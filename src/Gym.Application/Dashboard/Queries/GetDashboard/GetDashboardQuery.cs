@@ -43,7 +43,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             .CountAsync(s => s.Status == SubscriptionStatus.Active, cancellationToken);
 
         var todayCheckIns = await _attendanceRepo.Query()
-            .CountAsync(a => a.Date == today, cancellationToken);
+            .CountAsync(a => a.CheckIn.Date == today, cancellationToken);
 
         var expiringSubs = await _subscriptionRepo.Query()
             .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active, cancellationToken);

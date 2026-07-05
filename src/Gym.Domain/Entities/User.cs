@@ -17,6 +17,8 @@ public class User : BaseEntity
     public string? PreviousRefreshTokenHash { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
     public DateTime? LastLoginAt { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTime? LockoutEnd { get; set; }
 
     public Role Role { get; set; } = null!;
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
@@ -43,9 +45,11 @@ public class User : BaseEntity
     public void UpdateRefreshToken(string? token, DateTime? expiry)
     {
         PreviousRefreshTokenHash = !string.IsNullOrEmpty(RefreshToken)
-            ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(RefreshToken)))
+            ? RefreshToken
             : null;
-        RefreshToken = token;
+        RefreshToken = !string.IsNullOrEmpty(token)
+            ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)))
+            : null;
         RefreshTokenExpiry = expiry;
     }
 

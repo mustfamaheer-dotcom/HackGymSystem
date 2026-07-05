@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.API.Controllers;
 
 [ApiController]
-[IgnoreAntiforgeryToken]
 [Route("api/[controller]")]
+[EnableRateLimiting("Api")]
 public abstract class BaseController : ControllerBase
 {
     protected Guid? CurrentUserId =>

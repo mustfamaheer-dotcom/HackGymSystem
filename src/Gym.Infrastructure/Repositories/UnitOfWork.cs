@@ -1,5 +1,6 @@
 using Gym.Domain.Interfaces;
 using Gym.Infrastructure.Data;
+using Gym.Shared.Common;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Gym.Infrastructure.Repositories;
@@ -16,7 +17,7 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
     }
 
-    public IRepository<T> Repository<T>() where T : class
+    public IRepository<T> Repository<T>() where T : BaseEntity
     {
         var type = typeof(T);
         if (!_repositories.ContainsKey(type))

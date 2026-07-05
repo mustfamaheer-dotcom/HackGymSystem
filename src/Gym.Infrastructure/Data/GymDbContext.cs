@@ -1,17 +1,16 @@
+using System.Text.Json;
+using Gym.Application.Common.Interfaces;
 using Gym.Domain.Entities;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Gym.Infrastructure.Data;
 
 public class GymDbContext : DbContext
 {
     public GymDbContext(DbContextOptions<GymDbContext> options) : base(options) { }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
-    }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
@@ -44,14 +43,90 @@ public class GymDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var serviceProvider = this.GetInfrastructure<IServiceProvider>();
+        var currentUserService = serviceProvider.GetService<ICurrentUserService>();
+        var mediator = serviceProvider.GetService<IMediator>();
+        var userId = currentUserService?.UserId;
+
         foreach (var entry in ChangeTracker.Entries<Shared.Common.BaseEntity>())
         {
+            if (entry.State == EntityState.Added && entry.Entity.CreatedAt == default)
+                entry.Entity.CreatedAt = DateTime.UtcNow;
+
             if (entry.State == EntityState.Modified)
-            {
                 entry.Entity.MarkUpdated();
+        }
+
+        var domainEntities = ChangeTracker.Entries<Shared.Common.BaseEntity>()
+            .Where(e => e.Entity.DomainEvents.Count > 0)
+            .ToList();
+
+        var events = domainEntities
+            .SelectMany(e => e.Entity.DomainEvents)
+            .ToList();
+
+        domainEntities.ForEach(e => e.Entity.ClearDomainEvents());
+
+        var auditEntries = new List<(string Action, string EntityType, string? EntityId, string? OldValues, string? NewValues)>();
+
+        if (userId.HasValue)
+        {
+            foreach (var entry in ChangeTracker.Entries<Shared.Common.BaseEntity>())
+            {
+                if (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted)
+                {
+                    var oldValues = entry.State == EntityState.Modified
+                        ? JsonSerializer.Serialize(entry.OriginalValues.ToObject())
+                        : null;
+                    var newValues = entry.State != EntityState.Deleted
+                        ? JsonSerializer.Serialize(entry.CurrentValues.ToObject())
+                        : null;
+
+                    auditEntries.Add((
+                        entry.State.ToString(),
+                        entry.Entity.GetType().Name,
+                        entry.Entity.Id.ToString(),
+                        oldValues,
+                        newValues
+                    ));
+                }
             }
         }
 
-        return await base.SaveChangesAsync(cancellationToken);
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (auditEntries.Count > 0 && AuditLogs is not null)
+        {
+            foreach (var (action, entityType, entityId, oldValues, newValues) in auditEntries)
+            {
+                AuditLogs.Add(new AuditLog(
+                    userId,
+                    action,
+                    entityType,
+                    entityId,
+                    oldValues,
+                    newValues,
+                    null
+                ));
+            }
+            await base.SaveChangesAsync(cancellationToken);
+        }
+
+        foreach (var @event in events)
+        {
+            if (mediator is not null)
+            {
+                try
+                {
+                    await mediator.Publish(@event, cancellationToken);
+                }
+                catch
+                {
+                    // Log and swallow to avoid interrupting the main operation
+                }
+            }
+        }
+
+        return result;
     }
 }

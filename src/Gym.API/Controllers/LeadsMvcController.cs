@@ -128,6 +128,7 @@ public class LeadsMvcController : Controller
 
     [HttpPost("create")]
     [RequirePermission("Leads.Create")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateLeadCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["New Lead"];
@@ -163,6 +164,7 @@ public class LeadsMvcController : Controller
 
     [HttpPost("edit/{id}")]
     [RequirePermission("Leads.Edit")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UpdateLeadCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Edit Lead"];
@@ -224,6 +226,7 @@ public class LeadsMvcController : Controller
 
     [HttpPost("delete/{id}")]
     [RequirePermission("Leads.Delete")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeleteLeadCommand(id), cancellationToken);
@@ -253,6 +256,7 @@ public class LeadsMvcController : Controller
 
     [HttpPost("convert/{id}")]
     [RequirePermission("Leads.Convert")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Convert(Guid id, ConvertToMemberCommand command, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Convert Lead to Member"];
@@ -287,6 +291,7 @@ public class LeadsMvcController : Controller
 
     [RequirePermission("Leads.Create")]
     [HttpPost("import")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken)
     {
         ViewData["Title"] = _localizer["Import Leads"];
@@ -318,7 +323,6 @@ public class LeadsMvcController : Controller
     {
         var leads = await _leadRepository.Query()
             .Include(l => l.InterestedPackage)
-            .IgnoreQueryFilters()
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(cancellationToken);
 
@@ -368,24 +372,17 @@ public class LeadsMvcController : Controller
         sheet.Columns().AdjustToContents();
 
         var fileName = $"Leads_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
-        var exportDir = Path.Combine(_env.ContentRootPath, "Exported Excel Sheets");
-        Directory.CreateDirectory(exportDir);
-        var filePath = Path.Combine(exportDir, fileName);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         stream.Position = 0;
-
-        await System.IO.File.WriteAllBytesAsync(filePath, stream.ToArray(), cancellationToken);
-        stream.Position = 0;
-
-        TempData["Success"] = string.Format(_localizer["Leads exported to {0}"].Value, filePath);
 
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
     [HttpPost("add-follow-up/{leadId}")]
     [RequirePermission("Leads.Edit")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddFollowUp(Guid leadId, AddFollowUpCommand command, CancellationToken cancellationToken)
     {
         if (leadId != command.LeadId)

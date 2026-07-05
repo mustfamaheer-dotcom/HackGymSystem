@@ -35,6 +35,21 @@ public class Subscription : BaseEntity
         decimal amountPaid, PaymentMethod paymentMethod, DateTime startDate, DateTime expirationDate,
         Guid? offerId = null)
     {
+        if (string.IsNullOrWhiteSpace(receiptNumber))
+            throw new ArgumentException("Receipt number is required", nameof(receiptNumber));
+        if (totalValue <= 0)
+            throw new ArgumentException("Total subscription value must be greater than zero", nameof(totalValue));
+        if (amountPaid < 0)
+            throw new ArgumentException("Amount paid cannot be negative", nameof(amountPaid));
+        if (amountPaid > totalValue)
+            throw new ArgumentException("Amount paid cannot exceed total subscription value", nameof(amountPaid));
+        if (startDate >= expirationDate)
+            throw new ArgumentException("Start date must be before expiration date", nameof(startDate));
+        if (memberId == Guid.Empty)
+            throw new ArgumentException("Member is required", nameof(memberId));
+        if (planId == Guid.Empty)
+            throw new ArgumentException("Plan is required", nameof(planId));
+
         ReceiptNumber = receiptNumber;
         MemberId = memberId;
         PlanId = planId;
@@ -88,6 +103,9 @@ public class Subscription : BaseEntity
 
     public void RecordPayment(decimal amount)
     {
+        if (amount <= 0)
+            throw new ArgumentException("Payment amount must be greater than zero", nameof(amount));
+
         AmountPaid += amount;
         RemainingBalance = TotalSubscriptionValue - AmountPaid;
         if (RemainingBalance < 0)

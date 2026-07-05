@@ -27,7 +27,7 @@ public class GetMemberAttendancesQueryHandler : IRequestHandler<GetMemberAttenda
         var attendances = await _attendanceRepository.Query()
             .Include(a => a.Member)
             .Where(a => a.MemberId == request.MemberId)
-            .OrderByDescending(a => a.Date)
+            .OrderByDescending(a => a.CheckIn)
             .ProjectTo<AttendanceDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

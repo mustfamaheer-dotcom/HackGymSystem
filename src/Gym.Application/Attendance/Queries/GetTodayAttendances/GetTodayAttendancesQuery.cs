@@ -28,8 +28,8 @@ public class GetTodayAttendancesQueryHandler : IRequestHandler<GetTodayAttendanc
 
         var attendances = await _attendanceRepository.Query()
             .Include(a => a.Member)
-            .Where(a => a.Date == today)
-            .OrderByDescending(a => a.Time)
+            .Where(a => a.CheckIn.Date == today)
+            .OrderByDescending(a => a.CheckIn)
             .ProjectTo<AttendanceDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

@@ -464,6 +464,6 @@ public class MemberService : IMemberService
 
     private static string GenerateReceiptNumber()
     {
-        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        return $"{DateTime.UtcNow:yyyyMMddHHmmssfff}{Random.Shared.Next(1000, 9999)}";
     }
 }

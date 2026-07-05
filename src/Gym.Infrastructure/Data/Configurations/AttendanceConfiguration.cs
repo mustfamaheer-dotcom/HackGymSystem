@@ -12,15 +12,15 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Time)
+        builder.Property(x => x.CheckIn)
             .IsRequired();
 
         builder.Property(x => x.SyncStatus)
             .HasConversion<string>()
             .HasMaxLength(20);
 
-        builder.HasIndex(x => new { x.MemberId, x.Date });
-        builder.HasIndex(x => new { x.DeviceId, x.Date });
+        builder.HasIndex(x => new { x.MemberId, x.CheckIn });
+        builder.HasIndex(x => new { x.DeviceId, x.CheckIn });
 
         builder.HasOne(a => a.Member)
             .WithMany(m => m.Attendances)

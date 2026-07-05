@@ -14,6 +14,39 @@ namespace Gym.Infrastructure.Services;
 
 public class ExcelImportService : IExcelImportService
 {
+    private static readonly Dictionary<string, int> MemberColumns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["FullName"] = 1,
+        ["PhoneNumber"] = 2,
+        ["NationalId"] = 3,
+        ["Nationality"] = 4,
+        ["Company"] = 5,
+        ["Address"] = 6,
+        ["Weight"] = 7,
+        ["HasDisease"] = 8,
+        ["DiseaseType"] = 9,
+        ["ReferralSource"] = 10,
+        ["PlanName"] = 11,
+        ["SubscriptionPrice"] = 12,
+        ["PaidAmount"] = 13,
+        ["Duration"] = 14,
+        ["FreeMonths"] = 15,
+        ["FreezeDays"] = 16,
+        ["StartDate"] = 17,
+        ["PaymentMethod"] = 18,
+    };
+
+    private static readonly Dictionary<string, int> LeadColumns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Name"] = 1,
+        ["Phone"] = 2,
+        ["Email"] = 3,
+        ["Gender"] = 4,
+        ["Source"] = 5,
+        ["PlanName"] = 6,
+        ["Notes"] = 7,
+    };
+
     private readonly IMemberRepository _memberRepository;
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Subscription> _subscriptionRepository;
@@ -83,24 +116,24 @@ public class ExcelImportService : IExcelImportService
 
             try
             {
-                var fullName = GetCellString(row, 1);
-                var phoneNumber = GetCellString(row, 2);
-                var nationalId = GetCellString(row, 3);
-                var nationality = GetCellString(row, 4);
-                var company = GetCellString(row, 5);
-                var address = GetCellString(row, 6);
-                var weightStr = GetCellString(row, 7);
-                var hasDiseaseStr = GetCellString(row, 8);
-                var diseaseType = GetCellString(row, 9);
-                var referralSource = GetCellString(row, 10);
-                var planName = GetCellString(row, 11);
-                var subscriptionPriceStr = GetCellString(row, 12);
-                var paidAmountStr = GetCellString(row, 13);
-                var durationStr = GetCellString(row, 14);
-                var freeMonthsStr = GetCellString(row, 15);
-                var freezeDaysStr = GetCellString(row, 16);
-                var startDateStr = GetCellString(row, 17);
-                var paymentMethodStr = GetCellString(row, 18);
+                var fullName = GetCellString(row, MemberColumns["FullName"]);
+                var phoneNumber = GetCellString(row, MemberColumns["PhoneNumber"]);
+                var nationalId = GetCellString(row, MemberColumns["NationalId"]);
+                var nationality = GetCellString(row, MemberColumns["Nationality"]);
+                var company = GetCellString(row, MemberColumns["Company"]);
+                var address = GetCellString(row, MemberColumns["Address"]);
+                var weightStr = GetCellString(row, MemberColumns["Weight"]);
+                var hasDiseaseStr = GetCellString(row, MemberColumns["HasDisease"]);
+                var diseaseType = GetCellString(row, MemberColumns["DiseaseType"]);
+                var referralSource = GetCellString(row, MemberColumns["ReferralSource"]);
+                var planName = GetCellString(row, MemberColumns["PlanName"]);
+                var subscriptionPriceStr = GetCellString(row, MemberColumns["SubscriptionPrice"]);
+                var paidAmountStr = GetCellString(row, MemberColumns["PaidAmount"]);
+                var durationStr = GetCellString(row, MemberColumns["Duration"]);
+                var freeMonthsStr = GetCellString(row, MemberColumns["FreeMonths"]);
+                var freezeDaysStr = GetCellString(row, MemberColumns["FreezeDays"]);
+                var startDateStr = GetCellString(row, MemberColumns["StartDate"]);
+                var paymentMethodStr = GetCellString(row, MemberColumns["PaymentMethod"]);
 
                 var errors = new List<string>();
 
@@ -113,11 +146,11 @@ public class ExcelImportService : IExcelImportService
 
                 if (string.IsNullOrWhiteSpace(phoneNumber))
                     errors.Add(_localizer["Phone number is required"]);
-                else if (phoneNumber.Length != 11 || !phoneNumber.All(char.IsDigit))
-                    errors.Add(_localizer["Phone number must be exactly 11 digits"]);
+                else if (phoneNumber.Length < 7 || !phoneNumber.All(char.IsDigit))
+                    errors.Add(_localizer["Phone number must be at least 7 digits and contain only numbers"]);
 
-                if (!string.IsNullOrEmpty(nationalId) && (nationalId.Length != 14 || !nationalId.All(char.IsDigit)))
-                    errors.Add(_localizer["National ID must be exactly 14 digits"]);
+                if (!string.IsNullOrEmpty(nationalId) && nationalId.Length < 5)
+                    errors.Add(_localizer["National ID must be at least 5 characters"]);
 
                 var hasDisease = !string.IsNullOrEmpty(hasDiseaseStr) &&
                     (hasDiseaseStr.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
@@ -285,13 +318,13 @@ public class ExcelImportService : IExcelImportService
 
             try
             {
-                var name = GetCellString(row, 1);
-                var phone = GetCellString(row, 2);
-                var email = GetCellString(row, 3);
-                var genderStr = GetCellString(row, 4);
-                var sourceStr = GetCellString(row, 5);
-                var planName = GetCellString(row, 6);
-                var notes = GetCellString(row, 7);
+                var name = GetCellString(row, LeadColumns["Name"]);
+                var phone = GetCellString(row, LeadColumns["Phone"]);
+                var email = GetCellString(row, LeadColumns["Email"]);
+                var genderStr = GetCellString(row, LeadColumns["Gender"]);
+                var sourceStr = GetCellString(row, LeadColumns["Source"]);
+                var planName = GetCellString(row, LeadColumns["PlanName"]);
+                var notes = GetCellString(row, LeadColumns["Notes"]);
 
                 var errors = new List<string>();
 
@@ -303,8 +336,8 @@ public class ExcelImportService : IExcelImportService
 
                 if (string.IsNullOrWhiteSpace(phone))
                     errors.Add(_localizer["Phone number is required"]);
-                else if (phone.Length != 11 || !phone.All(char.IsDigit))
-                    errors.Add(_localizer["Phone number must be exactly 11 digits"]);
+                else if (phone.Length < 7 || !phone.All(char.IsDigit))
+                    errors.Add(_localizer["Phone number must be at least 7 digits and contain only numbers"]);
 
                 if (!string.IsNullOrEmpty(email) && !email.Contains('@'))
                     errors.Add(_localizer["Email is not valid"]);
@@ -370,10 +403,8 @@ public class ExcelImportService : IExcelImportService
         return cell.IsEmpty() ? string.Empty : cell.GetString().Trim();
     }
 
-    private static int _receiptCounter = 0;
     private static string GenerateReceiptNumber()
     {
-        var seq = Interlocked.Increment(ref _receiptCounter);
-        return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + seq.ToString("D4");
+        return $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
     }
 }

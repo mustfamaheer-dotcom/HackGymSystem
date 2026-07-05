@@ -41,10 +41,9 @@ public class CreateManualAttendanceCommandHandler : IRequestHandler<CreateManual
         if (!memberExists)
             return Result<Guid>.Failure(_localizer["Member not found"]);
 
-        var attendance = new Attendance(request.MemberId, request.Date, request.Time, true);
+        var checkIn = request.CheckIn ?? (request.Date + request.Time);
+        var attendance = new Attendance(request.MemberId, checkIn, true);
 
-        if (request.CheckIn.HasValue)
-            attendance.CheckIn = request.CheckIn.Value;
         if (request.CheckOut.HasValue)
             attendance.CheckOut = request.CheckOut.Value;
         if (request.DeviceId.HasValue)

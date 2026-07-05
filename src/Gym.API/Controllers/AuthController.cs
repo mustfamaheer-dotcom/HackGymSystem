@@ -6,7 +6,9 @@ using Gym.Application.Users.Commands.ChangePassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Gym.API.Controllers;
 
@@ -15,18 +17,27 @@ public class AuthController : BaseController
     private readonly IAuthService _authService;
     private readonly IStringLocalizer<SharedResources> _localizer;
     private readonly IMediator _mediator;
+    private readonly ICaptchaService _captchaService;
 
-    public AuthController(IAuthService authService, IStringLocalizer<SharedResources> localizer, IMediator mediator)
+    public AuthController(IAuthService authService, IStringLocalizer<SharedResources> localizer,
+        IMediator mediator, ICaptchaService captchaService)
     {
         _authService = authService;
         _localizer = localizer;
         _mediator = mediator;
+        _captchaService = captchaService;
     }
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
+    [EnableRateLimiting("Login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
+        var captchaResult = await _captchaService.ValidateTokenAsync(request.CaptchaToken, cancellationToken);
+        if (captchaResult.IsFailure)
+            return Unauthorized(ApiResponse.Fail(_localizer["CAPTCHA verification failed. Please try again."]));
+
         var result = await _authService.LoginAsync(request.Username, request.Password, cancellationToken);
         if (result.IsFailure)
             return Unauthorized(ApiResponse.Fail(result.Message ?? _localizer["Login failed"]));
@@ -53,7 +64,6 @@ public class AuthController : BaseController
 
         return Ok(ApiResponse<object>.Ok(new
         {
-            response.AccessToken,
             response.ExpiresAt,
             response.User
         }));
@@ -93,7 +103,6 @@ public class AuthController : BaseController
 
         return Ok(ApiResponse<object>.Ok(new
         {
-            response.AccessToken,
             response.ExpiresAt,
             response.User
         }));
@@ -147,17 +156,27 @@ public class AuthController : BaseController
 
 public class LoginRequest
 {
+    [Required(ErrorMessage = "Username is required")]
     public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required")]
     public string Password { get; set; } = string.Empty;
+
+    public string CaptchaToken { get; set; } = string.Empty;
 }
 
 public class RefreshTokenRequest
 {
+    [Required(ErrorMessage = "Refresh token is required")]
     public string RefreshToken { get; set; } = string.Empty;
 }
 
 public class ChangePasswordRequest
 {
+    [Required(ErrorMessage = "Current password is required")]
     public string CurrentPassword { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "New password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
     public string NewPassword { get; set; } = string.Empty;
 }

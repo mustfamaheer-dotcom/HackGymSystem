@@ -26,9 +26,7 @@ public static class ServiceRegistration
                 }));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
         services.AddScoped<IMemberRepository, MemberRepository>();
 
         services.AddScoped<ITokenService, TokenService>();
@@ -38,6 +36,8 @@ public static class ServiceRegistration
         services.AddScoped<IOfferService, OfferService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
+        services.AddScoped<ICaptchaService, CaptchaService>();
+
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         return services;

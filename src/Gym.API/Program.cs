@@ -1,15 +1,20 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Gym.API.Middleware;
 using Gym.API;
 using Gym.API.Services;
 using Gym.Application;
+using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
+using Gym.Infrastructure.Security;
+using Gym.Infrastructure.Services;
 using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -115,9 +120,40 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ReceiptPdfService>();
 builder.Services.AddHostedService<Gym.Infrastructure.Data.Seed.SeedDataInitializer>();
+builder.Services.AddHealthChecks().AddDbContextCheck<Gym.Infrastructure.Data.GymDbContext>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, CacheService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("Login", config =>
+    {
+        config.PermitLimit = 5;
+        config.Window = TimeSpan.FromMinutes(1);
+        config.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("Api", config =>
+    {
+        config.PermitLimit = 100;
+        config.Window = TimeSpan.FromMinutes(1);
+        config.QueueLimit = 0;
+    });
+});
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Application-layer service registrations (composition root)
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
+builder.Services.AddScoped<IOfferService, OfferService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -164,6 +200,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseRateLimiter();
+
 app.UseCors("AllowFrontend");
 
 app.UseRequestLocalization();
@@ -185,6 +223,7 @@ app.Use(async (context, next) =>
 app.UseStaticFiles();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.MapControllerRoute(
     name: "default",

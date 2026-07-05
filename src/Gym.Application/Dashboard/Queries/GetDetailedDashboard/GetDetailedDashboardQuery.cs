@@ -67,11 +67,11 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
         var expiringThisWeek = await subscriptionQuery
             .CountAsync(s => s.ExpirationDate <= now.AddDays(7) && s.ExpirationDate > now && s.Status == SubscriptionStatus.Active, cancellationToken);
 
-        var todayAttendance = await attendanceQuery.CountAsync(a => a.Date == today, cancellationToken);
-        var weekAttendance = await attendanceQuery.CountAsync(a => a.Date >= weekStart, cancellationToken);
-        var monthAttendance = await attendanceQuery.CountAsync(a => a.Date >= monthStart, cancellationToken);
+        var todayAttendance = await attendanceQuery.CountAsync(a => a.CheckIn.Date == today, cancellationToken);
+        var weekAttendance = await attendanceQuery.CountAsync(a => a.CheckIn >= weekStart, cancellationToken);
+        var monthAttendance = await attendanceQuery.CountAsync(a => a.CheckIn >= monthStart, cancellationToken);
         var currentlyCheckedIn = await attendanceQuery
-            .CountAsync(a => a.Date == today && a.CheckOut == null, cancellationToken);
+            .CountAsync(a => a.CheckIn.Date == today && a.CheckOut == null, cancellationToken);
 
         var avgDailyThisMonth = Math.Round((double)monthAttendance / Math.Max(now.Day, 1), 1);
 
@@ -92,21 +92,20 @@ public class GetDetailedDashboardQueryHandler : IRequestHandler<GetDetailedDashb
 
         var recentActivities = await attendanceQuery
             .Include(a => a.Member)
-            .OrderByDescending(a => a.Date)
-            .ThenByDescending(a => a.Time)
+            .OrderByDescending(a => a.CheckIn)
             .Take(15)
             .Select(a => new RecentActivityDto
             {
                 Type = a.IsManual ? "manual" : "checkin",
                 Description = $"{a.Member.FullName} - {(a.CheckOut == null ? "Checked in" : "Checked out")}",
-                Timestamp = a.Date
+                Timestamp = a.CheckIn
             })
             .ToListAsync(cancellationToken);
 
         var last7Days = Enumerable.Range(0, 7).Select(i => today.AddDays(-6 + i)).ToList();
         var dailyAttendanceData = await attendanceQuery
-            .Where(a => a.Date >= last7Days[0])
-            .GroupBy(a => a.Date)
+            .Where(a => a.CheckIn >= last7Days[0])
+            .GroupBy(a => a.CheckIn.Date)
             .Select(g => new { Date = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
         var dailyAttendanceTrend = last7Days.Select(d => new DailyStatDto

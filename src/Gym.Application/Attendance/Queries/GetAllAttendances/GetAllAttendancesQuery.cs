@@ -27,7 +27,7 @@ public class GetAllAttendancesQueryHandler : IRequestHandler<GetAllAttendancesQu
     {
         var query = _attendanceRepository.Query()
             .Include(a => a.Member)
-            .OrderByDescending(a => a.Date);
+            .OrderByDescending(a => a.CheckIn);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

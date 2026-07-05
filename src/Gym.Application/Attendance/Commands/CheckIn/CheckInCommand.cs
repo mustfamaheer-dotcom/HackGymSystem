@@ -38,8 +38,13 @@ public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid
         if (!memberExists)
             return Result<Guid>.Failure(_localizer["Member not found"]);
 
+        var existingToday = await _attendanceRepository.AnyAsync(
+            a => a.MemberId == request.MemberId && a.CheckIn.Date == DateTime.UtcNow.Date, cancellationToken);
+        if (existingToday)
+            return Result<Guid>.Failure(_localizer["Member already checked in today"]);
+
         var now = DateTime.UtcNow;
-        var attendance = new Attendance(request.MemberId, now.Date, now.TimeOfDay, request.IsManual);
+        var attendance = new Attendance(request.MemberId, now, request.IsManual);
 
         if (request.DeviceId.HasValue)
             attendance.AssignDevice(request.DeviceId.Value);

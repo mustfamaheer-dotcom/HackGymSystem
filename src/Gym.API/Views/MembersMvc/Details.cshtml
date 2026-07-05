@@ -231,9 +231,9 @@
                             var a = attendances[i];
                             <tr>
                                 <td>@(i + 1)</td>
-                                <td>@a.Date.ToString("dd/MM/yyyy")</td>
-                                <td>@a.Time</td>
-                                <td>@(a.CheckIn?.ToString("HH:mm") ?? "-")</td>
+                                <td>@a.CheckIn.ToString("dd/MM/yyyy")</td>
+                                <td>@a.CheckIn.ToString("HH:mm")</td>
+                                <td>@a.CheckIn.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>@(a.CheckOut?.ToString("HH:mm") ?? "-")</td>
                                 <td>@(a.Device?.Name ?? "-")</td>
                             </tr>

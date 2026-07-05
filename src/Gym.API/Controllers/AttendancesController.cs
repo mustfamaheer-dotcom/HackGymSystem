@@ -69,7 +69,7 @@ public class AttendancesController : BaseController
     }
 
     [HttpPost("check-in")]
-    [RequirePermission("Attendance.View")]
+    [RequirePermission("Attendance.Create")]
     public async Task<IActionResult> CheckIn([FromBody] CheckInCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -80,7 +80,7 @@ public class AttendancesController : BaseController
     }
 
     [HttpPost("check-out")]
-    [RequirePermission("Attendance.View")]
+    [RequirePermission("Attendance.Create")]
     public async Task<IActionResult> CheckOut([FromBody] CheckOutCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -91,7 +91,7 @@ public class AttendancesController : BaseController
     }
 
     [HttpPost("manual")]
-    [RequirePermission("Attendance.View")]
+    [RequirePermission("Attendance.Manage")]
     public async Task<IActionResult> CreateManual([FromBody] CreateManualAttendanceCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);

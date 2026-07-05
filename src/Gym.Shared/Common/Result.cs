@@ -45,4 +45,7 @@ public class Result
 
     public static Result Failure(string message, params string[] errors) =>
         new(false, message, errors);
+
+    public static Result Failure(string[] errors) =>
+        new(false, errors.Length > 0 ? string.Join("; ", errors) : "An error occurred", errors);
 }
