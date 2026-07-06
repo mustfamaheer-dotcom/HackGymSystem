@@ -203,7 +203,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-// app.UseRateLimiter();
+app.UseRateLimiter();
 
 app.UseCors("AllowFrontend");
 

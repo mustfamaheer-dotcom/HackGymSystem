@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Gym.API.Filters;
+using Gym.API.Hubs;
 using Gym.Application.Attendances.Commands.CheckIn;
 using Gym.Application.Attendances.Commands.CheckOut;
 using Gym.Application.Common.DTOs;
@@ -10,12 +11,15 @@ using Gym.Shared.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 
 namespace Gym.API.Controllers;
 
 [AllowAnonymous]
 [DeviceApiKey]
+[DisableRateLimiting]
 public class ZKTecoAttendanceController : BaseController
 {
     private readonly IMediator _mediator;
@@ -23,19 +27,25 @@ public class ZKTecoAttendanceController : BaseController
     private readonly IRepository<Device> _deviceRepo;
     private readonly IOptions<ZKTecoSettings> _zktecoConfig;
     private readonly IRepository<Attendance> _attendanceRepo;
+    private readonly IHubContext<AttendanceHub> _hubContext;
+    private readonly IZKTecoBridgeClient _bridgeClient;
 
     public ZKTecoAttendanceController(
         IMediator mediator,
         IDeviceMemberMappingRepository mappingRepo,
         IRepository<Device> deviceRepo,
         IOptions<ZKTecoSettings> zktecoConfig,
-        IRepository<Attendance> attendanceRepo)
+        IRepository<Attendance> attendanceRepo,
+        IHubContext<AttendanceHub> hubContext,
+        IZKTecoBridgeClient bridgeClient)
     {
         _mediator = mediator;
         _mappingRepo = mappingRepo;
         _deviceRepo = deviceRepo;
         _zktecoConfig = zktecoConfig;
         _attendanceRepo = attendanceRepo;
+        _hubContext = hubContext;
+        _bridgeClient = bridgeClient;
     }
 
     [HttpPost("push")]
@@ -52,6 +62,15 @@ public class ZKTecoAttendanceController : BaseController
             var result = await _mediator.Send(new CheckInCommand(mapping.MemberId, false, device?.Id), ct);
             if (result.IsFailure)
                 return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
+
+            await _hubContext.Clients.All.SendAsync("AttendancePushed", new
+            {
+                memberId = mapping.MemberId,
+                timestamp = request.Timestamp,
+                type = "check-in",
+                attendanceId = result.Data!
+            }, ct);
+
             return Ok(ApiResponse<Guid>.Ok(result.Data!));
         }
         else
@@ -64,8 +83,29 @@ public class ZKTecoAttendanceController : BaseController
             var result = await _mediator.Send(new CheckOutCommand(existing.Id, device?.Id), ct);
             if (result.IsFailure)
                 return BadRequest(ApiResponse.Fail(result.Message!));
+
+            await _hubContext.Clients.All.SendAsync("AttendancePushed", new
+            {
+                memberId = mapping.MemberId,
+                timestamp = request.Timestamp,
+                type = "check-out",
+                attendanceId = existing.Id
+            }, ct);
+
             return Ok(ApiResponse.Ok("Check-out recorded"));
         }
+    }
+
+    [HttpGet("health")]
+    public async Task<IActionResult> Health(CancellationToken ct)
+    {
+        var bridgeOk = await _bridgeClient.CheckHealthAsync(ct);
+        return Ok(new
+        {
+            service = "ZKTeco Attendance",
+            bridgeConnected = bridgeOk,
+            timestamp = DateTime.UtcNow
+        });
     }
 }
 

@@ -16,6 +16,7 @@ public class AttendancePollingWorker : BackgroundService
     private readonly HttpClient _httpClient;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> _processedLogs = new();
     private readonly TimeSpan _dedupWindow = TimeSpan.FromHours(1);
+    private DateTime _lastLogTimestamp = DateTime.MinValue;
 
     public AttendancePollingWorker(
         ZKDeviceManager deviceManager,
@@ -46,11 +47,18 @@ public class AttendancePollingWorker : BackgroundService
                 }
 
                 var events = _deviceManager.GetNewLogs();
-                _logger.LogDebug("Polled {Count} attendance events", events.Count);
+                _logger.LogDebug("Polled {Count} attendance events (last timestamp: {Last})", events.Count, _lastLogTimestamp);
 
+                var maxTimestamp = _lastLogTimestamp;
                 var now = DateTime.UtcNow;
                 foreach (var evt in events)
                 {
+                    if (evt.Timestamp <= _lastLogTimestamp)
+                        continue;
+
+                    if (evt.Timestamp > maxTimestamp)
+                        maxTimestamp = evt.Timestamp;
+
                     var dedupKey = $"{evt.EnrollmentId}_{evt.Timestamp:O}_{evt.Direction}";
                     if (_processedLogs.TryGetValue(dedupKey, out var cachedTime) && (now - cachedTime) < _dedupWindow)
                         continue;
@@ -66,6 +74,8 @@ public class AttendancePollingWorker : BackgroundService
                         _logger.LogError(ex, "Failed to process attendance event for {EnrollmentId}", evt.EnrollmentId);
                     }
                 }
+
+                _lastLogTimestamp = maxTimestamp;
 
                 // Evict stale keys periodically (every ~300 events)
                 if (_processedLogs.Count > 1000)
@@ -130,6 +140,7 @@ public class AttendancePollingWorker : BackgroundService
 
         if (_deviceManager.Connect())
         {
+            _lastLogTimestamp = DateTime.MinValue;
             _logger.LogInformation("Reconnected successfully after {Delay}", delay);
         }
     }
