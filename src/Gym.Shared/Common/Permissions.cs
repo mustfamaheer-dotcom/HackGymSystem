@@ -61,7 +61,7 @@ public static class Permissions
     public const string DevicesView = "Devices.View";
     public const string DevicesManage = "Devices.Manage";
 
-    public const string DeviceManage = "Device.Manage";
+    public const string DeviceManage = "Devices.Manage";
 
     public const string BackupManage = "Backup.Manage";
 }
