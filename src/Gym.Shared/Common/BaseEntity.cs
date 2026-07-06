@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MediatR;
 
 namespace Gym.Shared.Common;
 
@@ -36,7 +37,7 @@ public interface IDomainEvent
     public DateTime OccurredAt { get; }
 }
 
-public abstract record DomainEvent : IDomainEvent
+public abstract record DomainEvent : IDomainEvent, INotification
 {
     public DateTime OccurredAt { get; } = DateTime.UtcNow;
 }

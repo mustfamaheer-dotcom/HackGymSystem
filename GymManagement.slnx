@@ -7,5 +7,6 @@
     <Project Path="src/Gym.Infrastructure/Gym.Infrastructure.csproj" />
     <Project Path="src/Gym.NotificationService/Gym.NotificationService.csproj" />
     <Project Path="src/Gym.Shared/Gym.Shared.csproj" />
+    <Project Path="src/HackGym.ZKTeco.Bridge/HackGym.ZKTeco.Bridge.csproj" />
   </Folder>
 </Solution>

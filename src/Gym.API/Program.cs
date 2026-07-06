@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Gym.API.Hubs;
 using Gym.API.Middleware;
 using Gym.API;
 using Gym.API.Services;
@@ -11,6 +12,7 @@ using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Security;
 using Gym.Infrastructure.Services;
+using Gym.Infrastructure.Services.ZKTeco;
 using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -143,6 +145,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.Configure<ZKTecoSettings>(builder.Configuration.GetSection("ZKTeco"));
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -200,7 +203,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseRateLimiter();
+// app.UseRateLimiter();
 
 app.UseCors("AllowFrontend");
 
@@ -224,6 +227,7 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapHub<AttendanceHub>("/hubs/attendance");
 
 app.MapControllerRoute(
     name: "default",
@@ -242,3 +246,4 @@ finally
 {
     Log.CloseAndFlush();
 }
+

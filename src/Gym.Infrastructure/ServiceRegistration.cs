@@ -4,6 +4,7 @@ using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Repositories;
 using Gym.Infrastructure.Security;
 using Gym.Infrastructure.Services;
+using Gym.Infrastructure.Services.ZKTeco;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +38,18 @@ public static class ServiceRegistration
         services.AddScoped<IOfferService, OfferService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
+        services.AddScoped<IDeviceMemberMappingRepository, DeviceMemberMappingRepository>();
         services.AddScoped<ICaptchaService, CaptchaService>();
+        services.AddScoped<ISyncAuditService, SyncAuditService>();
+
+        services.AddHttpClient("ZKTecoBridge", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        services.AddScoped<IZKTecoBridgeClient, ZKTecoBridgeGrpcClient>();
+        services.Configure<ZKTecoBridgeOptions>(configuration.GetSection("ZKTecoBridge"));
+
+        services.AddHostedService<BackgroundJobs.PeriodicReconciliationWorker>();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

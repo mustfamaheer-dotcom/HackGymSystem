@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package zkteco;
+
+service ZKTecoBridge {
+  rpc CheckHealth (HealthRequest) returns (HealthResponse);
+  rpc SetUserPrivilege (SetUserPrivilegeRequest) returns (PrivilegeResponse);
+  rpc EnrollFingerprint (EnrollFingerprintRequest) returns (EnrollResponse);
+  rpc EnrollFace (EnrollFaceRequest) returns (EnrollResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  rpc GetDeviceStatus (DeviceStatusRequest) returns (DeviceStatusResponse);
+  rpc ReconcileUsers (ReconcileRequest) returns (ReconcileResponse);
+  rpc TestConnection (TestConnectionRequest) returns (TestConnectionResponse);
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  bool is_connected = 1;
+  int32 enrolled_user_count = 2;
+  int64 free_memory = 3;
+  string firmware_version = 4;
+  int64 uptime_ms = 5;
+}
+
+message SetUserPrivilegeRequest {
+  string enrollment_id = 1;
+  int32 privilege = 2;
+  bool enable_expiry = 3;
+  int32 expiry_year = 4;
+  int32 expiry_month = 5;
+  int32 expiry_day = 6;
+}
+
+message PrivilegeResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message EnrollFingerprintRequest {
+  string member_id = 1;
+  string enrollment_id = 2;
+  int32 finger_index = 3;
+  int32 timeout_seconds = 4;
+}
+
+message EnrollFaceRequest {
+  string member_id = 1;
+  string enrollment_id = 2;
+  int32 timeout_seconds = 3;
+}
+
+message EnrollResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message DeleteUserRequest {
+  string enrollment_id = 1;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message DeviceStatusRequest {}
+
+message DeviceStatusResponse {
+  bool is_connected = 1;
+  int32 enrolled_user_count = 2;
+  int64 free_memory = 3;
+  string firmware_version = 4;
+  int32 max_fingerprints = 5;
+  int32 max_faces = 6;
+}
+
+message ReconcileRequest {}
+
+message ReconcileResponse {
+  bool success = 1;
+  int32 users_checked = 2;
+  int32 discrepancies_fixed = 3;
+  repeated string details = 4;
+}
+
+message TestConnectionRequest {}
+
+message TestConnectionResponse {
+  bool success = 1;
+  int64 round_trip_latency_ms = 2;
+  string error_message = 3;
+}

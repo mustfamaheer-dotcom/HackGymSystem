@@ -60,6 +60,13 @@ public class Subscription : BaseEntity
         PaymentMethod = paymentMethod;
         StartDate = startDate;
         ExpirationDate = expirationDate;
+
+        QueueDomainEvent(new SubscriptionActivatedEvent
+        {
+            MemberId = memberId,
+            SubscriptionId = Id,
+            ExpiryDate = expirationDate
+        });
     }
 
     public void Freeze(DateTime freezeStart, DateTime freezeEnd, int freezeDays, string? reason = null, string? invalidStatusErrorMessage = null)
@@ -73,6 +80,12 @@ public class Subscription : BaseEntity
         ExpirationDate = ExpirationDate.AddDays(freezeDays);
         Status = SubscriptionStatus.Frozen;
         MarkUpdated();
+        QueueDomainEvent(new SubscriptionSuspendedEvent
+        {
+            MemberId = MemberId,
+            SubscriptionId = Id,
+            ExpiryDate = ExpirationDate
+        });
     }
 
     public void Unfreeze(string? invalidStatusErrorMessage = null)
@@ -84,12 +97,24 @@ public class Subscription : BaseEntity
         FreezeEnd = null;
         Status = SubscriptionStatus.Active;
         MarkUpdated();
+        QueueDomainEvent(new SubscriptionActivatedEvent
+        {
+            MemberId = MemberId,
+            SubscriptionId = Id,
+            ExpiryDate = ExpirationDate
+        });
     }
 
     public void MarkRenewed()
     {
         Status = SubscriptionStatus.Renewed;
         MarkUpdated();
+        QueueDomainEvent(new SubscriptionRenewedEvent
+        {
+            MemberId = MemberId,
+            SubscriptionId = Id,
+            ExpiryDate = ExpirationDate
+        });
     }
 
     public void MarkExpired()
@@ -98,6 +123,12 @@ public class Subscription : BaseEntity
         {
             Status = SubscriptionStatus.Expired;
             MarkUpdated();
+            QueueDomainEvent(new SubscriptionExpiredEvent
+            {
+                MemberId = MemberId,
+                SubscriptionId = Id,
+                ExpiryDate = ExpirationDate
+            });
         }
     }
 
