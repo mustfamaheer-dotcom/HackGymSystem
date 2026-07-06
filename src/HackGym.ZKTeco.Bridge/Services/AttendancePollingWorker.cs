@@ -14,7 +14,8 @@ public class AttendancePollingWorker : BackgroundService
     private readonly ILogger<AttendancePollingWorker> _logger;
     private readonly ZKTecoConfig _config;
     private readonly HttpClient _httpClient;
-    private readonly HashSet<string> _processedLogs = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> _processedLogs = new();
+    private readonly TimeSpan _dedupWindow = TimeSpan.FromHours(1);
 
     public AttendancePollingWorker(
         ZKDeviceManager deviceManager,
@@ -47,13 +48,14 @@ public class AttendancePollingWorker : BackgroundService
                 var events = _deviceManager.GetNewLogs();
                 _logger.LogDebug("Polled {Count} attendance events", events.Count);
 
+                var now = DateTime.UtcNow;
                 foreach (var evt in events)
                 {
                     var dedupKey = $"{evt.EnrollmentId}_{evt.Timestamp:O}_{evt.Direction}";
-                    if (_processedLogs.Contains(dedupKey))
+                    if (_processedLogs.TryGetValue(dedupKey, out var cachedTime) && (now - cachedTime) < _dedupWindow)
                         continue;
 
-                    _processedLogs.Add(dedupKey);
+                    _processedLogs[dedupKey] = now;
 
                     try
                     {
@@ -65,9 +67,14 @@ public class AttendancePollingWorker : BackgroundService
                     }
                 }
 
-                // Trim processed logs set periodically
-                if (_processedLogs.Count > 10000)
-                    _processedLogs.Clear();
+                // Evict stale keys periodically (every ~300 events)
+                if (_processedLogs.Count > 1000)
+                {
+                    var cutoff = now - _dedupWindow;
+                    foreach (var kvp in _processedLogs)
+                        if (kvp.Value < cutoff)
+                            _processedLogs.TryRemove(kvp.Key, out _);
+                }
             }
             catch (Exception ex)
             {
@@ -88,25 +95,12 @@ public class AttendancePollingWorker : BackgroundService
             VerifyMethod = (int)evt.Method
         };
 
-        if (evt.Direction == 0)
+        var response = await _httpClient.PostAsJsonAsync("/api/zkteco-attendance/push", payload, ct);
+        if (!response.IsSuccessStatusCode)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/attendances/check-in", payload, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("Check-in failed for {EnrollmentId}: {Status} {Error}",
-                    evt.EnrollmentId, response.StatusCode, error);
-            }
-        }
-        else
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/attendances/check-out", payload, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("Check-out failed for {EnrollmentId}: {Status} {Error}",
-                    evt.EnrollmentId, response.StatusCode, error);
-            }
+            var error = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogWarning("Attendance push failed for {EnrollmentId}: {Status} {Error}",
+                evt.EnrollmentId, response.StatusCode, error);
         }
     }
 

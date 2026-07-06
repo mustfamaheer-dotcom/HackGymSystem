@@ -9,7 +9,7 @@ Write-Host "=== ZKTeco MB2000 SDK Registration ===" -ForegroundColor Cyan
 Write-Host "SDK Path: $sdkDir" -ForegroundColor Gray
 
 # Check if already registered
-$regPath = "HKLM:\SOFTWARE\Classes\CLSID\{008F751F-BE65-4A3E-9E27-7F0A6C5E1B2C}"
+$regPath = "HKLM:\SOFTWARE\Classes\CLSID\{00853A19-BD51-419B-9269-2DABE57EB61F}"
 $existing = Get-ItemProperty $regPath -ErrorAction SilentlyContinue
 if ($existing) {
     Write-Host "ALREADY REGISTERED - CLSID found in registry" -ForegroundColor Yellow
@@ -42,7 +42,7 @@ if ($LASTEXITCODE -eq 0) {
 # Verify
 $check = Get-ItemProperty $regPath -ErrorAction SilentlyContinue
 if ($check) {
-    Write-Host "VERIFIED: COM component accessible at CLSID {008F751F-BE65-4A3E-9E27-7F0A6C5E1B2C}" -ForegroundColor Green
+    Write-Host "VERIFIED: COM component accessible at CLSID {00853A19-BD51-419B-9269-2DABE57EB61F}" -ForegroundColor Green
     Write-Host "All DLLs in SDK directory:" -ForegroundColor Gray
     Get-ChildItem $sdkDir | Select-Object Name, Length | Format-Table -AutoSize
     Write-Host "=== Registration Complete ===" -ForegroundColor Cyan

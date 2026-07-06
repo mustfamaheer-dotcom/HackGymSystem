@@ -1,9 +1,8 @@
 using HackGym.ZKTeco.Bridge;
 using HackGym.ZKTeco.Bridge.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWindowsService(options =>
 {
@@ -13,10 +12,13 @@ builder.Services.AddWindowsService(options =>
 builder.Services.Configure<ZKTecoConfig>(builder.Configuration.GetSection("ZKTeco"));
 
 builder.Services.AddGrpc();
+var mainApiKey = builder.Configuration.GetValue<string>("MainApi:ApiKey") ?? "";
 builder.Services.AddHttpClient("MainApi", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("MainApi:BaseUrl") ?? "http://localhost:5000");
     client.Timeout = TimeSpan.FromSeconds(10);
+    if (!string.IsNullOrEmpty(mainApiKey))
+        client.DefaultRequestHeaders.Add("X-API-Key", mainApiKey);
 });
 
 builder.Services.AddSingleton<ZKDeviceManager>();
@@ -24,18 +26,169 @@ builder.Services.AddSingleton<DeviceHealthMonitor>();
 builder.Services.AddHostedService<AttendancePollingWorker>();
 builder.Services.AddHostedService<DeviceHealthMonitor>();
 
-var host = builder.Build();
+var app = builder.Build();
 
-// Connect to device on startup
-var deviceManager = host.Services.GetRequiredService<ZKDeviceManager>();
-var logger = host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
-if (deviceManager.Connect())
+var deviceManager = app.Services.GetRequiredService<ZKDeviceManager>();
+
+var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+try
 {
-    logger.LogInformation("Connected to ZKTeco device on startup");
+    if (deviceManager.Connect())
+        startupLogger.LogInformation("Connected to ZKTeco device on startup");
+    else
+        startupLogger.LogWarning("Failed to connect to ZKTeco device on startup, will retry in background");
 }
-else
+catch (Exception ex)
 {
-    logger.LogWarning("Failed to connect to ZKTeco device on startup, will retry in background");
+    startupLogger.LogWarning(ex, "Failed to connect to ZKTeco device on startup");
 }
 
-host.Run();
+app.MapGrpcService<ZKTecoBridgeService>();
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/TestConnection", () =>
+{
+    var (success, latencyMs) = deviceManager.TestConnection();
+    return Results.Ok(new
+    {
+        success,
+        roundTripLatencyMs = latencyMs,
+        errorMessage = success ? null : "Connection test failed"
+    });
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/GetDeviceStatus", () =>
+{
+    var (enrolledCount, freeMemory, firmwareVersion) = deviceManager.IsConnected
+        ? deviceManager.GetDeviceStatus()
+        : (0, 0L, null);
+    return Results.Ok(new
+    {
+        isConnected = deviceManager.IsConnected,
+        enrolledUserCount = enrolledCount,
+        freeMemory,
+        firmwareVersion = firmwareVersion ?? "",
+        maxFingerprints = 3000,
+        maxFaces = 500
+    });
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/CheckHealth", () =>
+{
+    var (enrolledCount, freeMemory, firmwareVersion) = deviceManager.IsConnected
+        ? deviceManager.GetDeviceStatus()
+        : (0, 0L, null);
+    return Results.Ok(new
+    {
+        isConnected = deviceManager.IsConnected,
+        enrolledUserCount = enrolledCount,
+        freeMemory,
+        firmwareVersion = firmwareVersion ?? "",
+        uptimeMs = deviceManager.IsConnected
+            ? (long)(DateTime.UtcNow - deviceManager.ConnectionInfo.LastConnectedAt).TotalMilliseconds
+            : 0L
+    });
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/ReconcileUsers", () =>
+{
+    try
+    {
+        var (deviceIds, success) = deviceManager.GetAllUserIds();
+        return Results.Ok(new
+        {
+            success,
+            usersChecked = deviceIds.Count,
+            discrepanciesFixed = 0,
+            details = success ? Array.Empty<string>() : new[] { "Failed to read users from device" }
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, usersChecked = 0, discrepanciesFixed = 0, details = new[] { ex.Message } });
+    }
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/SetUserPrivilege", async (HttpContext context) =>
+{
+    try
+    {
+        using var reader = new StreamReader(context.Request.Body);
+        var body = await reader.ReadToEndAsync();
+        var data = JsonSerializer.Deserialize<JsonElement>(body);
+
+        var enrollmentId = data.GetProperty("enrollmentId").GetString() ?? "";
+        var privilege = data.GetProperty("privilege").GetInt32();
+        var enableExpiry = data.GetProperty("enableExpiry").GetBoolean();
+        var expiryYear = data.TryGetProperty("expiryYear", out var ey) ? ey.GetInt32() : 0;
+        var expiryMonth = data.TryGetProperty("expiryMonth", out var em) ? em.GetInt32() : 0;
+        var expiryDay = data.TryGetProperty("expiryDay", out var ed) ? ed.GetInt32() : 0;
+
+        DateTime? expiry = enableExpiry ? new DateTime(expiryYear, expiryMonth, expiryDay, 23, 59, 59, DateTimeKind.Local) : null;
+        var success = deviceManager.SetUserPrivilege(enrollmentId, privilege, expiry);
+        return Results.Ok(new { success, errorMessage = success ? null : "Failed to set privilege on device" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, errorMessage = ex.Message });
+    }
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/DeleteUser", async (HttpContext context) =>
+{
+    try
+    {
+        using var reader = new StreamReader(context.Request.Body);
+        var body = await reader.ReadToEndAsync();
+        var data = JsonSerializer.Deserialize<JsonElement>(body);
+        var enrollmentId = data.GetProperty("enrollmentId").GetString() ?? "";
+        var success = deviceManager.DeleteUser(enrollmentId);
+        return Results.Ok(new { success, errorMessage = success ? null : "Failed to delete user from device" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, errorMessage = ex.Message });
+    }
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/EnrollFingerprint", async (HttpContext context) =>
+{
+    try
+    {
+        using var reader = new StreamReader(context.Request.Body);
+        var body = await reader.ReadToEndAsync();
+        var data = JsonSerializer.Deserialize<JsonElement>(body);
+        var memberId = data.GetProperty("memberId").GetString() ?? "";
+        var enrollmentId = data.GetProperty("enrollmentId").GetString() ?? "";
+        var fingerIndex = data.GetProperty("fingerIndex").GetInt32();
+        var timeoutSeconds = data.TryGetProperty("timeoutSeconds", out var ts) ? ts.GetInt32() : 60;
+
+        var (success, error) = deviceManager.EnrollFingerprint(enrollmentId, $"Member_{memberId}", fingerIndex, timeoutSeconds);
+        return Results.Ok(new { success, errorMessage = error ?? "" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, errorMessage = ex.Message });
+    }
+});
+
+app.MapPost("/zkteco.bridge.ZKTecoBridge/EnrollFace", async (HttpContext context) =>
+{
+    try
+    {
+        using var reader = new StreamReader(context.Request.Body);
+        var body = await reader.ReadToEndAsync();
+        var data = JsonSerializer.Deserialize<JsonElement>(body);
+        var memberId = data.GetProperty("memberId").GetString() ?? "";
+        var enrollmentId = data.GetProperty("enrollmentId").GetString() ?? "";
+        var timeoutSeconds = data.TryGetProperty("timeoutSeconds", out var ts) ? ts.GetInt32() : 60;
+
+        var (success, error) = deviceManager.EnrollFace(enrollmentId, $"Member_{memberId}", timeoutSeconds);
+        return Results.Ok(new { success, errorMessage = error ?? "" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, errorMessage = ex.Message });
+    }
+});
+
+app.Run();

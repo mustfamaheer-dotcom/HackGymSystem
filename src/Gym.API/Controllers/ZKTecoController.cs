@@ -25,7 +25,7 @@ public class ZKTecoController : BaseController
     }
 
     [HttpGet("status")]
-    [RequirePermission("Device.Manage")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> GetStatus(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetDeviceStatusQuery(), cancellationToken);
@@ -36,7 +36,7 @@ public class ZKTecoController : BaseController
     }
 
     [HttpGet("sync-logs")]
-    [RequirePermission("Device.Manage")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> GetSyncLogs([FromQuery] GetSyncLogsQuery query, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(query, cancellationToken);
@@ -47,7 +47,7 @@ public class ZKTecoController : BaseController
     }
 
     [HttpPost("reconcile")]
-    [RequirePermission("Device.Manage")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Reconcile(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ReconcileUsersCommand(), cancellationToken);
@@ -58,7 +58,7 @@ public class ZKTecoController : BaseController
     }
 
     [HttpPost("enroll")]
-    [RequirePermission("Device.Manage")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> Enroll([FromBody] EnrollBiometricCommand command, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
@@ -69,7 +69,7 @@ public class ZKTecoController : BaseController
     }
 
     [HttpPost("testconnection")]
-    [RequirePermission("Device.Manage")]
+    [RequirePermission("Devices.Manage")]
     public async Task<IActionResult> TestConnection(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new TestConnectionCommand(), cancellationToken);

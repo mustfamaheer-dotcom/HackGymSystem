@@ -7,6 +7,7 @@ public class DeviceHealthMonitor : BackgroundService
 {
     private readonly ZKDeviceManager _deviceManager;
     private readonly ILogger<DeviceHealthMonitor> _logger;
+    private static readonly TimeSpan HealthCheckInterval = TimeSpan.FromSeconds(30);
 
     public DeviceHealthMonitor(ZKDeviceManager deviceManager, ILogger<DeviceHealthMonitor> logger)
     {
@@ -37,7 +38,16 @@ public class DeviceHealthMonitor : BackgroundService
                 }
                 else
                 {
-                    _logger.LogWarning("Device is offline");
+                    _logger.LogWarning("Device is offline, attempting reconnection...");
+                    if (_deviceManager.Connect())
+                    {
+                        _logger.LogInformation("Device reconnected successfully");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Reconnection attempt failed, will retry in {Interval}s",
+                            HealthCheckInterval.TotalSeconds);
+                    }
                 }
             }
             catch (Exception ex)
@@ -45,7 +55,7 @@ public class DeviceHealthMonitor : BackgroundService
                 _logger.LogError(ex, "Error monitoring device health");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            await Task.Delay(HealthCheckInterval, stoppingToken);
         }
     }
 }
