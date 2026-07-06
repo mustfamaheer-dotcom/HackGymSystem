@@ -8,6 +8,7 @@ using Gym.Application.Common.Interfaces;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
+using Gym.Shared.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ public class ZKTecoAttendanceController : BaseController
     private readonly IRepository<Device> _deviceRepo;
     private readonly IOptions<ZKTecoSettings> _zktecoConfig;
     private readonly IRepository<Attendance> _attendanceRepo;
+    private readonly IRepository<Subscription> _subscriptionRepo;
     private readonly IHubContext<AttendanceHub> _hubContext;
     private readonly IZKTecoBridgeClient _bridgeClient;
 
@@ -36,6 +38,7 @@ public class ZKTecoAttendanceController : BaseController
         IRepository<Device> deviceRepo,
         IOptions<ZKTecoSettings> zktecoConfig,
         IRepository<Attendance> attendanceRepo,
+        IRepository<Subscription> subscriptionRepo,
         IHubContext<AttendanceHub> hubContext,
         IZKTecoBridgeClient bridgeClient)
     {
@@ -44,6 +47,7 @@ public class ZKTecoAttendanceController : BaseController
         _deviceRepo = deviceRepo;
         _zktecoConfig = zktecoConfig;
         _attendanceRepo = attendanceRepo;
+        _subscriptionRepo = subscriptionRepo;
         _hubContext = hubContext;
         _bridgeClient = bridgeClient;
     }
@@ -54,6 +58,14 @@ public class ZKTecoAttendanceController : BaseController
         var mapping = await _mappingRepo.GetByEnrollmentIdAsync(request.EnrollmentId, ct);
         if (mapping == null)
             return NotFound(ApiResponse.Fail($"No member mapping found for enrollment ID '{request.EnrollmentId}'"));
+
+        var hasActiveSub = await _subscriptionRepo.AnyAsync(
+            s => s.MemberId == mapping.MemberId
+              && s.Status == SubscriptionStatus.Active
+              && s.ExpirationDate > DateTime.UtcNow, ct);
+
+        if (!hasActiveSub)
+            return BadRequest(ApiResponse.Fail("Member has no active subscription"));
 
         var device = await _deviceRepo.FirstOrDefaultAsync(d => d.IPAddress == _zktecoConfig.Value.DeviceIp, ct);
 

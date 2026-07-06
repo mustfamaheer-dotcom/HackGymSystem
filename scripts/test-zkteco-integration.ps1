@@ -31,12 +31,12 @@ try {
     $r = Invoke-WebRequest -Uri "$BASE/api/ZKTeco/testconnection" -Method POST `
         -WebSession $S -UseBasicParsing -TimeoutSec 20
     $data = $r.Content | ConvertFrom-Json
-    if ($data.succeeded) {
-        Write-Host "   [OK] Device reachable: $($data.data.connected)" -ForegroundColor Green
-        Write-Host "   Round-trip: $($data.data.roundTripMs)ms" -ForegroundColor Gray
-        Write-Host "   Firmware: $($data.data.firmwareVersion)" -ForegroundColor Gray
+    if ($data.Success) {
+        Write-Host "   [OK] Device reachable: $($data.Data.IsConnected)" -ForegroundColor Green
+        Write-Host "   Round-trip: $($data.Data.RoundTripLatencyMs)ms" -ForegroundColor Gray
+        Write-Host "   Error: $($data.Data.ErrorMessage)" -ForegroundColor Gray
     } else {
-        Write-Host "   [WARN] $($data.message)" -ForegroundColor Yellow
+        Write-Host "   [WARN] $($data.Message)" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "   [FAIL] Connection test failed: $_" -ForegroundColor Red
@@ -48,12 +48,12 @@ try {
     $r = Invoke-WebRequest -Uri "$BASE/api/ZKTeco/status" -Method GET `
         -WebSession $S -UseBasicParsing -TimeoutSec 20
     $data = $r.Content | ConvertFrom-Json
-    if ($data.succeeded) {
-        Write-Host "   [OK] Device: $($data.data.deviceName)" -ForegroundColor Green
-        Write-Host "   IP: $($data.data.ip):$($data.data.port)" -ForegroundColor Gray
-        Write-Host "   Uptime: $($data.data.uptime)" -ForegroundColor Gray
-        Write-Host "   Users on device: $($data.data.userCount)" -ForegroundColor Gray
-        Write-Host "   Free space: $($data.data.freeSpace)" -ForegroundColor Gray
+    if ($data.Success) {
+        Write-Host "   [OK] IsConnected: $($data.Data.IsConnected)" -ForegroundColor Green
+        Write-Host "   Users on device: $($data.Data.EnrolledUserCount)" -ForegroundColor Gray
+        Write-Host "   Free memory: $($data.Data.FreeMemory) bytes" -ForegroundColor Gray
+        Write-Host "   Firmware: $($data.Data.FirmwareVersion)" -ForegroundColor Gray
+        Write-Host "   Uptime: $($data.Data.UptimeMs)ms" -ForegroundColor Gray
     }
 } catch {
     Write-Host "   [FAIL] Status check failed: $_" -ForegroundColor Red
@@ -65,11 +65,13 @@ try {
     $r = Invoke-WebRequest -Uri "$BASE/api/ZKTeco/reconcile" -Method POST `
         -WebSession $S -UseBasicParsing -TimeoutSec 60
     $data = $r.Content | ConvertFrom-Json
-    if ($data.succeeded) {
+    if ($data.Success) {
         Write-Host "   [OK] Reconciliation complete" -ForegroundColor Green
-        Write-Host "   Synced: $($data.data.synced)" -ForegroundColor Gray
-        Write-Host "   Failed: $($data.data.failed)" -ForegroundColor Gray
-        Write-Host "   Skipped: $($data.data.skipped)" -ForegroundColor Gray
+        Write-Host "   Users checked: $($data.Data.UsersChecked)" -ForegroundColor Gray
+        Write-Host "   Discrepancies fixed: $($data.Data.DiscrepanciesFixed)" -ForegroundColor Gray
+        $data.Data.Details | ForEach-Object {
+            Write-Host "   - $_" -ForegroundColor Gray
+        }
     }
 } catch {
     Write-Host "   [FAIL] Reconciliation failed: $_" -ForegroundColor Red
@@ -81,10 +83,10 @@ try {
     $r = Invoke-WebRequest -Uri "$BASE/api/ZKTeco/sync-logs?page=1&pageSize=5" -Method GET `
         -WebSession $S -UseBasicParsing -TimeoutSec 10
     $data = $r.Content | ConvertFrom-Json
-    if ($data.succeeded) {
-        Write-Host "   [OK] Total sync events: $($data.data.total)" -ForegroundColor Green
-        $data.data.items | ForEach-Object {
-            Write-Host "   - $($_.eventType): $($_.status) at $($_.timestamp)" -ForegroundColor Gray
+    if ($data.Success) {
+        Write-Host "   [OK] Total sync events: $($data.Data.TotalCount)" -ForegroundColor Green
+        $data.Data.Items | ForEach-Object {
+            Write-Host "   - $($_.EventType): $($_.Status) at $($_.CreatedAt)" -ForegroundColor Gray
         }
     }
 } catch {
@@ -96,4 +98,4 @@ Write-Host "   Test Complete" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Next: Scan a finger on the MB2000 device -" -ForegroundColor White
-Write-Host "the Bridge polls every 3s and sends to /api/attendances/check-in" -ForegroundColor Gray
+Write-Host "the Bridge polls every 3s and sends to /api/zkteco-attendance/push" -ForegroundColor Gray

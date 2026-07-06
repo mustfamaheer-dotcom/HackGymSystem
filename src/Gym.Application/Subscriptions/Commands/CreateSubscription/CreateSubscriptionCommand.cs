@@ -152,17 +152,7 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         if (!offer.IsActive)
             return Result<Guid>.Failure(_localizer["Offer is not active"]);
 
-        activeSub.ExpirationDate = activeSub.ExpirationDate
-            .AddMonths(offer.BonusMonths ?? 0)
-            .AddDays(offer.BonusDays ?? 0);
-
-        activeSub.MarkUpdated();
-        activeSub.QueueDomainEvent(new SubscriptionUpgradedEvent
-        {
-            MemberId = activeSub.MemberId,
-            SubscriptionId = activeSub.Id,
-            ExpiryDate = activeSub.ExpirationDate
-        });
+        activeSub.ApplyOffer(offer.BonusMonths, offer.BonusDays, request.OfferId);
 
         _subscriptionRepo.Update(activeSub);
 

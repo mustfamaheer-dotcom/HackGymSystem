@@ -57,19 +57,38 @@ public class ReconcileUsersCommandHandler : IRequestHandler<ReconcileUsersComman
                     cancellationToken);
 
                 var shouldHaveAccess = activeSub is not null;
-                // We assume privilege 1 = active, 0 = inactive
-                // For simplicity we just sync the privilege
+                var privilege = shouldHaveAccess ? 1 : 0;
                 var success = await _bridge.SetUserPrivilegeAsync(
                     mapping.DeviceEnrollmentId,
-                    shouldHaveAccess ? 1 : 0,
+                    privilege,
                     activeSub?.ExpirationDate,
                     cancellationToken);
 
-                if (!success)
+                if (success)
                 {
                     result.DiscrepanciesFixed++;
-                    result.Details.Add($"Fixed privilege for {mapping.DeviceEnrollmentId} (active: {shouldHaveAccess})");
+                    result.Details.Add($"Fixed privilege for {mapping.DeviceEnrollmentId} → {privilege}");
                 }
+                else
+                {
+                    result.Details.Add($"FAILED to set privilege for {mapping.DeviceEnrollmentId}");
+                }
+
+                await _audit.LogAsync(new SyncAuditEntry
+                {
+                    EventType = SyncEventType.PrivilegeUpdate,
+                    Direction = SyncDirection.SystemToDevice,
+                    EntityId = mapping.DeviceEnrollmentId,
+                    Payload = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        memberId = mapping.MemberId,
+                        privilege,
+                        expiryDate = activeSub?.ExpirationDate,
+                        action = shouldHaveAccess ? "ReconcileGrant" : "ReconcileRevoke"
+                    }),
+                    Status = success ? SyncStatus.Success : SyncStatus.Failed,
+                    ErrorMessage = success ? null : "Bridge returned failure"
+                }, cancellationToken);
             }
 
             await _audit.LogAsync(new SyncAuditEntry

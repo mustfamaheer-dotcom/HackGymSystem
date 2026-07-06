@@ -143,4 +143,20 @@ public class Subscription : BaseEntity
             RemainingBalance = 0;
         MarkUpdated();
     }
+
+    public void ApplyOffer(int? bonusMonths, int? bonusDays, Guid? offerId)
+    {
+        ExpirationDate = ExpirationDate
+            .AddMonths(bonusMonths ?? 0)
+            .AddDays(bonusDays ?? 0);
+        if (offerId.HasValue)
+            OfferId = offerId;
+        MarkUpdated();
+        QueueDomainEvent(new SubscriptionUpgradedEvent
+        {
+            MemberId = MemberId,
+            SubscriptionId = Id,
+            ExpiryDate = ExpirationDate
+        });
+    }
 }
