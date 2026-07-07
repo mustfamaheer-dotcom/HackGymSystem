@@ -31,11 +31,21 @@ public class SubscriptionRenewalReminderJob
         _logger.LogInformation("Found {Count} subscriptions expiring within 7 days", expiring.Count);
 
         var notificationRepo = _unitOfWork.Repository<Notification>();
+        var title = "Subscription Expiring Soon";
+        var existingMemberIds = await notificationRepo.Query()
+            .Where(n => n.Title == title && !n.IsRead)
+            .Select(n => n.MemberId)
+            .ToListAsync(cancellationToken);
+        var existingSet = new HashSet<Guid>(existingMemberIds);
+
         foreach (var sub in expiring)
         {
+            if (existingSet.Contains(sub.MemberId))
+                continue;
+
             await notificationRepo.AddAsync(new Notification(
                 sub.MemberId,
-                "Subscription Expiring Soon",
+                title,
                 $"Your subscription expires on {sub.ExpirationDate:yyyy-MM-dd}. Please renew."));
         }
 
