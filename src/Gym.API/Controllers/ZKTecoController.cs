@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Gym.API.Controllers;
 
 [Authorize]
+[IgnoreAntiforgeryToken]
 public class ZKTecoController : BaseController
 {
     private readonly IMediator _mediator;

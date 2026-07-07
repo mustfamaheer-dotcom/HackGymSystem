@@ -21,6 +21,7 @@ namespace Gym.API.Controllers;
 [AllowAnonymous]
 [DeviceApiKey]
 [DisableRateLimiting]
+[IgnoreAntiforgeryToken]
 public class ZKTecoAttendanceController : BaseController
 {
     private readonly IMediator _mediator;
