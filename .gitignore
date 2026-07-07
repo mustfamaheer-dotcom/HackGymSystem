@@ -10,6 +10,11 @@ stderr_api.txt
 stdout_api.txt
 
 # Backups
+backups/
+
+# Generated files
+Payments History/
+Exported Excel Sheets/
 
 # OS files
 Thumbs.db

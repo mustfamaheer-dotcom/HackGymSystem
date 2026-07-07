@@ -2,8 +2,9 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace Gym.API.Jobs;
+namespace Gym.Application.Jobs;
 
 public class SubscriptionRenewalReminderJob
 {
@@ -28,5 +29,16 @@ public class SubscriptionRenewalReminderJob
             .ToListAsync(cancellationToken);
 
         _logger.LogInformation("Found {Count} subscriptions expiring within 7 days", expiring.Count);
+
+        var notificationRepo = _unitOfWork.Repository<Notification>();
+        foreach (var sub in expiring)
+        {
+            await notificationRepo.AddAsync(new Notification(
+                sub.MemberId,
+                "Subscription Expiring Soon",
+                $"Your subscription expires on {sub.ExpirationDate:yyyy-MM-dd}. Please renew."));
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

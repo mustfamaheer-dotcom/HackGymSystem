@@ -5,7 +5,6 @@ using System.Threading.RateLimiting;
 using Gym.API.Hubs;
 using Gym.API.Middleware;
 using Gym.API;
-using Gym.API.Jobs;
 using Gym.API.Services;
 using Gym.Application;
 using Gym.Application.Common.Interfaces;
@@ -154,9 +153,9 @@ builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(hangfireConnStr));
 builder.Services.AddHangfireServer();
 
-builder.Services.AddScoped<Gym.API.Jobs.SubscriptionRenewalReminderJob>();
-builder.Services.AddScoped<Gym.API.Jobs.SubscriptionExpiryJob>();
-builder.Services.AddScoped<Gym.API.Jobs.LeadFollowUpJob>();
+builder.Services.AddScoped<Gym.Application.Jobs.SubscriptionRenewalReminderJob>();
+builder.Services.AddScoped<Gym.Application.Jobs.SubscriptionExpiryJob>();
+builder.Services.AddScoped<Gym.Application.Jobs.LeadFollowUpJob>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -246,11 +245,11 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = new[] { new HangfireAuthorizationFilter() }
 });
 
-RecurringJob.AddOrUpdate<SubscriptionRenewalReminderJob>("subscription-renewal-reminders",
+RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionRenewalReminderJob>("subscription-renewal-reminders",
     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(9));
-RecurringJob.AddOrUpdate<SubscriptionExpiryJob>("subscription-expiry",
+RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionExpiryJob>("subscription-expiry",
     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(0));
-RecurringJob.AddOrUpdate<LeadFollowUpJob>("lead-follow-up",
+RecurringJob.AddOrUpdate<Gym.Application.Jobs.LeadFollowUpJob>("lead-follow-up",
     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(14));
 
 app.MapControllerRoute(

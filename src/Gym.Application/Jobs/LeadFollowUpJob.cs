@@ -2,8 +2,9 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace Gym.API.Jobs;
+namespace Gym.Application.Jobs;
 
 public class LeadFollowUpJob
 {
@@ -18,18 +19,20 @@ public class LeadFollowUpJob
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var repo = _unitOfWork.Repository<Member>();
+        var repo = _unitOfWork.Repository<Lead>();
+        var now = DateTime.UtcNow;
         var stale = await repo.Query()
-            .Where(m => m.Subscriptions.All(s => s.Status != SubscriptionStatus.Active))
-            .Include(m => m.Subscriptions)
+            .Where(l => l.NextFollowUpDate <= now
+                && l.Status != LeadStatus.Converted
+                && l.Status != LeadStatus.Lost)
             .ToListAsync(cancellationToken);
 
-        _logger.LogInformation("Found {Count} leads/members needing follow-up", stale.Count);
+        _logger.LogInformation("Found {Count} leads needing follow-up", stale.Count);
 
-        foreach (var member in stale)
+        foreach (var lead in stale)
         {
-            _logger.LogInformation("Lead {MemberId} ({Name}) has no active subscription",
-                member.Id, member.FullName);
+            _logger.LogInformation("Lead {LeadId} ({Name}) needs follow-up, next date: {Date}",
+                lead.Id, lead.Name, lead.NextFollowUpDate);
         }
     }
 }

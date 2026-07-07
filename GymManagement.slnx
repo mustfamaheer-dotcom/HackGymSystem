@@ -2,11 +2,14 @@
   <Folder Name="/src/">
     <Project Path="src/Gym.API/Gym.API.csproj" />
     <Project Path="src/Gym.Application/Gym.Application.csproj" />
-    <Project Path="src/Gym.DeviceService/Gym.DeviceService.csproj" />
     <Project Path="src/Gym.Domain/Gym.Domain.csproj" />
     <Project Path="src/Gym.Infrastructure/Gym.Infrastructure.csproj" />
-    <Project Path="src/Gym.NotificationService/Gym.NotificationService.csproj" />
     <Project Path="src/Gym.Shared/Gym.Shared.csproj" />
     <Project Path="src/HackGym.ZKTeco.Bridge/HackGym.ZKTeco.Bridge.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gym.Domain.Tests/Gym.Domain.Tests.csproj" />
+    <Project Path="tests/Gym.Application.Tests/Gym.Application.Tests.csproj" />
+    <Project Path="tests/Gym.API.Tests/Gym.API.Tests.csproj" />
   </Folder>
 </Solution>

@@ -2,8 +2,9 @@ using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace Gym.API.Jobs;
+namespace Gym.Application.Jobs;
 
 public class SubscriptionExpiryJob
 {
@@ -27,9 +28,14 @@ public class SubscriptionExpiryJob
 
         _logger.LogInformation("Expiring {Count} subscriptions", expired.Count);
 
+        var notificationRepo = _unitOfWork.Repository<Notification>();
         foreach (var sub in expired)
         {
             sub.MarkExpired();
+            await notificationRepo.AddAsync(new Notification(
+                sub.MemberId,
+                "Subscription Expired",
+                "Your subscription has expired. Please renew to regain access."));
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
