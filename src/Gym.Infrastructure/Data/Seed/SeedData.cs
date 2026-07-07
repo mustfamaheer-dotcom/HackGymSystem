@@ -125,7 +125,7 @@ public static class SeedData
         builder.Entity<Role>().HasData(
             new { Id = OwnerRoleId, Name = "Owner", Description = "Full system access", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
             new { Id = ReceptionistRoleId, Name = "Receptionist", Description = "Front desk operations", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null },
-            new { Id = TrainerRoleId, Name = "Trainer", Description = "Trainer limited access", IsSystem = true, IsActive = false, CreatedAt = now, UpdatedAt = (DateTime?)null }
+            new { Id = TrainerRoleId, Name = "Trainer", Description = "Trainer limited access", IsSystem = true, IsActive = true, CreatedAt = now, UpdatedAt = (DateTime?)null }
         );
     }
 

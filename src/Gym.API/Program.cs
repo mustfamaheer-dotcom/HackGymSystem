@@ -5,6 +5,7 @@ using System.Threading.RateLimiting;
 using Gym.API.Hubs;
 using Gym.API.Middleware;
 using Gym.API;
+using Gym.API.Jobs;
 using Gym.API.Services;
 using Gym.Application;
 using Gym.Application.Common.Interfaces;
@@ -13,6 +14,7 @@ using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Security;
 using Gym.Infrastructure.Services;
 using Gym.Infrastructure.Services.ZKTeco;
+using Hangfire;
 using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -146,6 +148,16 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.Configure<ZKTecoSettings>(builder.Configuration.GetSection("ZKTeco"));
+
+var hangfireConnStr = builder.Configuration.GetConnectionString("HangfireConnection") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(hangfireConnStr));
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<Gym.API.Jobs.SubscriptionRenewalReminderJob>();
+builder.Services.AddScoped<Gym.API.Jobs.SubscriptionExpiryJob>();
+builder.Services.AddScoped<Gym.API.Jobs.LeadFollowUpJob>();
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -228,6 +240,18 @@ app.UseStaticFiles();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHub<AttendanceHub>("/hubs/attendance");
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
+RecurringJob.AddOrUpdate<SubscriptionRenewalReminderJob>("subscription-renewal-reminders",
+    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(9));
+RecurringJob.AddOrUpdate<SubscriptionExpiryJob>("subscription-expiry",
+    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(0));
+RecurringJob.AddOrUpdate<LeadFollowUpJob>("lead-follow-up",
+    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(14));
 
 app.MapControllerRoute(
     name: "default",

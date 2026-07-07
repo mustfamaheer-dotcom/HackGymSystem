@@ -1,5 +1,6 @@
 using Gym.API.Filters;
 using Gym.Application.Common.DTOs;
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Devices.Commands.CreateDevice;
 using Gym.Application.Devices.Commands.DeleteDevice;
 using Gym.Application.Devices.Commands.ToggleDeviceStatus;
@@ -27,13 +28,15 @@ public class DevicesController : BaseController
     private readonly IRepository<DeviceLog> _deviceLogRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStringLocalizer<SharedResources> _localizer;
+    private readonly IZKTecoBridgeClient _bridgeClient;
 
-    public DevicesController(IMediator mediator, IRepository<DeviceLog> deviceLogRepo, IUnitOfWork unitOfWork, IStringLocalizer<SharedResources> localizer)
+    public DevicesController(IMediator mediator, IRepository<DeviceLog> deviceLogRepo, IUnitOfWork unitOfWork, IStringLocalizer<SharedResources> localizer, IZKTecoBridgeClient bridgeClient)
     {
         _mediator = mediator;
         _deviceLogRepo = deviceLogRepo;
         _unitOfWork = unitOfWork;
         _localizer = localizer;
+        _bridgeClient = bridgeClient;
     }
 
     [HttpGet]
@@ -115,10 +118,17 @@ public class DevicesController : BaseController
         if (device.IsFailure)
             return NotFound(ApiResponse.Fail(device.Message ?? _localizer["Device not found"]));
 
-        await _deviceLogRepo.AddAsync(new DeviceLog(id, "Info", _localizer["Sync initiated for device {0}", device.Data!.Name]), cancellationToken);
+        var bridgeOk = await _bridgeClient.TestConnectionAsync(cancellationToken);
+        await _deviceLogRepo.AddAsync(new DeviceLog(id, "Info",
+            bridgeOk.Success
+                ? _localizer["Sync completed. Bridge reachable, latency {0}ms", bridgeOk.RoundTripLatencyMs]
+                : _localizer["Sync failed: {0}", bridgeOk.ErrorMessage ?? "Bridge unreachable"]), cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Ok(ApiResponse.Ok(_localizer["Sync completed. Device firmware and templates are up to date."]));
+        if (!bridgeOk.Success)
+            return BadRequest(ApiResponse.Fail(bridgeOk.ErrorMessage ?? _localizer["Bridge unreachable"]));
+
+        return Ok(ApiResponse.Ok(_localizer["Sync completed. Bridge latency: {0}ms", bridgeOk.RoundTripLatencyMs]));
     }
 
     [HttpGet("{id}/logs")]
@@ -152,29 +162,11 @@ public class DevicesController : BaseController
         if (device.IsFailure)
             return NotFound(ApiResponse.Fail(device.Message ?? _localizer["Device not found"]));
 
-        var dto = device.Data!;
+        var result = await _bridgeClient.TestConnectionAsync(cancellationToken);
+        if (result.Success)
+            return Ok(ApiResponse<TestConnectionResult>.Ok(result));
 
-        if (string.IsNullOrEmpty(dto.IPAddress))
-            return BadRequest(ApiResponse.Fail(_localizer["Device has no IP address configured"]));
-
-        try
-        {
-            using var client = new System.Net.Sockets.TcpClient();
-            var connectTask = client.ConnectAsync(dto.IPAddress, dto.Port);
-            if (await Task.WhenAny(connectTask, Task.Delay(3000, cancellationToken)) == connectTask)
-            {
-                if (client.Connected)
-                {
-                    client.Close();
-                    return Ok(ApiResponse<ConnectionTestResult>.Ok(new(true, _localizer["Connected to {0}:{1} successfully", dto.IPAddress, dto.Port])));
-                }
-            }
-            return BadRequest(ApiResponse.Fail(_localizer["Connection to {0}:{1} timed out", dto.IPAddress, dto.Port]));
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ApiResponse.Fail(_localizer["Connection failed: {0}", ex.Message]));
-        }
+        return BadRequest(ApiResponse.Fail(result.ErrorMessage ?? _localizer["Bridge connection test failed"]));
     }
 
     [HttpPatch("{id}/status")]

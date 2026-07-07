@@ -10,8 +10,6 @@ builder.Services.AddWindowsService(options =>
 });
 
 builder.Services.Configure<ZKTecoConfig>(builder.Configuration.GetSection("ZKTeco"));
-
-builder.Services.AddGrpc();
 var mainApiKey = builder.Configuration.GetValue<string>("MainApi:ApiKey") ?? "";
 builder.Services.AddHttpClient("MainApi", client =>
 {
@@ -42,8 +40,6 @@ catch (Exception ex)
 {
     startupLogger.LogWarning(ex, "Failed to connect to ZKTeco device on startup");
 }
-
-app.MapGrpcService<ZKTecoBridgeService>();
 
 app.MapPost("/zkteco.bridge.ZKTecoBridge/TestConnection", () =>
 {

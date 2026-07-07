@@ -13,9 +13,13 @@ Write-Host ""
 
 $BASE = "http://localhost:5000"
 
+# Config — read from env vars with dev fallback
+$ADMIN_USER = if ($env:ADMIN_USERNAME) { $env:ADMIN_USERNAME } else { "admin" }
+$ADMIN_PASS = if ($env:ADMIN_PASSWORD) { $env:ADMIN_PASSWORD } else { "Admin@123" }
+
 # 1. LOGIN
 Write-Host "=== 1. Login ===" -ForegroundColor Yellow
-$loginBody = @{ Username = "admin"; Password = "Admin@123" } | ConvertTo-Json
+$loginBody = @{ Username = $ADMIN_USER; Password = $ADMIN_PASS } | ConvertTo-Json
 try {
     $loginResp = Invoke-WebRequest -Uri "$BASE/api/Auth/login" -Method POST -Body $loginBody `
         -ContentType "application/json" -SessionVariable S -UseBasicParsing -TimeoutSec 10
