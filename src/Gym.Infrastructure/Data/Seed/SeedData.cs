@@ -157,6 +157,7 @@ public static class SeedData
 
         var receptionistPermissions = new HashSet<Guid>
         {
+            // Front desk operations: Add Members, Create Subscriptions, Add Leads, Record Payments
             PermDashboardView,
             PermMembersView,
             PermMembersCreate,

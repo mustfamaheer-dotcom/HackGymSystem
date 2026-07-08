@@ -1,4 +1,6 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using ClosedXML.Excel;
 using Gym.API.Filters;
 using Gym.Application.Common.Interfaces;

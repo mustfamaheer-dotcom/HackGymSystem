@@ -48,6 +48,8 @@ public class ZKTecoAttendanceControllerTests
             Mock.Of<IOptions<ZKTecoSettings>>(o => o.Value == new ZKTecoSettings()),
             _attendanceRepoMock.Object,
             _subscriptionRepoMock.Object,
+            Mock.Of<IRepository<Member>>(),
+            Mock.Of<IRepository<MembershipPlan>>(),
             hubMock.Object,
             _bridgeMock.Object
         )

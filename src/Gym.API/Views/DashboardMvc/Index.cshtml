@@ -2,6 +2,12 @@
 @{
     var now = DateTime.UtcNow;
     var hasRevenue = User.HasClaim("permission", "Dashboard.Revenue");
+    var selectedYear = ViewBag.SelectedYear as int?;
+    var selectedMonth = ViewBag.SelectedMonth as int?;
+    var availableYears = ViewBag.AvailableYears as List<int> ?? new List<int>();
+    var currentYear = now.Year;
+    var currentMonth = now.Month;
+    var isFilterActive = selectedYear.HasValue && selectedMonth.HasValue;
 }
 
 <div class="dash-container" style="max-width:1600px;margin:0 auto;">
@@ -9,7 +15,29 @@
         <h2 style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--charcoal);margin:0;font-size:1.35rem;">
             <i style="color:var(--amber);" class="bi bi-bar-chart-fill dash-icon-spacing"></i> @SharedLocalizer["Dashboard Analysis"]
         </h2>
-        <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Updated"] @now.ToString("dd MMM yyyy, HH:mm")</span>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 m-0">
+                <label class="form-label m-0 text-muted small">@SharedLocalizer["Month Filter"]:</label>
+                <select name="month" class="form-select form-select-sm" style="min-width:110px;" onchange="this.form.submit()">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        var monthDate = new DateTime(currentYear, m, 1);
+                        <option value="@m" selected="@(isFilterActive ? m == selectedMonth : m == currentMonth)">@monthDate.ToString("MMMM")</option>
+                    }
+                </select>
+                <select name="year" class="form-select form-select-sm" style="min-width:90px;" onchange="this.form.submit()">
+                    @foreach (var y in availableYears)
+                    {
+                        <option value="@y" selected="@(isFilterActive ? y == selectedYear : y == currentYear)">@y</option>
+                    }
+                </select>
+                @if (isFilterActive)
+                {
+                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="@SharedLocalizer["Clear filter"]"><i class="bi bi-x-lg"></i></a>
+                }
+            </form>
+            <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Updated"] @now.ToString("dd MMM yyyy, HH:mm")</span>
+        </div>
     </div>
 
     @* Group Navigation Icons *@

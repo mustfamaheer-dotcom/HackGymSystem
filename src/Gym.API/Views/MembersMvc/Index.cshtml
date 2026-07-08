@@ -246,6 +246,91 @@
                 var encoded = encodeURIComponent(msg);
                 window.open('https://wa.me/' + phone + '?text=' + encoded, '_blank');
             });
+
+            function buildBulkMessage(cb, body, offersText) {
+                return body
+                    .replace(/\{MemberName\}/g, cb.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, cb.dataset.code || '')
+                    .replace(/\{JoinDate\}/g, cb.dataset.joindate || '')
+                    .replace(/\{ReceiptNumber\}/g, cb.dataset.receipt || '')
+                    .replace(/\{StartDate\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{SubscriptionStatus\}/g, '')
+                    .replace(/\{TotalPaid\}/g, '')
+                    .replace(/\{RemainingBalance\}/g, '')
+                    .replace(/\{LastPaymentDate\}/g, '')
+                    .replace(/\{LastPaymentAmount\}/g, '')
+                    .replace(/\{PaymentMethod\}/g, '')
+                    .replace(/\{Offers\}/g, offersText)
+                    .replace(/\{OfferName\}/g, '')
+                    .replace(/\{PdfLink\}/g, cb.dataset.pdflink || '');
+            }
+
+            function updateBulkCount() {
+                var checked = document.querySelectorAll('.member-bulk-checkbox:checked');
+                var count = checked.length;
+                var counter = document.getElementById('bulkSelectedCount');
+                if (counter) counter.textContent = count;
+                var btn = document.getElementById('sendBulkWhatsAppBtn');
+                if (btn) {
+                    btn.disabled = count === 0;
+                    btn.classList.toggle('btn-success', count > 0);
+                    btn.classList.toggle('btn-secondary', count === 0);
+                }
+            }
+
+            var selectAll = document.getElementById('selectAllMembers');
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    document.querySelectorAll('.member-bulk-checkbox').forEach(function(cb) { cb.checked = selectAll.checked; });
+                    updateBulkCount();
+                });
+            }
+
+            document.addEventListener('change', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('member-bulk-checkbox')) {
+                    updateBulkCount();
+                }
+            });
+
+            var bulkBtn = document.getElementById('sendBulkWhatsAppBtn');
+            if (bulkBtn) {
+                bulkBtn.addEventListener('click', function() {
+                    var tid = select ? select.value : '';
+                    if (!tid) {
+                        showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
+                        return;
+                    }
+                    var body = templateMap[tid] || '';
+                    var checked = document.querySelectorAll('.member-bulk-checkbox:checked');
+                    if (checked.length === 0) return;
+
+                    var delay = 0;
+                    var step = 400;
+                    checked.forEach(function(cb) {
+                        var msg = buildBulkMessage(cb, body, offersText);
+                        var phone = (cb.dataset.phone || '').replace(/\D/g, '');
+                        if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                        if (!phone) return;
+
+                        var row = cb.closest('tr');
+                        if (row) row.classList.add('wa-selected');
+
+                        setTimeout(function() {
+                            window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                        }, delay);
+                        delay += step;
+                    });
+
+                    setTimeout(function() {
+                        var n = checked.length;
+                        showAlertModal('@SharedLocalizer["Bulk WhatsApp opened for "].Value' + n + ' @SharedLocalizer["members. Check your browser tabs."].Value');
+                    }, delay + 200);
+                });
+            }
+
+            updateBulkCount();
         })();
     </script>
 }

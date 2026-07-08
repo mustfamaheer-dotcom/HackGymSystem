@@ -24,14 +24,18 @@ public class DashboardMvcController : Controller
 
     [RequirePermission("Dashboard.View")]
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(int? year = null, int? month = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = _localizer["Dashboard Analysis"];
 
-        var result = await _mediator.Send(new GetDetailedDashboardQuery(), cancellationToken);
+        var result = await _mediator.Send(new GetDetailedDashboardQuery(year, month), cancellationToken);
 
         if (result.IsFailure)
             return View(new DetailedDashboardDto());
+
+        ViewBag.SelectedYear = year;
+        ViewBag.SelectedMonth = month;
+        ViewBag.AvailableYears = Enumerable.Range(DateTime.UtcNow.Year - 5, 7).ToList();
 
         return View(result.Data);
     }
