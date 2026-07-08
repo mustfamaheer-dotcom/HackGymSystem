@@ -55,6 +55,7 @@ public class FreezeSubscriptionCommandHandler : IRequestHandler<FreezeSubscripti
         var freezeEnd = freezeStart.AddDays(request.FreezeDays);
 
         subscription.Freeze(freezeStart, freezeEnd, request.FreezeDays, request.Reason, _localizer["Only active subscriptions can be frozen"]);
+        _subscriptionRepo.Update(subscription);
 
         var freezeHistory = new SubscriptionFreezeHistory(
             subscription.Id, freezeStart, freezeEnd, request.FreezeDays, request.Reason);

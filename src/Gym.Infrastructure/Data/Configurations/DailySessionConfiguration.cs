@@ -22,5 +22,23 @@ public class DailySessionConfiguration : IEntityTypeConfiguration<DailySession>
 
         builder.Property(x => x.VisitDate)
             .IsRequired();
+
+        builder.Property(x => x.Amount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(x => x.PaidAmount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(x => x.RemainingBalance)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(x => x.PaymentMethod)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.HasOne(x => x.Plan)
+            .WithMany()
+            .HasForeignKey(x => x.PlanId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

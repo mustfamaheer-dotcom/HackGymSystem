@@ -4,6 +4,7 @@ using System.Text.Unicode;
 using Gym.API.Filters;
 using Gym.API;
 using Gym.Application.Common.DTOs;
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Subscriptions.Commands.CreateSubscription;
 using Gym.Application.Subscriptions.Commands.FreezeSubscription;
 using Gym.Application.Subscriptions.Commands.RecordSubscriptionPayment;
@@ -29,6 +30,7 @@ namespace Gym.API.Controllers;
 public class SubscriptionsMvcController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IWhatsAppService _whatsAppService;
     private readonly IStringLocalizer<SharedResources> _localizer;
     private readonly IRepository<Member> _memberRepo;
     private readonly IRepository<MembershipPlan> _planRepo;
@@ -37,6 +39,7 @@ public class SubscriptionsMvcController : Controller
 
     public SubscriptionsMvcController(
         IMediator mediator,
+        IWhatsAppService whatsAppService,
         IStringLocalizer<SharedResources> localizer,
         IRepository<Member> memberRepo,
         IRepository<MembershipPlan> planRepo,
@@ -44,6 +47,7 @@ public class SubscriptionsMvcController : Controller
         IRepository<WhatsAppTemplate> templateRepo)
     {
         _mediator = mediator;
+        _whatsAppService = whatsAppService;
         _localizer = localizer;
         _memberRepo = memberRepo;
         _planRepo = planRepo;
@@ -70,6 +74,8 @@ public class SubscriptionsMvcController : Controller
         ViewBag.DateTo = query.DateTo?.ToString("yyyy-MM-dd");
         ViewBag.ExpiresWithinDays = query.ExpiresWithinDays;
         ViewBag.HasOutstandingBalance = query.HasOutstandingBalance;
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
@@ -128,6 +134,8 @@ public class SubscriptionsMvcController : Controller
         }
 
         await PopulateDetailsDropdowns(cancellationToken);
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");

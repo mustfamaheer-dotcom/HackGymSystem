@@ -51,6 +51,7 @@ public class RecordSubscriptionPaymentCommandHandler : IRequestHandler<RecordSub
             return Result.Failure(_localizer["Payment amount exceeds remaining balance"]);
 
         subscription.RecordPayment(request.Amount);
+        _subscriptionRepo.Update(subscription);
 
         var payment = new SubscriptionPayment(
             subscription.Id, request.Amount, request.PaymentMethod,

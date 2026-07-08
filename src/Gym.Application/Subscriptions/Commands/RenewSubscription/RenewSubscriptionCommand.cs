@@ -53,16 +53,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         {
             try
             {
-                await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-                var result = await HandleCoreAsync(request, cancellationToken);
-
-                if (result.IsSuccess)
-                    await _unitOfWork.CommitAsync(cancellationToken);
-                else
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-
-                return result;
+                return await _unitOfWork.ExecuteTransactionAsync(ct => HandleCoreAsync(request, ct), cancellationToken);
             }
             catch (DbUpdateException) when (attempt < maxRetries - 1)
             {
@@ -88,6 +79,7 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
             return Result<Guid>.Failure(_localizer["Member already has an active subscription. Cannot create a new one."]);
 
         previous.MarkRenewed();
+        _subscriptionRepo.Update(previous);
 
         var planId = request.NewPlanId ?? previous.PlanId;
         var plan = await _planRepo.GetByIdAsync(planId, cancellationToken);

@@ -207,12 +207,9 @@
                 : '';
 
             var select = document.getElementById('whatsappTemplate');
+            var isConfigured = @(ViewBag.IsWhatsAppConfigured ? "true" : "false");
 
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('.wa-btn');
-                if (!btn) return;
-                e.preventDefault();
-
+            function sendSingleWhatsApp(btn) {
                 var tid = select ? select.value : '';
                 if (!tid) {
                     showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
@@ -241,10 +238,38 @@
                 var row = btn.closest('tr');
                 if (row) row.classList.add('wa-selected');
 
-                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
-                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                var encoded = encodeURIComponent(msg);
-                window.open('https://wa.me/' + phone + '?text=' + encoded, '_blank');
+                if (!isConfigured) {
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                    return;
+                }
+
+                var data = {
+                    memberPhone: btn.dataset.phone || '',
+                    memberName: btn.dataset.member || '',
+                    memberCode: btn.dataset.code || '',
+                    joinDate: btn.dataset.joindate || '',
+                    receiptNumber: btn.dataset.receipt || '',
+                    offers: offersText
+                };
+                fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+                    body: JSON.stringify(data)
+                }).then(function(r) { return r.json(); }).then(function(r) {
+                    if (r.success) showAlertModal('@SharedLocalizer["WhatsApp message sent successfully"]');
+                    else showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]: ' + (r.message || ''));
+                }).catch(function() {
+                    showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]');
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+                sendSingleWhatsApp(btn);
             });
 
             function buildBulkMessage(cb, body, offersText) {
@@ -306,27 +331,55 @@
                     var checked = document.querySelectorAll('.member-bulk-checkbox:checked');
                     if (checked.length === 0) return;
 
-                    var delay = 0;
-                    var step = 400;
+                    if (!isConfigured) {
+                        var delay = 0;
+                        var step = 400;
+                        checked.forEach(function(cb) {
+                            var msg = buildBulkMessage(cb, body, offersText);
+                            var phone = (cb.dataset.phone || '').replace(/\D/g, '');
+                            if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                            if (!phone) return;
+                            var row = cb.closest('tr');
+                            if (row) row.classList.add('wa-selected');
+                            setTimeout(function() {
+                                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                            }, delay);
+                            delay += step;
+                        });
+                        setTimeout(function() {
+                            var n = checked.length;
+                            showAlertModal('@SharedLocalizer["Bulk WhatsApp opened for "].Value' + n + ' @SharedLocalizer["members. Check your browser tabs."].Value');
+                        }, delay + 200);
+                        return;
+                    }
+
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    var sent = 0;
+                    var failed = 0;
+                    var total = checked.length;
                     checked.forEach(function(cb) {
                         var msg = buildBulkMessage(cb, body, offersText);
-                        var phone = (cb.dataset.phone || '').replace(/\D/g, '');
-                        if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                        if (!phone) return;
-
+                        var data = {
+                            memberPhone: cb.dataset.phone || '',
+                            memberName: cb.dataset.member || '',
+                            memberCode: cb.dataset.code || '',
+                            joinDate: cb.dataset.joindate || '',
+                            receiptNumber: cb.dataset.receipt || '',
+                            offers: offersText
+                        };
                         var row = cb.closest('tr');
                         if (row) row.classList.add('wa-selected');
-
-                        setTimeout(function() {
-                            window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-                        }, delay);
-                        delay += step;
+                        fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                            body: JSON.stringify(data)
+                        }).then(function(r) { return r.json(); }).then(function(r) {
+                            if (r.success) sent++; else failed++;
+                        }).catch(function() { failed++; });
                     });
-
                     setTimeout(function() {
-                        var n = checked.length;
-                        showAlertModal('@SharedLocalizer["Bulk WhatsApp opened for "].Value' + n + ' @SharedLocalizer["members. Check your browser tabs."].Value');
-                    }, delay + 200);
+                        showAlertModal(sent + ' @SharedLocalizer["sent, "] ' + failed + ' @SharedLocalizer["failed"]');
+                    }, 2000);
                 });
             }
 

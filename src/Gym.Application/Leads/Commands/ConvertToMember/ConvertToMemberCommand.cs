@@ -45,66 +45,61 @@ public class ConvertToMemberCommandHandler : IRequestHandler<ConvertToMemberComm
         {
             try
             {
-                await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-                var lead = await _leadRepo.Query()
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(l => l.Id == request.LeadId, cancellationToken);
-                if (lead == null)
-                    return Result<Guid>.Failure(_localizer["Lead not found"]);
-
-                var plan = await _planRepo.GetByIdAsync(request.PlanId, cancellationToken);
-                if (plan == null)
-                    return Result<Guid>.Failure(_localizer["Plan not found"]);
-
-                var now = DateTime.UtcNow;
-
-                // Generate code
-                var lastMember = await _memberRepo.Query()
-                    .IgnoreQueryFilters()
-                    .OrderByDescending(m => m.Code)
-                    .FirstOrDefaultAsync(cancellationToken);
-                var code = (lastMember?.Code ?? 0) + 1;
-
-                // Generate receipt number
-                var lastReceipt = await _memberRepo.Query()
-                    .IgnoreQueryFilters()
-                    .OrderByDescending(m => m.ReceiptNumber)
-                    .Select(m => m.ReceiptNumber)
-                    .FirstOrDefaultAsync(cancellationToken);
-                int nextNum = 1;
-                if (lastReceipt != null && lastReceipt.StartsWith("REC-"))
+                return await _unitOfWork.ExecuteTransactionAsync(async ct =>
                 {
-                    int.TryParse(lastReceipt[4..], out nextNum);
-                    nextNum++;
-                }
-                var receiptNumber = $"REC-{nextNum:D6}";
+                    var lead = await _leadRepo.Query()
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(l => l.Id == request.LeadId, ct);
+                    if (lead == null)
+                        return Result<Guid>.Failure(_localizer["Lead not found"]);
 
-                var member = new Member(receiptNumber, lead.Name, lead.Phone, now)
-                {
-                    Code = code,
-                    PackageId = plan.Id
-                };
-                await _memberRepo.AddAsync(member, cancellationToken);
+                    var plan = await _planRepo.GetByIdAsync(request.PlanId, ct);
+                    if (plan == null)
+                        return Result<Guid>.Failure(_localizer["Plan not found"]);
 
-                // Create subscription
-                var expirationDate = now.AddDays(plan.DurationDays);
-                var subscription = new Domain.Entities.Subscription(
-                    receiptNumber, member.Id, plan.Id, plan.Price,
-                    request.AmountPaid, request.PaymentMethod, now, expirationDate)
-                {
-                    AdminSignature = "Converted from Lead"
-                };
-                await _subscriptionRepo.AddAsync(subscription, cancellationToken);
+                    var now = DateTime.UtcNow;
 
-                // Mark lead as converted
-                lead.MarkConverted();
-                _leadRepo.Update(lead);
+                    var lastMember = await _memberRepo.Query()
+                        .IgnoreQueryFilters()
+                        .OrderByDescending(m => m.Code)
+                        .FirstOrDefaultAsync(ct);
+                    var code = (lastMember?.Code ?? 0) + 1;
 
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                await _unitOfWork.CommitAsync(cancellationToken);
+                    var lastReceipt = await _memberRepo.Query()
+                        .IgnoreQueryFilters()
+                        .OrderByDescending(m => m.ReceiptNumber)
+                        .Select(m => m.ReceiptNumber)
+                        .FirstOrDefaultAsync(ct);
+                    int nextNum = 1;
+                    if (lastReceipt != null && lastReceipt.StartsWith("REC-"))
+                    {
+                        int.TryParse(lastReceipt[4..], out nextNum);
+                        nextNum++;
+                    }
+                    var receiptNumber = $"REC-{nextNum:D6}";
 
-                return Result<Guid>.Success(member.Id, _localizer["Lead converted to member successfully"]);
+                    var member = new Member(receiptNumber, lead.Name, lead.Phone, now)
+                    {
+                        Code = code,
+                        PackageId = plan.Id
+                    };
+                    await _memberRepo.AddAsync(member, ct);
+
+                    var expirationDate = now.AddDays(plan.DurationDays);
+                    var subscription = new Domain.Entities.Subscription(
+                        receiptNumber, member.Id, plan.Id, plan.Price,
+                        request.AmountPaid, request.PaymentMethod, now, expirationDate)
+                    {
+                        AdminSignature = "Converted from Lead"
+                    };
+                    await _subscriptionRepo.AddAsync(subscription, ct);
+
+                    lead.MarkConverted();
+                    _leadRepo.Update(lead);
+
+                    await _unitOfWork.SaveChangesAsync(ct);
+                    return Result<Guid>.Success(member.Id, _localizer["Lead converted to member successfully"]);
+                }, cancellationToken);
             }
             catch (DbUpdateException) when (attempt < maxRetries - 1)
             {

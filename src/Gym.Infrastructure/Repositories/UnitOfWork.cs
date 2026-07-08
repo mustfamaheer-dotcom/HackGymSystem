@@ -1,6 +1,7 @@
 using Gym.Domain.Interfaces;
 using Gym.Infrastructure.Data;
 using Gym.Shared.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +51,35 @@ public class UnitOfWork : IUnitOfWork
         }
         _context.ChangeTracker.Clear();
         await Task.CompletedTask;
+    }
+
+    public async Task<TResult> ExecuteTransactionAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken = default)
+    {
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            _transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var result = await operation(cancellationToken);
+                await _transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                if (_transaction is not null)
+                    await _transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+            finally
+            {
+                if (_transaction is not null)
+                {
+                    _transaction.Dispose();
+                    _transaction = null;
+                }
+            }
+        });
     }
 
     public void Dispose()

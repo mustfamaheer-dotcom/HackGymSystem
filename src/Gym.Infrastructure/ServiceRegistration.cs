@@ -41,6 +41,7 @@ public static class ServiceRegistration
         services.AddScoped<IDeviceMemberMappingRepository, DeviceMemberMappingRepository>();
         services.AddScoped<ICaptchaService, CaptchaService>();
         services.AddScoped<ISyncAuditService, SyncAuditService>();
+        services.AddScoped<IWhatsAppService, WhatsAppService>();
 
         services.AddHttpClient("ZKTecoBridge", client =>
         {

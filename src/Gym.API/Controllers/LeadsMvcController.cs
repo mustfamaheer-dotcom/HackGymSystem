@@ -38,16 +38,18 @@ public class LeadsMvcController : Controller
     private readonly IMediator _mediator;
     private readonly IStringLocalizer<SharedResources> _localizer;
     private readonly IExcelImportService _excelImportService;
+    private readonly IWhatsAppService _whatsAppService;
     private readonly IRepository<Lead> _leadRepository;
     private readonly IRepository<WhatsAppTemplate> _templateRepo;
     private readonly IRepository<Offer> _offerRepo;
     private readonly IWebHostEnvironment _env;
 
-    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IExcelImportService excelImportService, IRepository<Lead> leadRepository, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo, IWebHostEnvironment env)
+    public LeadsMvcController(IMediator mediator, IStringLocalizer<SharedResources> localizer, IExcelImportService excelImportService, IWhatsAppService whatsAppService, IRepository<Lead> leadRepository, IRepository<WhatsAppTemplate> templateRepo, IRepository<Offer> offerRepo, IWebHostEnvironment env)
     {
         _mediator = mediator;
         _localizer = localizer;
         _excelImportService = excelImportService;
+        _whatsAppService = whatsAppService;
         _leadRepository = leadRepository;
         _templateRepo = templateRepo;
         _offerRepo = offerRepo;
@@ -101,6 +103,8 @@ public class LeadsMvcController : Controller
 
         var statsResult = await _mediator.Send(new GetLeadStatsQuery(), cancellationToken);
         ViewBag.LeadStats = statsResult.IsSuccess ? statsResult.Data : null;
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
@@ -196,6 +200,8 @@ public class LeadsMvcController : Controller
         }
         var followUpsResult = await _mediator.Send(new GetFollowUpsQuery(id), cancellationToken);
         ViewBag.FollowUps = followUpsResult.IsSuccess ? followUpsResult.Data ?? new List<LeadFollowUpDto>() : new List<LeadFollowUpDto>();
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");

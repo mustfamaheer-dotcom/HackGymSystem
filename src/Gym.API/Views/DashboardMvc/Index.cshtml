@@ -2,42 +2,87 @@
 @{
     var now = DateTime.UtcNow;
     var hasRevenue = User.HasClaim("permission", "Dashboard.Revenue");
-    var selectedYear = ViewBag.SelectedYear as int?;
-    var selectedMonth = ViewBag.SelectedMonth as int?;
+    var filterYear = ViewBag.FilterYear as int?;
+    var filterMonth = ViewBag.FilterMonth as int?;
+    var filterFrom = ViewBag.FilterFrom as DateTime?;
+    var filterTo = ViewBag.FilterTo as DateTime?;
     var availableYears = ViewBag.AvailableYears as List<int> ?? new List<int>();
     var currentYear = now.Year;
     var currentMonth = now.Month;
-    var isFilterActive = selectedYear.HasValue && selectedMonth.HasValue;
+    var hasMonthFilter = filterYear.HasValue && filterMonth.HasValue;
+    var hasRangeFilter = filterFrom.HasValue && filterTo.HasValue;
+    var isFilterActive = hasMonthFilter || hasRangeFilter;
+
+    string ActivePill(string pill)
+    {
+        if (!hasRangeFilter && !hasMonthFilter && pill == "current") return "active";
+        if (hasRangeFilter && !hasMonthFilter)
+        {
+            var from = filterFrom!.Value;
+            var to = filterTo!.Value;
+            if (pill == "30days" && from == now.Date.AddDays(-29) && to == now.Date) return "active";
+            if (pill == "quarter" && from == new DateTime(now.Year, ((now.Month - 1) / 3) * 3 + 1, 1) && to == now.Date) return "active";
+            if (pill == "year" && from == new DateTime(now.Year, 1, 1) && to == now.Date) return "active";
+            if (pill == "all") return "active";
+        }
+        if (hasMonthFilter && pill == "current") return "active";
+        return "";
+    }
 }
 
 <div class="dash-container" style="max-width:1600px;margin:0 auto;">
-    <div class="dash-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
+    <div class="dash-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
         <h2 style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--charcoal);margin:0;font-size:1.35rem;">
             <i style="color:var(--amber);" class="bi bi-bar-chart-fill dash-icon-spacing"></i> @SharedLocalizer["Dashboard Analysis"]
         </h2>
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 m-0">
-                <label class="form-label m-0 text-muted small">@SharedLocalizer["Month Filter"]:</label>
-                <select name="month" class="form-select form-select-sm" style="min-width:110px;" onchange="this.form.submit()">
+        <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Updated"] @now.ToString("dd MMM yyyy, HH:mm")</span>
+    </div>
+
+    @* --- Enhanced Filter Bar --- *@
+    <div class="filter-bar" style="background:var(--card-bg);border:1px solid var(--border-solid);border-radius:12px;padding:0.85rem 1.25rem;margin-bottom:1.25rem;">
+        <form asp-action="Index" method="get" id="dashboardFilterForm" class="d-flex flex-wrap align-items-center gap-2 m-0">
+            @* Quick Period Pills *@
+            <div class="d-flex gap-1 flex-wrap" style="padding-right:1rem;border-right:1px solid var(--border-solid);margin-right:1rem;">
+                <button type="button" class="period-pill @ActivePill("current")" data-period="current" style="padding:0.25rem 0.7rem;border-radius:20px;border:1px solid var(--border-solid);background:transparent;font-size:0.72rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">@SharedLocalizer["This Month"]</button>
+                <button type="button" class="period-pill @ActivePill("30days")" data-period="30days" style="padding:0.25rem 0.7rem;border-radius:20px;border:1px solid var(--border-solid);background:transparent;font-size:0.72rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">@SharedLocalizer["Last 30 Days"]</button>
+                <button type="button" class="period-pill @ActivePill("quarter")" data-period="quarter" style="padding:0.25rem 0.7rem;border-radius:20px;border:1px solid var(--border-solid);background:transparent;font-size:0.72rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">@SharedLocalizer["This Quarter"]</button>
+                <button type="button" class="period-pill @ActivePill("year")" data-period="year" style="padding:0.25rem 0.7rem;border-radius:20px;border:1px solid var(--border-solid);background:transparent;font-size:0.72rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">@SharedLocalizer["This Year"]</button>
+                <button type="button" class="period-pill @ActivePill("all")" data-period="all" style="padding:0.25rem 0.7rem;border-radius:20px;border:1px solid var(--border-solid);background:transparent;font-size:0.72rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">@SharedLocalizer["All Time"]</button>
+            </div>
+
+            @* Month/Year selector *@
+            <div class="d-flex align-items-center gap-1">
+                <select name="month" class="form-select form-select-sm period-select" style="min-width:105px;font-size:0.75rem;">
+                    <option value="">@SharedLocalizer["Month"]</option>
                     @for (int m = 1; m <= 12; m++)
                     {
                         var monthDate = new DateTime(currentYear, m, 1);
-                        <option value="@m" selected="@(isFilterActive ? m == selectedMonth : m == currentMonth)">@monthDate.ToString("MMMM")</option>
+                        <option value="@m" selected="@(m == filterMonth)">@monthDate.ToString("MMMM")</option>
                     }
                 </select>
-                <select name="year" class="form-select form-select-sm" style="min-width:90px;" onchange="this.form.submit()">
+                <select name="year" class="form-select form-select-sm period-select" style="min-width:80px;font-size:0.75rem;">
+                    <option value="">@SharedLocalizer["Year"]</option>
                     @foreach (var y in availableYears)
                     {
-                        <option value="@y" selected="@(isFilterActive ? y == selectedYear : y == currentYear)">@y</option>
+                        <option value="@y" selected="@(y == filterYear)">@y</option>
                     }
                 </select>
-                @if (isFilterActive)
-                {
-                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="@SharedLocalizer["Clear filter"]"><i class="bi bi-x-lg"></i></a>
-                }
-            </form>
-            <span class="dash-refresh"><i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Updated"] @now.ToString("dd MMM yyyy, HH:mm")</span>
-        </div>
+            </div>
+
+            @* Date range *@
+            <div class="d-flex align-items-center gap-1">
+                <input type="date" name="from" id="rangeFrom" value="@(filterFrom?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm range-input" style="width:135px;font-size:0.75rem;" />
+                <span style="color:var(--text-muted-custom);font-size:0.7rem;">-</span>
+                <input type="date" name="to" id="rangeTo" value="@(filterTo?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm range-input" style="width:135px;font-size:0.75rem;" />
+            </div>
+
+            <button type="submit" class="btn btn-sm" style="background:var(--amber);color:#fff;border:none;border-radius:6px;font-size:0.72rem;font-weight:600;padding:0.3rem 0.85rem;"><i class="bi bi-funnel-fill"></i></button>
+
+            @if (isFilterActive)
+            {
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;border-radius:6px;padding:0.3rem 0.6rem;" title="@SharedLocalizer["Clear filter"]"><i class="bi bi-x-lg"></i></a>
+            }
+        </form>
     </div>
 
     @* Group Navigation Icons *@
@@ -1511,6 +1556,7 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
             var buttons = document.querySelectorAll('.group-btn');
             var sections = {
                 members: document.getElementById('group-members'),
@@ -1541,6 +1587,54 @@
             });
 
             showGroup('members');
+
+            // Dashboard period pills
+            var form = document.getElementById('dashboardFilterForm');
+            var monthSel = form.querySelector('select[name="month"]');
+            var yearSel = form.querySelector('select[name="year"]');
+            var fromInput = form.querySelector('input[name="from"]');
+            var toInput = form.querySelector('input[name="to"]');
+
+            function dateStr(d) {
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            }
+
+            document.querySelectorAll('.period-pill').forEach(function(pill) {
+                pill.addEventListener('click', function() {
+                    var period = this.dataset.period;
+                    var now = new Date();
+                    var y = now.getFullYear();
+                    var m = now.getMonth();
+
+                    // Clear all
+                    monthSel.value = '';
+                    yearSel.value = '';
+                    fromInput.value = '';
+                    toInput.value = '';
+
+                    if (period === 'current') {
+                        monthSel.value = m + 1;
+                        yearSel.value = y;
+                    } else if (period === '30days') {
+                        var from = new Date(now);
+                        from.setDate(from.getDate() - 29);
+                        fromInput.value = dateStr(from);
+                        toInput.value = dateStr(now);
+                    } else if (period === 'quarter') {
+                        var qStart = Math.floor(m / 3) * 3;
+                        var from = new Date(y, qStart, 1);
+                        fromInput.value = dateStr(from);
+                        toInput.value = dateStr(now);
+                    } else if (period === 'year') {
+                        var from = new Date(y, 0, 1);
+                        fromInput.value = dateStr(from);
+                        toInput.value = dateStr(now);
+                    }
+                    // 'all' = send nothing (empty form = no filter)
+
+                    form.submit();
+                });
+            });
         });
     </script>
 }

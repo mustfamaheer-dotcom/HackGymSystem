@@ -131,6 +131,7 @@ public class RolePermissionService : IRolePermissionService
         foreach (var permId in requested.Where(p => !existing.Contains(p)))
             await _unitOfWork.Repository<RolePermission>().AddAsync(new RolePermission(role.Id, permId), ct);
 
+        _unitOfWork.Repository<Role>().Update(role);
         await _unitOfWork.SaveChangesAsync(ct);
 
         await LogPermissionChangeAsync(_localizer["Update"], role.Name, oldPermissionIds, dto.PermissionIds, ct);

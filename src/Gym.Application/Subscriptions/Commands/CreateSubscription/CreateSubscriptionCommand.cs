@@ -54,84 +54,58 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
         {
             try
             {
-                await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-                Result<Guid> result;
-
-                var member = await _memberRepo.GetByIdAsync(request.MemberId, cancellationToken);
-                if (member == null)
+                return await _unitOfWork.ExecuteTransactionAsync(async ct =>
                 {
-                    result = Result<Guid>.Failure(_localizer["Member not found"]);
-                }
-                else
-                {
+                    var member = await _memberRepo.GetByIdAsync(request.MemberId, ct);
+                    if (member == null)
+                        return Result<Guid>.Failure(_localizer["Member not found"]);
+
                     var existingSub = await _subscriptionRepo.Query()
-                        .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Frozen), cancellationToken);
+                        .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Frozen), ct);
 
                     if (existingSub != null && existingSub.Status == SubscriptionStatus.Active && !request.OfferId.HasValue)
-                        result = Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
-                    else if (existingSub != null && existingSub.Status == SubscriptionStatus.Active && request.OfferId.HasValue)
-                        result = await HandleExtendAsync(existingSub, member, request, cancellationToken);
-                    else if (existingSub != null && existingSub.Status == SubscriptionStatus.Frozen)
-                        result = Result<Guid>.Failure(_localizer["Member has a frozen subscription. Unfreeze it before creating a new one."]);
-                    else
+                        return Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
+                    if (existingSub != null && existingSub.Status == SubscriptionStatus.Active && request.OfferId.HasValue)
+                        return await HandleExtendAsync(existingSub, member, request, ct);
+                    if (existingSub != null && existingSub.Status == SubscriptionStatus.Frozen)
+                        return Result<Guid>.Failure(_localizer["Member has a frozen subscription. Unfreeze it before creating a new one."]);
+
+                    if (request.PlanId.HasValue)
                     {
-                        Guid resolvedPlanId;
-                        MembershipPlan plan;
-
-                        if (request.PlanId.HasValue)
-                        {
-                            resolvedPlanId = request.PlanId.Value;
-                            plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
-                            if (plan == null)
-                                result = Result<Guid>.Failure(_localizer["Plan not found"]);
-                            else if (!plan.IsActive)
-                                result = Result<Guid>.Failure(_localizer["Plan is not active"]);
-                            else
-                                result = await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
-                        }
-                        else if (request.OfferId.HasValue)
-                        {
-                            var resolvedOffer = await _offerRepo.Query()
-                                .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, cancellationToken);
-                            if (resolvedOffer == null)
-                                result = Result<Guid>.Failure(_localizer["Offer not found"]);
-                            else if (resolvedOffer.LinkedPackageId.HasValue)
-                            {
-                                resolvedPlanId = resolvedOffer.LinkedPackageId.Value;
-                                plan = await _planRepo.GetByIdAsync(resolvedPlanId, cancellationToken);
-                                if (plan == null)
-                                    result = Result<Guid>.Failure(_localizer["Linked plan not found"]);
-                                else if (!plan.IsActive)
-                                    result = Result<Guid>.Failure(_localizer["Linked plan is not active"]);
-                                else
-                                    result = await HandleNewAsync(member, plan, resolvedPlanId, request, cancellationToken);
-                            }
-                            else
-                            {
-                                plan = await _planRepo.Query()
-                                    .Where(p => p.IsActive)
-                                    .OrderBy(p => p.Name)
-                                    .FirstOrDefaultAsync(cancellationToken);
-                                if (plan == null)
-                                    result = Result<Guid>.Failure(_localizer["No active plan found to link the offer to"]);
-                                else
-                                    result = await HandleNewAsync(member, plan, plan.Id, request, cancellationToken);
-                            }
-                        }
-                        else
-                        {
-                            result = Result<Guid>.Failure(_localizer["Either plan or offer must be selected"]);
-                        }
+                        var plan = await _planRepo.GetByIdAsync(request.PlanId.Value, ct);
+                        if (plan == null)
+                            return Result<Guid>.Failure(_localizer["Plan not found"]);
+                        if (!plan.IsActive)
+                            return Result<Guid>.Failure(_localizer["Plan is not active"]);
+                        return await HandleNewAsync(member, plan, request.PlanId.Value, request, ct);
                     }
-                }
 
-                if (result.IsSuccess)
-                    await _unitOfWork.CommitAsync(cancellationToken);
-                else
-                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    if (request.OfferId.HasValue)
+                    {
+                        var resolvedOffer = await _offerRepo.Query()
+                            .FirstOrDefaultAsync(o => o.Id == request.OfferId.Value, ct);
+                        if (resolvedOffer == null)
+                            return Result<Guid>.Failure(_localizer["Offer not found"]);
+                        if (resolvedOffer.LinkedPackageId.HasValue)
+                        {
+                            var linkedPlan = await _planRepo.GetByIdAsync(resolvedOffer.LinkedPackageId.Value, ct);
+                            if (linkedPlan == null)
+                                return Result<Guid>.Failure(_localizer["Linked plan not found"]);
+                            if (!linkedPlan.IsActive)
+                                return Result<Guid>.Failure(_localizer["Linked plan is not active"]);
+                            return await HandleNewAsync(member, linkedPlan, resolvedOffer.LinkedPackageId.Value, request, ct);
+                        }
+                        var activePlan = await _planRepo.Query()
+                            .Where(p => p.IsActive)
+                            .OrderBy(p => p.Name)
+                            .FirstOrDefaultAsync(ct);
+                        if (activePlan == null)
+                            return Result<Guid>.Failure(_localizer["No active plan found to link the offer to"]);
+                        return await HandleNewAsync(member, activePlan, activePlan.Id, request, ct);
+                    }
 
-                return result;
+                    return Result<Guid>.Failure(_localizer["Either plan or offer must be selected"]);
+                }, cancellationToken);
             }
             catch (DbUpdateException) when (attempt < maxRetries - 1)
             {

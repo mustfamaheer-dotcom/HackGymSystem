@@ -53,7 +53,7 @@
         </div>
     }
 
-    @* WhatsApp Template Selector *@
+    @* WhatsApp Template Selector & Bulk Send *@
     <div class="p-3 border-bottom bg-light">
         <div class="row g-2 align-items-center">
             <div class="col-md-4">
@@ -71,8 +71,13 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-8 text-muted small d-flex align-items-center">
-                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template above, then click the WhatsApp button on any row"]
+            <div class="col-md-4">
+                <button type="button" id="sendBulkWhatsAppBtn" class="btn btn-success w-100" disabled>
+                    <i class="bi bi-whatsapp"></i> <span id="bulkSelectedCount">0</span> @SharedLocalizer["selected — Send Bulk WhatsApp"]
+                </button>
+            </div>
+            <div class="col-md-4 text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template, check leads, then click Send Bulk WhatsApp"]
             </div>
         </div>
     </div>
@@ -179,8 +184,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width:16%;text-align:left;">@SharedLocalizer["Name"]</th>
-                        <th style="width:16%;text-align:left;">@SharedLocalizer["Phone"] / @SharedLocalizer["Email"]</th>
+                        <th style="width:40px;">
+                            <input type="checkbox" id="selectAllLeads" class="form-check-input" title="@SharedLocalizer["Select all on this page"]" />
+                        </th>
+                        <th style="width:14%;text-align:left;">@SharedLocalizer["Name"]</th>
+                        <th style="width:14%;text-align:left;">@SharedLocalizer["Phone"] / @SharedLocalizer["Email"]</th>
                         <th style="width:8%;text-align:center;">@SharedLocalizer["Gender"]</th>
                         <th style="width:10%;text-align:center;">@SharedLocalizer["Source"]</th>
                         <th style="width:10%;text-align:center;">@SharedLocalizer["Status"]</th>
@@ -193,6 +201,11 @@
                     @foreach (var lead in Model.Items)
                     {
                         <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input lead-bulk-checkbox"
+                                    data-phone="@lead.Phone"
+                                    data-member="@lead.Name" />
+                            </td>
                             <td style="text-align:left;" class="fw-semibold">@lead.Name</td>
                             <td style="text-align:left;">
                                 <div>@lead.Phone</div>
@@ -312,12 +325,9 @@
                 : '';
 
             var select = document.getElementById('whatsappTemplate');
+            var isConfigured = @(ViewBag.IsWhatsAppConfigured ? "true" : "false");
 
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('.wa-btn');
-                if (!btn) return;
-                e.preventDefault();
-
+            function sendSingleWhatsApp(btn) {
                 var tid = select ? select.value : '';
                 if (!tid) {
                     showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
@@ -327,18 +337,163 @@
                 var body = templateMap[tid] || '';
                 var msg = body
                     .replace(/\{MemberName\}/g, btn.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, '')
+                    .replace(/\{JoinDate\}/g, '')
                     .replace(/\{ReceiptNumber\}/g, '')
+                    .replace(/\{StartDate\}/g, '')
                     .replace(/\{ExpirationDate\}/g, '')
                     .replace(/\{DaysRemaining\}/g, '')
-                    .replace(/\{Offers\}/g, offersText);
+                    .replace(/\{SubscriptionStatus\}/g, '')
+                    .replace(/\{TotalPaid\}/g, '')
+                    .replace(/\{RemainingBalance\}/g, '')
+                    .replace(/\{LastPaymentDate\}/g, '')
+                    .replace(/\{LastPaymentAmount\}/g, '')
+                    .replace(/\{PaymentMethod\}/g, '')
+                    .replace(/\{Offers\}/g, offersText)
+                    .replace(/\{OfferName\}/g, '')
+                    .replace(/\{PdfLink\}/g, '');
 
                 var row = btn.closest('tr');
                 if (row) row.classList.add('wa-selected');
 
-                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
-                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                if (!isConfigured) {
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                    return;
+                }
+
+                var data = {
+                    memberPhone: btn.dataset.phone || '',
+                    memberName: btn.dataset.member || '',
+                    offers: offersText
+                };
+                fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+                    body: JSON.stringify(data)
+                }).then(function(r) { return r.json(); }).then(function(r) {
+                    if (r.success) showAlertModal('@SharedLocalizer["WhatsApp message sent successfully"]');
+                    else showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]: ' + (r.message || ''));
+                }).catch(function() {
+                    showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]');
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+                sendSingleWhatsApp(btn);
             });
+
+            function buildBulkMessage(cb, body, offersText) {
+                return body
+                    .replace(/\{MemberName\}/g, cb.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, '')
+                    .replace(/\{JoinDate\}/g, '')
+                    .replace(/\{ReceiptNumber\}/g, '')
+                    .replace(/\{StartDate\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, '')
+                    .replace(/\{DaysRemaining\}/g, '')
+                    .replace(/\{SubscriptionStatus\}/g, '')
+                    .replace(/\{TotalPaid\}/g, '')
+                    .replace(/\{RemainingBalance\}/g, '')
+                    .replace(/\{LastPaymentDate\}/g, '')
+                    .replace(/\{LastPaymentAmount\}/g, '')
+                    .replace(/\{PaymentMethod\}/g, '')
+                    .replace(/\{Offers\}/g, offersText)
+                    .replace(/\{OfferName\}/g, '')
+                    .replace(/\{PdfLink\}/g, '');
+            }
+
+            function updateBulkCount() {
+                var checked = document.querySelectorAll('.lead-bulk-checkbox:checked');
+                var count = checked.length;
+                var counter = document.getElementById('bulkSelectedCount');
+                if (counter) counter.textContent = count;
+                var btn = document.getElementById('sendBulkWhatsAppBtn');
+                if (btn) {
+                    btn.disabled = count === 0;
+                    btn.classList.toggle('btn-success', count > 0);
+                    btn.classList.toggle('btn-secondary', count === 0);
+                }
+            }
+
+            var selectAll = document.getElementById('selectAllLeads');
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    document.querySelectorAll('.lead-bulk-checkbox').forEach(function(cb) { cb.checked = selectAll.checked; });
+                    updateBulkCount();
+                });
+            }
+
+            document.addEventListener('change', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('lead-bulk-checkbox')) {
+                    updateBulkCount();
+                }
+            });
+
+            var bulkBtn = document.getElementById('sendBulkWhatsAppBtn');
+            if (bulkBtn) {
+                bulkBtn.addEventListener('click', function() {
+                    var tid = select ? select.value : '';
+                    if (!tid) {
+                        showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
+                        return;
+                    }
+                    var body = templateMap[tid] || '';
+                    var checked = document.querySelectorAll('.lead-bulk-checkbox:checked');
+                    if (checked.length === 0) return;
+
+                    if (!isConfigured) {
+                        var delay = 0;
+                        var step = 400;
+                        checked.forEach(function(cb) {
+                            var msg = buildBulkMessage(cb, body, offersText);
+                            var phone = (cb.dataset.phone || '').replace(/\D/g, '');
+                            if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                            if (!phone) return;
+                            var row = cb.closest('tr');
+                            if (row) row.classList.add('wa-selected');
+                            setTimeout(function() {
+                                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                            }, delay);
+                            delay += step;
+                        });
+                        setTimeout(function() {
+                            var n = checked.length;
+                            showAlertModal('@SharedLocalizer["Bulk WhatsApp opened for "].Value' + n + ' @SharedLocalizer["leads. Check your browser tabs."].Value');
+                        }, delay + 200);
+                        return;
+                    }
+
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    var sent = 0, failed = 0;
+                    checked.forEach(function(cb) {
+                        var msg = buildBulkMessage(cb, body, offersText);
+                        var data = {
+                            memberPhone: cb.dataset.phone || '',
+                            memberName: cb.dataset.member || '',
+                            offers: offersText
+                        };
+                        var row = cb.closest('tr');
+                        if (row) row.classList.add('wa-selected');
+                        fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                            body: JSON.stringify(data)
+                        }).then(function(r) { return r.json(); }).then(function(r) {
+                            if (r.success) sent++; else failed++;
+                        }).catch(function() { failed++; });
+                    });
+                    setTimeout(function() {
+                        showAlertModal(sent + ' @SharedLocalizer["sent, "] ' + failed + ' @SharedLocalizer["failed"]');
+                    }, 2000);
+                });
+            }
+
+            updateBulkCount();
         })();
     </script>
 }

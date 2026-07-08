@@ -399,23 +399,47 @@ public class MemberService : IMemberService
                 ? PaymentMethod.Cash
                 : Enum.Parse<PaymentMethod>(dto.PaymentMethod, true);
 
-            var subscription = new Subscription(
-                GenerateReceiptNumber(),
-                member.Id,
-                resolvedPlanId,
-                dto.SubscriptionPrice.Value,
-                paidAmount,
-                paymentMethod,
-                startDate,
-                expirationDate,
-                dto.OfferId
-            );
+            var existingSub = await _unitOfWork.Repository<Subscription>()
+                .Query()
+                .FirstOrDefaultAsync(s => s.MemberId == member.Id && s.Status == SubscriptionStatus.Active, cancellationToken);
 
-            if (dto.FreezeDays.GetValueOrDefault() > 0)
-                subscription.TotalFreezeDays = dto.FreezeDays.Value;
+            if (existingSub != null)
+            {
+                existingSub.PlanId = resolvedPlanId;
+                existingSub.OfferId = dto.OfferId;
+                existingSub.TotalSubscriptionValue = dto.SubscriptionPrice.Value;
+                existingSub.AmountPaid = paidAmount;
+                existingSub.RemainingBalance = dto.SubscriptionPrice.Value - paidAmount;
+                existingSub.PaymentMethod = paymentMethod;
+                existingSub.StartDate = startDate;
+                existingSub.ExpirationDate = expirationDate;
+                existingSub.AdminSignature = dto.AdminSignature;
+                existingSub.Notes = null;
+                if (dto.FreezeDays.GetValueOrDefault() > 0)
+                    existingSub.TotalFreezeDays = dto.FreezeDays.Value;
+                existingSub.MarkUpdated();
+                _unitOfWork.Repository<Subscription>().Update(existingSub);
+            }
+            else
+            {
+                var subscription = new Subscription(
+                    GenerateReceiptNumber(),
+                    member.Id,
+                    resolvedPlanId,
+                    dto.SubscriptionPrice.Value,
+                    paidAmount,
+                    paymentMethod,
+                    startDate,
+                    expirationDate,
+                    dto.OfferId
+                );
 
-            member.Subscriptions.Add(subscription);
-            await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+                if (dto.FreezeDays.GetValueOrDefault() > 0)
+                    subscription.TotalFreezeDays = dto.FreezeDays.Value;
+
+                member.Subscriptions.Add(subscription);
+                await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+            }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

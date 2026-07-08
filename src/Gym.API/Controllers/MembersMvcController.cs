@@ -27,6 +27,7 @@ public class MembersMvcController : Controller
 {
     private readonly IMemberService _memberService;
     private readonly IExcelImportService _excelImportService;
+    private readonly IWhatsAppService _whatsAppService;
     private readonly IRepository<MembershipPlan> _planRepository;
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IStringLocalizer<SharedResources> _localizer;
@@ -37,6 +38,7 @@ public class MembersMvcController : Controller
     private readonly IRepository<Subscription> _subscriptionRepo;
 
     public MembersMvcController(IMemberService memberService, IExcelImportService excelImportService,
+        IWhatsAppService whatsAppService,
         IRepository<MembershipPlan> planRepository,
         IRepository<Attendance> attendanceRepository,
         IStringLocalizer<SharedResources> localizer,
@@ -48,6 +50,7 @@ public class MembersMvcController : Controller
     {
         _memberService = memberService;
         _excelImportService = excelImportService;
+        _whatsAppService = whatsAppService;
         _planRepository = planRepository;
         _attendanceRepository = attendanceRepository;
         _localizer = localizer;
@@ -71,6 +74,8 @@ public class MembersMvcController : Controller
             TempData["Error"] = result.Message;
             return View("Index", null);
         }
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
@@ -263,6 +268,8 @@ public class MembersMvcController : Controller
             .ToListAsync(cancellationToken);
 
         ViewBag.Attendances = attendances;
+
+        ViewBag.IsWhatsAppConfigured = _whatsAppService.IsConfigured;
 
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");

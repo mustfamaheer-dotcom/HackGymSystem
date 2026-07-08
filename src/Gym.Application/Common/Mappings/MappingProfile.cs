@@ -17,7 +17,9 @@ public class MappingProfile : Profile
             .ForMember(d => d.FollowUpCount, o => o.MapFrom(s => s.FollowUps.Count));
 
         CreateMap<LeadFollowUp, LeadFollowUpDto>();
-        CreateMap<DailySession, DailySessionDto>();
+        CreateMap<DailySession, DailySessionDto>()
+            .ForMember(d => d.PlanName, o => o.MapFrom(s => s.Plan != null ? s.Plan.Name : null))
+            .ForMember(d => d.PaymentMethod, o => o.MapFrom(s => s.PaymentMethod.ToString()));
     }
 
     private void ApplyMappingsFromAssembly(Assembly assembly)

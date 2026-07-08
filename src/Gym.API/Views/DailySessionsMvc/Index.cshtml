@@ -52,6 +52,11 @@
                         <th>@SharedLocalizer["Name"]</th>
                         <th>@SharedLocalizer["Phone"]</th>
                         <th>@SharedLocalizer["Visit Date"]</th>
+                        <th>@SharedLocalizer["Plan"]</th>
+                        <th>@SharedLocalizer["Amount"]</th>
+                        <th>@SharedLocalizer["Paid"]</th>
+                        <th>@SharedLocalizer["Balance"]</th>
+                        <th>@SharedLocalizer["Payment Method"]</th>
                         <th>@SharedLocalizer["Registered At"]</th>
                     </tr>
                 </thead>
@@ -62,6 +67,11 @@
                             <td class="fw-semibold">@session.Name</td>
                             <td>@session.Phone</td>
                             <td>@session.VisitDate.ToString("dd/MM/yyyy")</td>
+                            <td>@(session.PlanName ?? "-")</td>
+                            <td>@session.Amount.ToString("N2")</td>
+                            <td>@session.PaidAmount.ToString("N2")</td>
+                            <td>@session.RemainingBalance.ToString("N2")</td>
+                            <td>@SharedLocalizer[session.PaymentMethod]</td>
                             <td>@session.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                         </tr>
                     }

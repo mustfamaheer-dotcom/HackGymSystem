@@ -67,43 +67,42 @@ public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, R
         {
             try
             {
-                await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-                var receiptNumber = GenerateReceiptNumber();
-                var lastCode = await _repository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, cancellationToken) ?? 0;
-
-                var member = new Member(
-                    receiptNumber,
-                    request.FullName,
-                    request.PhoneNumber,
-                    DateTime.UtcNow
-                )
+                return await _unitOfWork.ExecuteTransactionAsync(async ct =>
                 {
-                    Code = lastCode + 1,
-                    Email = request.Email,
-                    DateOfBirth = request.DateOfBirth,
-                    Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true),
-                    Notes = request.Notes,
-                    Nationality = request.Nationality,
-                    NationalId = request.NationalId,
-                    Company = request.Company,
-                    Address = request.Address,
-                    Weight = request.Weight,
-                    HasDisease = request.HasDisease,
-                    DiseaseType = request.HasDisease ? request.DiseaseType : null,
-                    ReferralSource = request.ReferralSource,
-                    PackageId = request.PackageId,
-                    FingerprintDeviceId = request.FingerprintDeviceId,
-                    MemberSignature = request.MemberSignature,
-                    AdminSignature = request.AdminSignature,
-                    ImagePath = request.ImagePath
-                };
+                    var receiptNumber = GenerateReceiptNumber();
+                    var lastCode = await _repository.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, ct) ?? 0;
 
-                await _repository.AddAsync(member, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                await _unitOfWork.CommitAsync(cancellationToken);
+                    var member = new Member(
+                        receiptNumber,
+                        request.FullName,
+                        request.PhoneNumber,
+                        DateTime.UtcNow
+                    )
+                    {
+                        Code = lastCode + 1,
+                        Email = request.Email,
+                        DateOfBirth = request.DateOfBirth,
+                        Gender = string.IsNullOrEmpty(request.Gender) ? null : Enum.Parse<Gender>(request.Gender, true),
+                        Notes = request.Notes,
+                        Nationality = request.Nationality,
+                        NationalId = request.NationalId,
+                        Company = request.Company,
+                        Address = request.Address,
+                        Weight = request.Weight,
+                        HasDisease = request.HasDisease,
+                        DiseaseType = request.HasDisease ? request.DiseaseType : null,
+                        ReferralSource = request.ReferralSource,
+                        PackageId = request.PackageId,
+                        FingerprintDeviceId = request.FingerprintDeviceId,
+                        MemberSignature = request.MemberSignature,
+                        AdminSignature = request.AdminSignature,
+                        ImagePath = request.ImagePath
+                    };
 
-                return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
+                    await _repository.AddAsync(member, ct);
+                    await _unitOfWork.SaveChangesAsync(ct);
+                    return Result<Guid>.Success(member.Id, _localizer["Member created successfully"]);
+                }, cancellationToken);
             }
             catch (DbUpdateException) when (attempt < maxRetries - 1)
             {

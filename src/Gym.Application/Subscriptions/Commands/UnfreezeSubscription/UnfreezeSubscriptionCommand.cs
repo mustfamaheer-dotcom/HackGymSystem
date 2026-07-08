@@ -47,6 +47,7 @@ public class UnfreezeSubscriptionCommandHandler : IRequestHandler<UnfreezeSubscr
             lastFreeze.SetUnfreezeDate(unfreezeDate);
 
         subscription.Unfreeze(_localizer["Only frozen subscriptions can be unfrozen"]);
+        _subscriptionRepo.Update(subscription);
 
         var log = new SubscriptionTransactionLog(
             subscription.Id, "Unfrozen",

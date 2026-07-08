@@ -59,6 +59,8 @@ public static class SeedData
     private static readonly Guid PermDevicesView = Guid.Parse("D1000013-0000-0000-0000-000000000001");
     private static readonly Guid PermDevicesManage = Guid.Parse("D1000013-0000-0000-0000-000000000002");
     private static readonly Guid PermBackupManage = Guid.Parse("D1000014-0000-0000-0000-000000000001");
+    private static readonly Guid PermDailySessionsView = Guid.Parse("D1000017-0000-0000-0000-000000000001");
+    private static readonly Guid PermDailySessionsCreate = Guid.Parse("D1000017-0000-0000-0000-000000000002");
 
     private static readonly List<(Guid Id, string Name, string Description, string Module)> AllPermissions = new()
     {
@@ -108,7 +110,9 @@ public static class SeedData
         (PermRolesDelete, "Roles.Delete", "Delete roles", "Roles & Permissions"),
         (PermDevicesView, "Devices.View", "View devices", "Devices"),
         (PermDevicesManage, "Devices.Manage", "Manage devices", "Devices"),
-        (PermBackupManage, "Backup.Manage", "Manage backups", "Backup")
+        (PermBackupManage, "Backup.Manage", "Manage backups", "Backup"),
+        (PermDailySessionsView, "DailySessions.View", "View daily sessions", "Daily Sessions"),
+        (PermDailySessionsCreate, "DailySessions.Create", "Create daily sessions", "Daily Sessions")
     };
 
     public static void Seed(ModelBuilder builder)
@@ -179,7 +183,9 @@ public static class SeedData
             PermAttendanceExport,
             PermWhatsAppSend,
             PermImportExportImport,
-            PermImportExportExport
+            PermImportExportExport,
+            PermDailySessionsView,
+            PermDailySessionsCreate
         };
 
         foreach (var permId in receptionistPermissions)

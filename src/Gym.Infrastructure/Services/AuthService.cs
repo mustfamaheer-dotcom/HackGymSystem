@@ -29,8 +29,6 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Repository<User>()
             .Query()
             .Include(u => u.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
@@ -40,6 +38,7 @@ public class AuthService : IAuthService
                 user.FailedLoginAttempts++;
                 if (user.FailedLoginAttempts >= 5)
                     user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                _unitOfWork.Repository<User>().Update(user);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             return Result<AuthResponse>.Failure(_localizer["Invalid username or password."]);
@@ -54,10 +53,12 @@ public class AuthService : IAuthService
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var permissions = user.Role.RolePermissions?
-            .Select(rp => rp.Permission?.Name ?? string.Empty)
-            .Where(p => !string.IsNullOrEmpty(p))
-            .ToList() ?? new List<string>();
+        var permissions = await _unitOfWork.Repository<RolePermission>()
+            .Query()
+            .Where(rp => rp.RoleId == user.RoleId)
+            .Include(rp => rp.Permission)
+            .Select(rp => rp.Permission.Name)
+            .ToListAsync(cancellationToken);
 
         var (accessToken, refreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user, permissions);
 
@@ -90,8 +91,6 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Repository<User>()
             .Query()
             .Include(u => u.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.RefreshToken == tokenHash && u.IsActive, cancellationToken);
 
         if (user is null)
@@ -103,6 +102,7 @@ public class AuthService : IAuthService
             if (replayUser != null)
             {
                 replayUser.UpdateRefreshToken(null, null);
+                _unitOfWork.Repository<User>().Update(replayUser);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 return Result<AuthResponse>.Failure(_localizer["Refresh token has been compromised. Please login again."]);
             }
@@ -113,10 +113,12 @@ public class AuthService : IAuthService
         if (user.RefreshTokenExpiry <= DateTime.UtcNow)
             return Result<AuthResponse>.Failure(_localizer["Invalid or expired refresh token."]);
 
-        var permissions = user.Role.RolePermissions?
-            .Select(rp => rp.Permission?.Name ?? string.Empty)
-            .Where(p => !string.IsNullOrEmpty(p))
-            .ToList() ?? new List<string>();
+        var permissions = await _unitOfWork.Repository<RolePermission>()
+            .Query()
+            .Where(rp => rp.RoleId == user.RoleId)
+            .Include(rp => rp.Permission)
+            .Select(rp => rp.Permission.Name)
+            .ToListAsync(cancellationToken);
 
         var (accessToken, newRefreshToken, expiresAt) = await _tokenService.GenerateTokensAsync(user, permissions);
         user.UpdateRefreshToken(newRefreshToken, expiresAt);

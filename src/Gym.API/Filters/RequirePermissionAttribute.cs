@@ -38,7 +38,7 @@ public class RequirePermissionAttribute : Attribute, IAuthorizationFilter
             }
             else
             {
-                context.Result = new RedirectToPageResult("/AccessDenied");
+                context.Result = new RedirectToActionResult("AccessDenied", "RolesMvc", null);
             }
         }
     }

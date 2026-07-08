@@ -109,23 +109,45 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand, R
                 ? PaymentMethod.Cash
                 : Enum.Parse<PaymentMethod>(request.PaymentMethod, true);
 
-            var receiptNumber = member.ReceiptNumber;
+            var existingSub = await _unitOfWork.Repository<Subscription>()
+                .Query()
+                .FirstOrDefaultAsync(s => s.MemberId == request.Id && s.Status == SubscriptionStatus.Active, cancellationToken);
 
-            var subscription = new Subscription(
-                receiptNumber,
-                member.Id,
-                request.PackageId.Value,
-                request.SubscriptionPrice.Value,
-                paidAmount,
-                paymentMethod,
-                startDate,
-                expirationDate
-            );
+            if (existingSub != null)
+            {
+                existingSub.PlanId = request.PackageId.Value;
+                existingSub.TotalSubscriptionValue = request.SubscriptionPrice.Value;
+                existingSub.AmountPaid = paidAmount;
+                existingSub.RemainingBalance = request.SubscriptionPrice.Value - paidAmount;
+                existingSub.PaymentMethod = paymentMethod;
+                existingSub.StartDate = startDate;
+                existingSub.ExpirationDate = expirationDate;
+                existingSub.AdminSignature = request.AdminSignature;
+                existingSub.Notes = null;
+                if (request.FreezeDays.GetValueOrDefault() > 0)
+                    existingSub.TotalFreezeDays = request.FreezeDays.Value;
+                existingSub.MarkUpdated();
+                _unitOfWork.Repository<Subscription>().Update(existingSub);
+            }
+            else
+            {
+                var receiptNumber = member.ReceiptNumber;
+                var subscription = new Subscription(
+                    receiptNumber,
+                    member.Id,
+                    request.PackageId.Value,
+                    request.SubscriptionPrice.Value,
+                    paidAmount,
+                    paymentMethod,
+                    startDate,
+                    expirationDate
+                );
 
-            if (request.FreezeDays.GetValueOrDefault() > 0)
-                subscription.TotalFreezeDays = request.FreezeDays.Value;
+                if (request.FreezeDays.GetValueOrDefault() > 0)
+                    subscription.TotalFreezeDays = request.FreezeDays.Value;
 
-            await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+                await _unitOfWork.Repository<Subscription>().AddAsync(subscription, cancellationToken);
+            }
         }
 
         _repository.Update(member);

@@ -292,6 +292,7 @@
 
             var select = document.getElementById('whatsappTemplate');
             var btn = document.getElementById('whatsappBtn');
+            var isConfigured = @(ViewBag.IsWhatsAppConfigured ? "true" : "false");
 
             function renderMessage(templateId) {
                 var body = templateMap[templateId] || '';
@@ -305,23 +306,52 @@
 
             select.addEventListener('change', function() {
                 var tid = this.value;
-                if (tid) {
-                    var msg = renderMessage(tid);
-                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
-                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                    btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
-                    btn.classList.remove('disabled');
-                } else {
-                    btn.href = '#';
-                    btn.classList.add('disabled');
-                }
+                btn.classList.toggle('disabled', !tid);
             });
 
             btn.addEventListener('click', function(e) {
                 if (!select.value) {
                     e.preventDefault();
                     showAlertModal('@SharedLocalizer["Please select a template first"]');
+                    return;
                 }
+
+                if (!isConfigured) {
+                    var msg = renderMessage(select.value);
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    btn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+                    return;
+                }
+
+                e.preventDefault();
+                var data = {
+                    memberPhone: btn.dataset.phone || '',
+                    memberName: btn.dataset.member || '',
+                    memberCode: btn.dataset.code || '',
+                    joinDate: '',
+                    receiptNumber: btn.dataset.receipt || '',
+                    startDate: '',
+                    expirationDate: '',
+                    daysRemaining: '',
+                    subscriptionStatus: '',
+                    totalPaid: '',
+                    lastPayment: '',
+                    remainingBalance: '',
+                    lastPaymentDate: '',
+                    offers: offersText
+                };
+                var url = '/api/whatsapp/send-member?templateBody=' + encodeURIComponent(renderMessage(select.value)) + '&language=ar';
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+                    body: JSON.stringify(data)
+                }).then(function(r) { return r.json(); }).then(function(r) {
+                    if (r.success) showAlertModal('@SharedLocalizer["WhatsApp message sent successfully"]');
+                    else showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]: ' + (r.message || ''));
+                }).catch(function() {
+                    showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]');
+                });
             });
         })();
     </script>

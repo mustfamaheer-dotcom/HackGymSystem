@@ -32,6 +32,7 @@ public class SubscriptionExpiryJob
         foreach (var sub in expired)
         {
             sub.MarkExpired();
+            repo.Update(sub);
             await notificationRepo.AddAsync(new Notification(
                 sub.MemberId,
                 "Subscription Expired",

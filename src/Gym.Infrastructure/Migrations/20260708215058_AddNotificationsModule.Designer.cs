@@ -4,6 +4,7 @@ using Gym.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataMigrations
 {
     [DbContext(typeof(GymDbContext))]
-    partial class GymDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708215058_AddNotificationsModule")]
+    partial class AddNotificationsModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,9 +184,6 @@ namespace DataMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -192,24 +192,10 @@ namespace DataMigrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid?>("PlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("RemainingBalance")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -224,8 +210,6 @@ namespace DataMigrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PlanId");
 
                     b.ToTable("DailySessions", (string)null);
                 });
@@ -1182,22 +1166,6 @@ namespace DataMigrations
                             Description = "Manage backups",
                             Module = "Backup",
                             Name = "Backup.Manage"
-                        },
-                        new
-                        {
-                            Id = new Guid("d1000017-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "View daily sessions",
-                            Module = "Daily Sessions",
-                            Name = "DailySessions.View"
-                        },
-                        new
-                        {
-                            Id = new Guid("d1000017-0000-0000-0000-000000000002"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Create daily sessions",
-                            Module = "Daily Sessions",
-                            Name = "DailySessions.Create"
                         });
                 });
 
@@ -1681,20 +1649,6 @@ namespace DataMigrations
                         },
                         new
                         {
-                            Id = new Guid("c5225560-c5ba-9944-60af-626bd395e6b5"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            PermissionId = new Guid("d1000017-0000-0000-0000-000000000001"),
-                            RoleId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-                        },
-                        new
-                        {
-                            Id = new Guid("f101e791-2da5-b3d5-471e-07ac41fa30bc"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            PermissionId = new Guid("d1000017-0000-0000-0000-000000000002"),
-                            RoleId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-                        },
-                        new
-                        {
                             Id = new Guid("48e05a34-1b30-1cdc-ca0d-974cb2c3ebd8"),
                             CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("d1000001-0000-0000-0000-000000000001"),
@@ -1845,20 +1799,6 @@ namespace DataMigrations
                             Id = new Guid("8ef92960-4f9f-70c2-58b7-a0fc32743d95"),
                             CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("d1000009-0000-0000-0000-000000000002"),
-                            RoleId = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901")
-                        },
-                        new
-                        {
-                            Id = new Guid("81874dec-6fb7-347a-9123-905f7c6889c7"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            PermissionId = new Guid("d1000017-0000-0000-0000-000000000001"),
-                            RoleId = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901")
-                        },
-                        new
-                        {
-                            Id = new Guid("1d5258ab-e319-427b-0bc8-58a1d66d17f2"),
-                            CreatedAt = new DateTime(2026, 7, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            PermissionId = new Guid("d1000017-0000-0000-0000-000000000002"),
                             RoleId = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901")
                         },
                         new
@@ -2446,16 +2386,6 @@ namespace DataMigrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Gym.Domain.Entities.DailySession", b =>
-                {
-                    b.HasOne("Gym.Domain.Entities.MembershipPlan", "Plan")
-                        .WithMany()
-                        .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Plan");
                 });
 
             modelBuilder.Entity("Gym.Domain.Entities.DeviceLog", b =>

@@ -15,7 +15,7 @@
         <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Subscription"]</a>
     </div>
 
-    @* WhatsApp Template Selector *@
+    @* WhatsApp Template Selector & Bulk Send *@
     <div class="p-3 border-bottom bg-light">
         <div class="row g-2 align-items-center">
             <div class="col-md-4">
@@ -33,8 +33,13 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-8 text-muted small d-flex align-items-center">
-                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template above, then click the WhatsApp button on any row"]
+            <div class="col-md-4">
+                <button type="button" id="sendBulkWhatsAppBtn" class="btn btn-success w-100" disabled>
+                    <i class="bi bi-whatsapp"></i> <span id="bulkSelectedCount">0</span> @SharedLocalizer["selected — Send Bulk WhatsApp"]
+                </button>
+            </div>
+            <div class="col-md-4 text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i> @SharedLocalizer["Select a template, check subscriptions, then click Send Bulk WhatsApp"]
             </div>
         </div>
     </div>
@@ -122,16 +127,22 @@
     }
     else
     {
+        <style>
+            tr.wa-selected td { background-color: rgba(0, 0, 0, 0.2) !important; }
+            @@media (prefers-color-scheme: dark) { tr.wa-selected td { background-color: rgba(200, 200, 200, 0.25) !important; } }
+        </style>
         @* Table *@
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
+                        <th style="width:40px;">
+                            <input type="checkbox" id="selectAllSubscriptions" class="form-check-input" title="@SharedLocalizer["Select all on this page"]" />
+                        </th>
                         <th>@SharedLocalizer["Receipt"]</th>
                         <th>@SharedLocalizer["Member"]</th>
                         <th>@SharedLocalizer["Phone"]</th>
                         <th>@SharedLocalizer["Plan"]</th>
-                        <th>@SharedLocalizer["Start Date"]</th>
                         <th>@SharedLocalizer["Expiration"]</th>
                         <th>@SharedLocalizer["Paid"]</th>
                         <th>@SharedLocalizer["Remaining"]</th>
@@ -143,11 +154,27 @@
                     @foreach (var item in Model.Items)
                     {
                         <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input subscription-bulk-checkbox"
+                                    data-phone="@item.MemberPhone"
+                                    data-member="@item.MemberName"
+                                    data-membercode="@item.MemberCode"
+                                    data-joindate="@item.MemberRegistrationDate.ToString("dd/MM/yyyy")"
+                                    data-receipt="@item.ReceiptNumber"
+                                    data-expiration="@item.ExpirationDate.ToString("dd/MM/yyyy")"
+                                    data-daysremaining="@((int)(item.ExpirationDate - DateTime.UtcNow).TotalDays)"
+                                    data-status="@item.Status.ToString()"
+                                    data-totalpaid="@item.TotalSubscriptionValue.ToString("N2")"
+                                    data-amountpaid="@item.AmountPaid.ToString("N2")"
+                                    data-remainingbalance="@item.RemainingBalance.ToString("N2")"
+                                    data-lastpaymentamount="@(item.LastPaymentAmount?.ToString("N2") ?? "0")"
+                                    data-lastpaymentdate="@(item.LastPaymentDate?.ToString("dd/MM/yyyy") ?? "")"
+                                    data-offers="@(item.OfferTitle ?? "")" />
+                            </td>
                             <td><code style="font-size:0.8rem;color:var(--text-secondary);background:var(--light-gray);padding:2px 8px;border-radius:6px;">@item.ReceiptNumber</code></td>
                             <td class="fw-semibold">@item.MemberName</td>
                             <td>@item.MemberPhone</td>
                             <td>@item.PlanName</td>
-                            <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
                             <td>@item.ExpirationDate.ToString("dd/MM/yyyy")</td>
                             <td>@item.AmountPaid.ToString("N2")</td>
                             <td class="@(item.RemainingBalance > 0 ? "text-danger fw-semibold" : "text-success")">@item.RemainingBalance.ToString("N2")</td>
@@ -165,7 +192,6 @@
                                        data-membercode="@item.MemberCode"
                                        data-joindate="@item.MemberRegistrationDate.ToString("dd/MM/yyyy")"
                                        data-receipt="@item.ReceiptNumber"
-                                       data-startdate="@item.StartDate.ToString("dd/MM/yyyy")"
                                        data-expiration="@item.ExpirationDate.ToString("dd/MM/yyyy")"
                                        data-daysremaining="@((int)(item.ExpirationDate - DateTime.UtcNow).TotalDays)"
                                        data-status="@item.Status.ToString()"
@@ -248,12 +274,9 @@
             }
 
             var select = document.getElementById('whatsappTemplate');
+            var isConfigured = @(ViewBag.IsWhatsAppConfigured ? "true" : "false");
 
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('.wa-btn');
-                if (!btn) return;
-                e.preventDefault();
-
+            function sendSingleWhatsApp(btn) {
                 var tid = select ? select.value : '';
                 if (!tid) {
                     showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
@@ -266,7 +289,7 @@
                     .replace(/\{MemberCode\}/g, btn.dataset.membercode || '')
                     .replace(/\{JoinDate\}/g, btn.dataset.joindate || '')
                     .replace(/\{ReceiptNumber\}/g, btn.dataset.receipt || '')
-                    .replace(/\{StartDate\}/g, btn.dataset.startdate || '')
+                    .replace(/\{StartDate\}/g, '')
                     .replace(/\{ExpirationDate\}/g, btn.dataset.expiration || '')
                     .replace(/\{DaysRemaining\}/g, btn.dataset.daysremaining || '')
                     .replace(/\{SubscriptionStatus\}/g, btn.dataset.status || '')
@@ -276,12 +299,169 @@
                     .replace(/\{RemainingBalance\}/g, btn.dataset.remainingbalance || '')
                     .replace(/\{LastPaymentAmount\}/g, btn.dataset.lastpaymentamount || '')
                     .replace(/\{LastPaymentDate\}/g, btn.dataset.lastpaymentdate || '')
-                    .replace(/\{Offers\}/g, formatOffers());
+                    .replace(/\{OfferName\}/g, btn.dataset.offers || '')
+                    .replace(/\{Offers\}/g, formatOffers())
+                    .replace(/\{PdfLink\}/g, '');
 
-                var phone = (btn.dataset.phone || '').replace(/\D/g, '');
-                if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                if (!isConfigured) {
+                    var phone = (btn.dataset.phone || '').replace(/\D/g, '');
+                    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                    return;
+                }
+
+                var data = {
+                    memberPhone: btn.dataset.phone || '',
+                    memberName: btn.dataset.member || '',
+                    memberCode: btn.dataset.membercode || '',
+                    joinDate: btn.dataset.joindate || '',
+                    receiptNumber: btn.dataset.receipt || '',
+                    expirationDate: btn.dataset.expiration || '',
+                    daysRemaining: btn.dataset.daysremaining || '',
+                    subscriptionStatus: btn.dataset.status || '',
+                    totalPaid: btn.dataset.amountpaid || '',
+                    remainingBalance: btn.dataset.remainingbalance || '',
+                    lastPayment: btn.dataset.lastpaymentamount || '',
+                    lastPaymentDate: btn.dataset.lastpaymentdate || '',
+                    offers: formatOffers()
+                };
+                fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+                    body: JSON.stringify(data)
+                }).then(function(r) { return r.json(); }).then(function(r) {
+                    if (r.success) showAlertModal('@SharedLocalizer["WhatsApp message sent successfully"]');
+                    else showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]: ' + (r.message || ''));
+                }).catch(function() {
+                    showAlertModal('@SharedLocalizer["Failed to send WhatsApp message"]');
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.wa-btn');
+                if (!btn) return;
+                e.preventDefault();
+                sendSingleWhatsApp(btn);
             });
+
+            function buildBulkMessage(cb, body, offersText) {
+                return body
+                    .replace(/\{MemberName\}/g, cb.dataset.member || '')
+                    .replace(/\{MemberCode\}/g, cb.dataset.membercode || '')
+                    .replace(/\{JoinDate\}/g, cb.dataset.joindate || '')
+                    .replace(/\{ReceiptNumber\}/g, cb.dataset.receipt || '')
+                    .replace(/\{StartDate\}/g, '')
+                    .replace(/\{ExpirationDate\}/g, cb.dataset.expiration || '')
+                    .replace(/\{DaysRemaining\}/g, cb.dataset.daysremaining || '')
+                    .replace(/\{SubscriptionStatus\}/g, cb.dataset.status || '')
+                    .replace(/\{TotalSubscriptionValue\}/g, cb.dataset.totalpaid || '')
+                    .replace(/\{TotalPaid\}/g, cb.dataset.amountpaid || '')
+                    .replace(/\{AmountPaid\}/g, cb.dataset.amountpaid || '')
+                    .replace(/\{RemainingBalance\}/g, cb.dataset.remainingbalance || '')
+                    .replace(/\{LastPaymentAmount\}/g, cb.dataset.lastpaymentamount || '')
+                    .replace(/\{LastPaymentDate\}/g, cb.dataset.lastpaymentdate || '')
+                    .replace(/\{OfferName\}/g, cb.dataset.offers || '')
+                    .replace(/\{Offers\}/g, offersText)
+                    .replace(/\{PdfLink\}/g, '');
+            }
+
+            function updateBulkCount() {
+                var checked = document.querySelectorAll('.subscription-bulk-checkbox:checked');
+                var count = checked.length;
+                var counter = document.getElementById('bulkSelectedCount');
+                if (counter) counter.textContent = count;
+                var btn = document.getElementById('sendBulkWhatsAppBtn');
+                if (btn) {
+                    btn.disabled = count === 0;
+                    btn.classList.toggle('btn-success', count > 0);
+                    btn.classList.toggle('btn-secondary', count === 0);
+                }
+            }
+
+            var selectAll = document.getElementById('selectAllSubscriptions');
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    document.querySelectorAll('.subscription-bulk-checkbox').forEach(function(cb) { cb.checked = selectAll.checked; });
+                    updateBulkCount();
+                });
+            }
+
+            document.addEventListener('change', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('subscription-bulk-checkbox')) {
+                    updateBulkCount();
+                }
+            });
+
+            var bulkBtn = document.getElementById('sendBulkWhatsAppBtn');
+            if (bulkBtn) {
+                bulkBtn.addEventListener('click', function() {
+                    var tid = select ? select.value : '';
+                    if (!tid) {
+                        showAlertModal('@SharedLocalizer["Please select a WhatsApp template first"]');
+                        return;
+                    }
+                    var body = templateMap[tid] || '';
+                    var checked = document.querySelectorAll('.subscription-bulk-checkbox:checked');
+                    if (checked.length === 0) return;
+
+                    if (!isConfigured) {
+                        var delay = 0;
+                        var step = 400;
+                        checked.forEach(function(cb) {
+                            var msg = buildBulkMessage(cb, body, formatOffers());
+                            var phone = (cb.dataset.phone || '').replace(/\D/g, '');
+                            if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+                            if (!phone) return;
+                            var row = cb.closest('tr');
+                            if (row) row.classList.add('wa-selected');
+                            setTimeout(function() {
+                                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                            }, delay);
+                            delay += step;
+                        });
+                        setTimeout(function() {
+                            var n = checked.length;
+                            showAlertModal('@SharedLocalizer["Bulk WhatsApp opened for "].Value' + n + ' @SharedLocalizer["subscriptions. Check your browser tabs."].Value');
+                        }, delay + 200);
+                        return;
+                    }
+
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    var sent = 0, failed = 0;
+                    checked.forEach(function(cb) {
+                        var msg = buildBulkMessage(cb, body, formatOffers());
+                        var data = {
+                            memberPhone: cb.dataset.phone || '',
+                            memberName: cb.dataset.member || '',
+                            memberCode: cb.dataset.membercode || '',
+                            joinDate: cb.dataset.joindate || '',
+                            receiptNumber: cb.dataset.receipt || '',
+                            expirationDate: cb.dataset.expiration || '',
+                            daysRemaining: cb.dataset.daysremaining || '',
+                            subscriptionStatus: cb.dataset.status || '',
+                            totalPaid: cb.dataset.amountpaid || '',
+                            remainingBalance: cb.dataset.remainingbalance || '',
+                            lastPayment: cb.dataset.lastpaymentamount || '',
+                            lastPaymentDate: cb.dataset.lastpaymentdate || '',
+                            offers: formatOffers()
+                        };
+                        var row = cb.closest('tr');
+                        if (row) row.classList.add('wa-selected');
+                        fetch('/api/whatsapp/send-member?templateBody=' + encodeURIComponent(msg) + '&language=ar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                            body: JSON.stringify(data)
+                        }).then(function(r) { return r.json(); }).then(function(r) {
+                            if (r.success) sent++; else failed++;
+                        }).catch(function() { failed++; });
+                    });
+                    setTimeout(function() {
+                        showAlertModal(sent + ' @SharedLocalizer["sent, "] ' + failed + ' @SharedLocalizer["failed"]');
+                    }, 2000);
+                });
+            }
+
+            updateBulkCount();
         })();
     </script>
 }

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using MockQueryable.Moq;
 using Moq;
 
 namespace Gym.API.Tests;
@@ -23,6 +24,7 @@ public class ZKTecoAttendanceControllerTests
     private readonly Mock<IRepository<Device>> _deviceRepoMock;
     private readonly Mock<IRepository<Attendance>> _attendanceRepoMock;
     private readonly Mock<IRepository<Subscription>> _subscriptionRepoMock;
+    private readonly Mock<IRepository<Member>> _memberRepoMock;
     private readonly Mock<IZKTecoBridgeClient> _bridgeMock;
     private readonly ZKTecoAttendanceController _controller;
 
@@ -33,6 +35,7 @@ public class ZKTecoAttendanceControllerTests
         _deviceRepoMock = new Mock<IRepository<Device>>();
         _attendanceRepoMock = new Mock<IRepository<Attendance>>();
         _subscriptionRepoMock = new Mock<IRepository<Subscription>>();
+        _memberRepoMock = new Mock<IRepository<Member>>();
         _bridgeMock = new Mock<IZKTecoBridgeClient>();
 
         var hubMock = new Mock<IHubContext<AttendanceHub>>();
@@ -48,7 +51,7 @@ public class ZKTecoAttendanceControllerTests
             Mock.Of<IOptions<ZKTecoSettings>>(o => o.Value == new ZKTecoSettings()),
             _attendanceRepoMock.Object,
             _subscriptionRepoMock.Object,
-            Mock.Of<IRepository<Member>>(),
+            _memberRepoMock.Object,
             Mock.Of<IRepository<MembershipPlan>>(),
             hubMock.Object,
             _bridgeMock.Object
@@ -87,6 +90,12 @@ public class ZKTecoAttendanceControllerTests
             It.IsAny<System.Linq.Expressions.Expression<System.Func<Subscription, bool>>>(),
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+        _deviceRepoMock.Setup(r => r.FirstOrDefaultAsync(
+            It.IsAny<System.Linq.Expressions.Expression<System.Func<Device, bool>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Device?)null);
+        _memberRepoMock.Setup(r => r.Query())
+            .Returns(new List<Member>().BuildMockDbSet().Object);
         _mediatorMock.Setup(m => m.Send(It.IsAny<CheckInCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<Guid>.Success(Guid.NewGuid()));
 
