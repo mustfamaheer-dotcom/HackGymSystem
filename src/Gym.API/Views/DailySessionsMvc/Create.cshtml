@@ -1,0 +1,37 @@
+@using Gym.Application.DailySessions.Commands.CreateDailySession
+@model CreateDailySessionCommand
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h4><i class="bi bi-plus-circle"></i> @SharedLocalizer["New Daily Session"]</h4>
+                <span class="receipt-badge">@SharedLocalizer["Trial / One-Day"]</span>
+            </div>
+            <form asp-action="Create" method="post" class="receipt-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label asp-for="Name" class="form-label">@SharedLocalizer["Name"] <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="@SharedLocalizer["Visitor name"]" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Phone" class="form-label">@SharedLocalizer["Phone"] <span class="text-danger">*</span></label>
+                        <input asp-for="Phone" class="form-control" placeholder="@SharedLocalizer["Phone number"]" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="VisitDate" class="form-label">@SharedLocalizer["Visit Date"] <span class="text-danger">*</span></label>
+                        <input asp-for="VisitDate" type="date" class="form-control" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="VisitDate" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="receipt-footer px-0 pb-0 mt-3">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i> @SharedLocalizer["Cancel"]</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> @SharedLocalizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

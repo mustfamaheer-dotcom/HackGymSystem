@@ -82,6 +82,11 @@ public class RenewSubscriptionCommandHandler : IRequestHandler<RenewSubscription
         if (previous == null)
             return Result<Guid>.Failure(_localizer["Previous subscription not found"]);
 
+        var activeExists = await _subscriptionRepo.AnyAsync(
+            s => s.MemberId == previous.MemberId && s.Status == SubscriptionStatus.Active && s.Id != request.PreviousSubscriptionId, cancellationToken);
+        if (activeExists)
+            return Result<Guid>.Failure(_localizer["Member already has an active subscription. Cannot create a new one."]);
+
         previous.MarkRenewed();
 
         var planId = request.NewPlanId ?? previous.PlanId;

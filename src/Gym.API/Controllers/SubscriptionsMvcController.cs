@@ -1,4 +1,6 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using Gym.API.Filters;
 using Gym.API;
 using Gym.Application.Common.DTOs;
@@ -72,10 +74,10 @@ public class SubscriptionsMvcController : Controller
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
-        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
 
         var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
-        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
 
         return View(result.Data);
     }
@@ -130,10 +132,10 @@ public class SubscriptionsMvcController : Controller
         var templates = await _templateRepo.Query().Where(t => t.IsActive).ToListAsync(cancellationToken);
         ViewBag.WhatsAppTemplates = new SelectList(templates, "Id", "Name");
         ViewBag.WhatsAppTemplateData = templates.Select(t => new { t.Id, t.Name, t.MessageBody }).ToList();
-        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+        ViewBag.WhatsAppTemplateJson = JsonSerializer.Serialize(templates.Select(t => new { t.Id, t.Name, t.MessageBody }), new JsonSerializerOptions { PropertyNamingPolicy = null, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
 
         var activeOffers = await _offerRepo.Query().Where(o => o.IsActive).OrderBy(o => o.OfferTitle).ToListAsync(cancellationToken);
-        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null });
+        ViewBag.ActiveOffersJson = JsonSerializer.Serialize(activeOffers.Select(o => new { o.OfferTitle, o.OfferType, o.OfferPrice, o.BonusMonths, o.BonusDays, o.ExtraFreezeDays }), new JsonSerializerOptions { PropertyNamingPolicy = null, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
 
         return View(result.Data);
     }

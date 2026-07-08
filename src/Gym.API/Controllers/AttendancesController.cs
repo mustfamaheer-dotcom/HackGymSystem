@@ -1,4 +1,5 @@
 using Gym.API.Filters;
+using Gym.API.Hubs;
 using Gym.Application.Attendances.Commands.CheckIn;
 using Gym.Application.Attendances.Commands.CheckOut;
 using Gym.Application.Attendances.Commands.CreateManualAttendance;
@@ -8,9 +9,13 @@ using Gym.Application.Attendances.Queries.GetAttendanceById;
 using Gym.Application.Attendances.Queries.GetMemberAttendances;
 using Gym.Application.Attendances.Queries.GetTodayAttendances;
 using Gym.Application.Common.DTOs;
+using Gym.Domain.Entities;
+using Gym.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.API.Controllers;
 
@@ -18,10 +23,14 @@ namespace Gym.API.Controllers;
 public class AttendancesController : BaseController
 {
     private readonly IMediator _mediator;
+    private readonly IHubContext<AttendanceHub> _hubContext;
+    private readonly IRepository<Member> _memberRepo;
 
-    public AttendancesController(IMediator mediator)
+    public AttendancesController(IMediator mediator, IHubContext<AttendanceHub> hubContext, IRepository<Member> memberRepo)
     {
         _mediator = mediator;
+        _hubContext = hubContext;
+        _memberRepo = memberRepo;
     }
 
     [HttpGet]
@@ -75,6 +84,22 @@ public class AttendancesController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsFailure)
             return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
+
+        var member = await _memberRepo.Query()
+            .Include(m => m.Package)
+            .FirstOrDefaultAsync(m => m.Id == command.MemberId, cancellationToken);
+
+        await _hubContext.Clients.All.SendAsync("AttendancePushed", new
+        {
+            memberId = command.MemberId,
+            memberName = member?.FullName ?? "",
+            imagePath = member?.ImagePath ?? "",
+            packageName = member?.Package?.Name ?? "",
+            phoneNumber = member?.PhoneNumber ?? "",
+            timestamp = DateTime.UtcNow,
+            type = "check-in",
+            attendanceId = result.Data!
+        }, cancellationToken);
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
     }

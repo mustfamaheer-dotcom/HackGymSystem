@@ -65,13 +65,15 @@ public class CreateSubscriptionCommandHandler : IRequestHandler<CreateSubscripti
                 }
                 else
                 {
-                    var activeSub = await _subscriptionRepo.Query()
-                        .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && s.Status == SubscriptionStatus.Active, cancellationToken);
+                    var existingSub = await _subscriptionRepo.Query()
+                        .FirstOrDefaultAsync(s => s.MemberId == request.MemberId && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Frozen), cancellationToken);
 
-                    if (activeSub != null && !request.OfferId.HasValue)
+                    if (existingSub != null && existingSub.Status == SubscriptionStatus.Active && !request.OfferId.HasValue)
                         result = Result<Guid>.Failure(_localizer["Member already has an active subscription"]);
-                    else if (activeSub != null && request.OfferId.HasValue)
-                        result = await HandleExtendAsync(activeSub, member, request, cancellationToken);
+                    else if (existingSub != null && existingSub.Status == SubscriptionStatus.Active && request.OfferId.HasValue)
+                        result = await HandleExtendAsync(existingSub, member, request, cancellationToken);
+                    else if (existingSub != null && existingSub.Status == SubscriptionStatus.Frozen)
+                        result = Result<Guid>.Failure(_localizer["Member has a frozen subscription. Unfreeze it before creating a new one."]);
                     else
                     {
                         Guid resolvedPlanId;

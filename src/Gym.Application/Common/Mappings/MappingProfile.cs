@@ -1,5 +1,6 @@
 using System.Reflection;
 using AutoMapper;
+using Gym.Application.DailySessions.DTOs;
 using Gym.Application.Leads.DTOs;
 using Gym.Domain.Entities;
 
@@ -16,6 +17,7 @@ public class MappingProfile : Profile
             .ForMember(d => d.FollowUpCount, o => o.MapFrom(s => s.FollowUps.Count));
 
         CreateMap<LeadFollowUp, LeadFollowUpDto>();
+        CreateMap<DailySession, DailySessionDto>();
     }
 
     private void ApplyMappingsFromAssembly(Assembly assembly)

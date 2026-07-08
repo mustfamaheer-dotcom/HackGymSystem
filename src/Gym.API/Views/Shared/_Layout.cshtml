@@ -682,6 +682,11 @@
                         <i class="bi bi-check-circle-fill"></i> @SharedLocalizer["Attendance"]
                     </a>
                 </div>
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "DailySessionsMvc" ? "active" : "")" asp-controller="DailySessionsMvc" asp-action="Index">
+                        <i class="bi bi-person-plus-fill"></i> @SharedLocalizer["Daily Sessions"]
+                    </a>
+                </div>
             }
             @if (User.HasClaim("permission", "Leads.View"))
             {
@@ -784,6 +789,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
 
     <script>
         (function() {
@@ -811,6 +817,40 @@
         </div>
     </div>
 
+    @* Attendance Check-In Popup (hidden by default) *@
+    <div class="modal fade" id="checkInPopup" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow:hidden;">
+                <div style="background:linear-gradient(135deg,#10B981,#34D399);padding:1.25rem;text-align:center;">
+                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;overflow:hidden;">
+                        <img id="popupMemberImage" src="" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;display:none;" />
+                        <i id="popupMemberIcon" class="bi bi-person-fill" style="font-size:1.75rem;color:white;"></i>
+                    </div>
+                    <h5 style="color:white;font-weight:700;margin:0;" id="popupMemberName">-</h5>
+                </div>
+                <div class="modal-body" style="padding:1.25rem;">
+                    <div style="display:grid;gap:0.75rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                            <span style="color:var(--text-muted-custom);font-weight:500;">@SharedLocalizer["Package"]</span>
+                            <span style="font-weight:600;color:var(--text-primary);" id="popupPackageName">-</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                            <span style="color:var(--text-muted-custom);font-weight:500;">@SharedLocalizer["Date & Time"]</span>
+                            <span style="font-weight:600;color:var(--text-primary);" id="popupDateTime">-</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                            <span style="color:var(--text-muted-custom);font-weight:500;">@SharedLocalizer["Phone"]</span>
+                            <span style="font-weight:600;color:var(--text-primary);" id="popupPhone">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border:none;justify-content:center;padding:0 1.25rem 1.25rem;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="background:#10B981;color:white;border-radius:10px;padding:0.5rem 2rem;font-weight:600;min-width:100px;">@SharedLocalizer["OK"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showAlertModal(message) {
             var msgEl = document.getElementById('alertModalMessage');
@@ -818,6 +858,32 @@
             var modal = new bootstrap.Modal('#alertModal');
             modal.show();
         }
+        (function() {
+            var connection = new signalR.HubConnectionBuilder().withUrl('/hubs/attendance').withAutomaticReconnect().build();
+            connection.on('AttendancePushed', function(data) {
+                if (data.type === 'check-in') {
+                    var imgEl = document.getElementById('popupMemberImage');
+                    var iconEl = document.getElementById('popupMemberIcon');
+                    if (data.imagePath) {
+                        imgEl.src = '/' + data.imagePath;
+                        imgEl.style.display = '';
+                        iconEl.style.display = 'none';
+                    } else {
+                        imgEl.style.display = 'none';
+                        iconEl.style.display = '';
+                    }
+                    document.getElementById('popupMemberName').textContent = data.memberName || '-';
+                    document.getElementById('popupPackageName').textContent = data.packageName || '-';
+                    var dt = data.timestamp ? new Date(data.timestamp).toLocaleString() : '-';
+                    document.getElementById('popupDateTime').textContent = dt;
+                    document.getElementById('popupPhone').textContent = data.phoneNumber || '-';
+                    var modal = new bootstrap.Modal('#checkInPopup');
+                    modal.show();
+                    setTimeout(function() { try { modal.hide(); } catch(e) {} }, 5000);
+                }
+            });
+            connection.start().catch(function(err) { console.warn('SignalR connection error:', err); });
+        })();
         (function() {
             const html = document.documentElement;
             const toggle = document.getElementById('themeToggle');

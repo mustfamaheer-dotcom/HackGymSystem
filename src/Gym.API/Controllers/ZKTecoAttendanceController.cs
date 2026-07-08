@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Gym.API.Controllers;
@@ -30,6 +31,8 @@ public class ZKTecoAttendanceController : BaseController
     private readonly IOptions<ZKTecoSettings> _zktecoConfig;
     private readonly IRepository<Attendance> _attendanceRepo;
     private readonly IRepository<Subscription> _subscriptionRepo;
+    private readonly IRepository<Member> _memberRepo;
+    private readonly IRepository<MembershipPlan> _planRepo;
     private readonly IHubContext<AttendanceHub> _hubContext;
     private readonly IZKTecoBridgeClient _bridgeClient;
 
@@ -40,6 +43,8 @@ public class ZKTecoAttendanceController : BaseController
         IOptions<ZKTecoSettings> zktecoConfig,
         IRepository<Attendance> attendanceRepo,
         IRepository<Subscription> subscriptionRepo,
+        IRepository<Member> memberRepo,
+        IRepository<MembershipPlan> planRepo,
         IHubContext<AttendanceHub> hubContext,
         IZKTecoBridgeClient bridgeClient)
     {
@@ -49,6 +54,8 @@ public class ZKTecoAttendanceController : BaseController
         _zktecoConfig = zktecoConfig;
         _attendanceRepo = attendanceRepo;
         _subscriptionRepo = subscriptionRepo;
+        _memberRepo = memberRepo;
+        _planRepo = planRepo;
         _hubContext = hubContext;
         _bridgeClient = bridgeClient;
     }
@@ -76,9 +83,17 @@ public class ZKTecoAttendanceController : BaseController
             if (result.IsFailure)
                 return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
 
+            var member = await _memberRepo.Query()
+                .Include(m => m.Package)
+                .FirstOrDefaultAsync(m => m.Id == mapping.MemberId, ct);
+
             await _hubContext.Clients.All.SendAsync("AttendancePushed", new
             {
                 memberId = mapping.MemberId,
+                memberName = member?.FullName ?? "",
+                imagePath = member?.ImagePath ?? "",
+                packageName = member?.Package?.Name ?? "",
+                phoneNumber = member?.PhoneNumber ?? "",
                 timestamp = request.Timestamp,
                 type = "check-in",
                 attendanceId = result.Data!

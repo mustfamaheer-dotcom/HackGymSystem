@@ -1,0 +1,98 @@
+@using Gym.Application.DailySessions.DTOs
+@model PaginatedResult<DailySessionDto>
+@{
+    var searchTerm = ViewBag.SearchTerm as string;
+    var dateFrom = ViewBag.DateFrom as string;
+    var dateTo = ViewBag.DateTo as string;
+}
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <h4><i class="bi bi-person-plus-fill"></i> @SharedLocalizer["Daily Sessions"]</h4>
+        <a asp-action="Create" class="btn btn-gold"><i class="bi bi-plus-lg"></i> @SharedLocalizer["New Session"]</a>
+    </div>
+
+    <div class="p-3 border-bottom bg-light">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="@SharedLocalizer["Search by name or phone..."]" value="@searchTerm" />
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="dateFrom" class="form-control" placeholder="@SharedLocalizer["From"]" value="@dateFrom" />
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="dateTo" class="form-control" placeholder="@SharedLocalizer["To"]" value="@dateTo" />
+            </div>
+            <div class="col-md-2">
+                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                    <option value="10" selected="@(Model?.PageSize == 10)">@SharedLocalizer["10 per page"]</option>
+                    <option value="20" selected="@(Model?.PageSize == 20)">@SharedLocalizer["20 per page"]</option>
+                    <option value="50" selected="@(Model?.PageSize == 50)">@SharedLocalizer["50 per page"]</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    @if (Model is null || Model.Items.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-person-plus-fill" style="font-size: 3rem;"></i>
+            <p class="mt-2">@SharedLocalizer["No daily sessions found."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>@SharedLocalizer["Name"]</th>
+                        <th>@SharedLocalizer["Phone"]</th>
+                        <th>@SharedLocalizer["Visit Date"]</th>
+                        <th>@SharedLocalizer["Registered At"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@session.Name</td>
+                            <td>@session.Phone</td>
+                            <td>@session.VisitDate.ToString("dd/MM/yyyy")</td>
+                            <td>@session.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">@SharedLocalizer["Showing {0} of {1} sessions", Model.Items.Count, Model.TotalCount]</small>
+            <nav>
+                <ul class="pagination pagination-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-dateFrom="@dateFrom" asp-route-dateTo="@dateTo">@SharedLocalizer["Previous"]</a>
+                        </li>
+                    }
+                    @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-dateFrom="@dateFrom" asp-route-dateTo="@dateTo">@i</a>
+                        </li>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@searchTerm" asp-route-dateFrom="@dateFrom" asp-route-dateTo="@dateTo">@SharedLocalizer["Next"]</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

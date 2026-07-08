@@ -226,7 +226,8 @@
 
                 var phone = (btn.dataset.phone || '').replace(/\D/g, '');
                 if (phone.startsWith('0')) phone = '20' + phone.substring(1);
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+                var encoded = encodeURIComponent(msg);
+                window.open('https://wa.me/' + phone + '?text=' + encoded, '_blank');
             });
         })();
     </script>

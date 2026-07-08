@@ -36,6 +36,7 @@ public class GymDbContext : DbContext
     public DbSet<PermissionAuditLog> PermissionAuditLogs => Set<PermissionAuditLog>();
     public DbSet<DeviceMemberMapping> DeviceMemberMappings => Set<DeviceMemberMapping>();
     public DbSet<SyncAuditLog> SyncAuditLogs => Set<SyncAuditLog>();
+    public DbSet<DailySession> DailySessions => Set<DailySession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
