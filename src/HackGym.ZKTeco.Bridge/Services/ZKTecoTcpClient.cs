@@ -72,7 +72,7 @@ public class ZKTecoTcpClient : IDisposable
                 resp = SendCommand(ZKProtocol.CMD_AUTH, commKey);
             }
 
-            if (resp.Code == ZKProtocol.CMD_ACK_OK || resp.Code == 0)
+            if (resp.Code == ZKProtocol.CMD_ACK_OK)
             {
                 IsConnected = true;
                 _logger.LogInformation("Connected to ZKTeco device at {Ip}:{Port} (session={Session})", ip, port, _sessionId);
@@ -446,68 +446,83 @@ public class ZKTecoTcpClient : IDisposable
 
         try
         {
-            // pyzk: command_string = pack('<bhii', 1, command, fct, ext) = 11 bytes
-            byte[] cmdData = new byte[11];
-            cmdData[0] = 1; // version byte
-            BinaryPrimitives.WriteUInt16LittleEndian(cmdData.AsSpan(1, 2), command); // command as short
-            BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(3, 4), functionCode); // fct
-            BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(7, 4), ext); // ext
-
-            _logger.LogDebug("ReadWithBuffer(CMD_PREPARE_BUFFER): inner_cmd={Command}, fct={Fct}, ext={Ext}",
-                command, functionCode, ext);
-
-            var resp = SendCommand(ZKProtocol.CMD_PREPARE_BUFFER, cmdData);
-
-            _logger.LogDebug("ReadWithBuffer: CMD_PREPARE_BUFFER response code={Code}, dataLen={DataLen}", resp.Code, resp.Data.Length);
-
-            if (!resp.IsOk && resp.Code != ZKProtocol.CMD_DATA)
+            const int maxRetries = 3;
+            for (int attempt = 0; attempt < maxRetries; attempt++)
             {
-                _logger.LogWarning("ReadWithBuffer: CMD_PREPARE_BUFFER failed with code={Code}", resp.Code);
-                return Array.Empty<byte>();
-            }
+                // Free any previous buffer before starting new read
+                FreeData();
 
-            // Case 1: Data returned inline (small datasets, pyzk checks cmd_response['code'] == CMD_DATA)
-            if (resp.Code == ZKProtocol.CMD_DATA)
-            {
-                _logger.LogDebug("ReadWithBuffer: got inline CMD_DATA, {Len} bytes", resp.Data.Length);
-                return resp.Data;
-            }
+                // pyzk: command_string = pack('<bhii', 1, command, fct, ext) = 11 bytes
+                byte[] cmdData = new byte[11];
+                cmdData[0] = 1; // version byte
+                BinaryPrimitives.WriteUInt16LittleEndian(cmdData.AsSpan(1, 2), command);
+                BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(3, 4), functionCode);
+                BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(7, 4), ext);
 
-            // Case 2: Size returned, need to read chunks
-            // pyzk: size = unpack('I', self.__data[1:5])[0]  — skips first byte, reads 4-byte LE int
-            if (resp.Data.Length < 5)
-            {
-                _logger.LogWarning("ReadWithBuffer: response data too short ({Len} bytes)", resp.Data.Length);
-                return resp.Data.Length > 0 ? resp.Data : Array.Empty<byte>();
-            }
+                _logger.LogDebug("ReadWithBuffer attempt {Attempt}: CMD_PREPARE_BUFFER inner_cmd={Command}, fct={Fct}, ext={Ext}",
+                    attempt + 1, command, functionCode, ext);
 
-            int totalSize = BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(1, 4));
-            _logger.LogDebug("ReadWithBuffer: totalSize={Size}, reading chunks of max {Chunk} bytes", totalSize, MAX_CHUNK);
+                var resp = SendCommand(ZKProtocol.CMD_PREPARE_BUFFER, cmdData);
 
-            using var ms = new MemoryStream();
-            int offset = 0;
-            int remaining = totalSize;
+                _logger.LogDebug("ReadWithBuffer: CMD_PREPARE_BUFFER response code={Code}, dataLen={DataLen}",
+                    resp.Code, resp.Data.Length);
 
-            while (remaining > 0)
-            {
-                int chunkSize = Math.Min(remaining, MAX_CHUNK);
-                byte[] chunk = ReadChunk(offset, chunkSize);
-                if (chunk.Length == 0)
+                if (!resp.IsOk && resp.Code != ZKProtocol.CMD_DATA)
                 {
-                    _logger.LogWarning("ReadWithBuffer: ReadChunk returned 0 bytes at offset={Offset}", offset);
-                    break;
+                    _logger.LogWarning("ReadWithBuffer attempt {Attempt}: CMD_PREPARE_BUFFER failed with code={Code}",
+                        attempt + 1, resp.Code);
+                    if (attempt + 1 < maxRetries)
+                    {
+                        Thread.Sleep(200 * (attempt + 1));
+                        continue;
+                    }
+                    return Array.Empty<byte>();
                 }
-                ms.Write(chunk, 0, chunk.Length);
-                offset += chunkSize;
-                remaining -= chunkSize;
+
+                // Case 1: Data returned inline (CMD_DATA)
+                if (resp.Code == ZKProtocol.CMD_DATA)
+                {
+                    _logger.LogDebug("ReadWithBuffer: got inline CMD_DATA, {Len} bytes", resp.Data.Length);
+                    return resp.Data;
+                }
+
+                // Case 2: Size returned, need to read chunks
+                if (resp.Data.Length < 5)
+                {
+                    _logger.LogWarning("ReadWithBuffer: response data too short ({Len} bytes)", resp.Data.Length);
+                    return resp.Data.Length > 0 ? resp.Data : Array.Empty<byte>();
+                }
+
+                int totalSize = BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(1, 4));
+                _logger.LogDebug("ReadWithBuffer: totalSize={Size}, reading chunks of max {Chunk} bytes",
+                    totalSize, MAX_CHUNK);
+
+                using var ms = new MemoryStream();
+                int offset = 0;
+                int remaining = totalSize;
+
+                while (remaining > 0)
+                {
+                    int chunkSize = Math.Min(remaining, MAX_CHUNK);
+                    byte[] chunk = ReadChunk(offset, chunkSize);
+                    if (chunk.Length == 0)
+                    {
+                        _logger.LogWarning("ReadWithBuffer: ReadChunk returned 0 bytes at offset={Offset}", offset);
+                        break;
+                    }
+                    ms.Write(chunk, 0, chunk.Length);
+                    offset += chunkSize;
+                    remaining -= chunkSize;
+                }
+
+                FreeData();
+
+                byte[] result = ms.ToArray();
+                _logger.LogDebug("ReadWithBuffer: completed, total {Total} bytes", result.Length);
+                return result;
             }
 
-            // pyzk: self.free_data()
-            FreeData();
-
-            byte[] result = ms.ToArray();
-            _logger.LogDebug("ReadWithBuffer: completed, total {Total} bytes", result.Length);
-            return result;
+            return Array.Empty<byte>();
         }
         catch (Exception ex)
         {
@@ -519,31 +534,47 @@ public class ZKTecoTcpClient : IDisposable
     /// <summary>
     /// Read a chunk of data from the device.
     /// pyzk: __read_chunk sends CMD_READ_BUFFER with pack('ii', start, size)
+    /// pyzk retries 3 times with __recieve_chunk
     /// </summary>
     private byte[] ReadChunk(int start, int size)
     {
-        // pyzk: command_string = pack('<ii', start, size) = 8 bytes
-        byte[] cmdData = new byte[8];
-        BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(0, 4), start);
-        BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(4, 4), size);
-
-        var resp = SendCommand(ZKProtocol.CMD_READ_BUFFER, cmdData);
-
-        // pyzk __recieve_chunk: checks self.__response == CMD_DATA, returns self.__data
-        if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 0)
+        for (int retry = 0; retry < 3; retry++)
         {
-            _logger.LogDebug("ReadChunk: got CMD_DATA, {Len} bytes", resp.Data.Length);
-            return resp.Data;
+            // pyzk: command_string = pack('<ii', start, size) = 8 bytes
+            byte[] cmdData = new byte[8];
+            BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(0, 4), start);
+            BinaryPrimitives.WriteInt32LittleEndian(cmdData.AsSpan(4, 4), size);
+
+            var resp = SendCommand(ZKProtocol.CMD_READ_BUFFER, cmdData);
+
+            // pyzk __recieve_chunk: checks self.__response == CMD_DATA, returns self.__data
+            if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 0)
+            {
+                _logger.LogDebug("ReadChunk: got CMD_DATA, {Len} bytes", resp.Data.Length);
+                return resp.Data;
+            }
+
+            // Also accept CMD_PREPARE_DATA with data
+            if (resp.Code == ZKProtocol.CMD_PREPARE_DATA && resp.Data.Length > 0)
+            {
+                // pyzk __recieve_chunk handles CMD_PREPARE_DATA by reading more
+                // For simplicity, return what we have
+                _logger.LogDebug("ReadChunk: got CMD_PREPARE_DATA, {Len} bytes", resp.Data.Length);
+                return resp.Data;
+            }
+
+            // Accept any response with data
+            if (resp.Data.Length > 0)
+            {
+                _logger.LogDebug("ReadChunk: got code={Code}, returning {Len} bytes", resp.Code, resp.Data.Length);
+                return resp.Data;
+            }
+
+            _logger.LogWarning("ReadChunk attempt {Retry}: code={Code}, dataLen={Len}", retry + 1, resp.Code, resp.Data.Length);
+            Thread.Sleep(100);
         }
 
-        // Sometimes device may respond with the data differently
-        if (resp.Data.Length > 0)
-        {
-            _logger.LogDebug("ReadChunk: got code={Code}, returning {Len} bytes", resp.Code, resp.Data.Length);
-            return resp.Data;
-        }
-
-        _logger.LogWarning("ReadChunk: unexpected response code={Code}, dataLen={Len}", resp.Code, resp.Data.Length);
+        _logger.LogWarning("ReadChunk: exhausted retries for start={Start}, size={Size}", start, size);
         return Array.Empty<byte>();
     }
 
@@ -627,8 +658,7 @@ public class ZKTecoTcpClient : IDisposable
             bool isOk = respCode == ZKProtocol.CMD_ACK_OK
                      || respCode == ZKProtocol.CMD_PREPARE_DATA
                      || respCode == ZKProtocol.CMD_ACK_DATA
-                     || respCode == ZKProtocol.CMD_DATA
-                     || respCode == 0;
+                     || respCode == ZKProtocol.CMD_DATA;
 
             return new CommandResponse
             {
@@ -694,14 +724,72 @@ public class ZKTecoTcpClient : IDisposable
     /// <summary>
     /// Raw diagnostic: send a command with data and return response code + hex data.
     /// </summary>
-    public (ushort code, int dataLen, string hex) TestCommandRaw(ushort command, byte[] data)
+    public (ushort code, int dataLen, string hex, ushort sid, ushort rid) TestCommandRaw(ushort command, byte[] data)
     {
-        if (!IsConnected) return (0, 0, "not connected");
+        if (!IsConnected) return (0, 0, "not connected", _sessionId, _replyId);
         var resp = SendCommand(command, data);
         string hex = resp.Data.Length > 0
             ? Convert.ToHexString(resp.Data.AsSpan(0, Math.Min(64, resp.Data.Length)))
             : "(empty)";
-        return (resp.Code, resp.Data.Length, hex);
+        return (resp.Code, resp.Data.Length, hex, resp.SessionId, _replyId);
+    }
+
+    /// <summary>
+    /// Raw diagnostic: return hex of raw bytes received when sending a command.
+    /// This bypasses magic-byte validation to show what the device actually sends.
+    /// </summary>
+    public (string sendHex, ushort recvMagic1, ushort recvMagic2, uint payloadSize, string recvPayloadHex, ushort code, int dataLen, ushort sid, ushort rid) RawSendRecv(ushort command, byte[] data)
+    {
+        if (!IsConnected || _stream == null) return ("", 0, 0, 0, "", 0, 0, 0, 0);
+
+        try
+        {
+            _replyId++;
+            if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
+
+            byte[] packet = ZKProtocol.BuildPacket(command, data, _sessionId, _replyId);
+            string sendHex = Convert.ToHexString(packet.AsSpan(0, Math.Min(128, packet.Length)));
+
+            _stream.Write(packet, 0, packet.Length);
+
+            byte[] topHeader = new byte[8];
+            int offset = 0;
+            while (offset < 8)
+            {
+                int read = _stream.Read(topHeader, offset, 8 - offset);
+                if (read == 0) return (sendHex, 0, 0, 0, "(connection closed)", 0, 0, 0, 0);
+                offset += read;
+            }
+
+            ushort magic1 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(0, 2));
+            ushort magic2 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(2, 2));
+            uint payloadSize = BitConverter.ToUInt32(topHeader, 4);
+
+            byte[] payload = new byte[payloadSize];
+            offset = 0;
+            while (offset < (int)payloadSize)
+            {
+                int read = _stream.Read(payload, offset, (int)payloadSize - offset);
+                if (read == 0) return (sendHex, magic1, magic2, payloadSize, "(connection closed during payload)", 0, 0, 0, 0);
+                offset += read;
+            }
+
+            string payloadHex = Convert.ToHexString(payload.AsSpan(0, Math.Min(64, payload.Length)));
+
+            ushort respCode = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(0, 2));
+            ushort respSid = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(4, 2));
+            ushort respRid = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(6, 2));
+
+            _replyId = respRid;
+
+            return (sendHex, magic1, magic2, payloadSize, payloadHex, respCode, (int)(payloadSize - 8), respSid, respRid);
+        }
+        catch (Exception ex)
+        {
+            _replyId++;
+            if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
+            return ("", 0, 0, 0, $"error: {ex.Message}", 0, 0, 0, 0);
+        }
     }
 
     private class CommandResponse

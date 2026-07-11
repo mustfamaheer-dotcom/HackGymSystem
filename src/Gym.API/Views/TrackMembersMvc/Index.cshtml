@@ -670,7 +670,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Importing...';
 
-            fetch('/api/zkteco-attendance/import-all-from-device', { method: 'POST' })
+            fetch('/TrackMembers/import-all-from-device', { method: 'POST' })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     btn.disabled = false;

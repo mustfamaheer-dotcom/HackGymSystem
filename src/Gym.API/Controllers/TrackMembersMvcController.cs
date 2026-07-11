@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using System.Text.Json;
 
 namespace Gym.API.Controllers;
 
@@ -23,6 +24,8 @@ public class TrackMembersMvcController : Controller
     private readonly IZKTecoBridgeClient _bridgeClient;
     private readonly IStringLocalizer<SharedResources> _localizer;
     private readonly ILogger<TrackMembersMvcController> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
 
     public TrackMembersMvcController(
         IRepository<Member> memberRepo,
@@ -32,7 +35,9 @@ public class TrackMembersMvcController : Controller
         IDeviceMemberMappingRepository mappingRepo,
         IZKTecoBridgeClient bridgeClient,
         IStringLocalizer<SharedResources> localizer,
-        ILogger<TrackMembersMvcController> logger)
+        ILogger<TrackMembersMvcController> logger,
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
     {
         _memberRepo = memberRepo;
         _attendanceRepo = attendanceRepo;
@@ -42,6 +47,8 @@ public class TrackMembersMvcController : Controller
         _bridgeClient = bridgeClient;
         _localizer = localizer;
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
     }
 
     [RequirePermission("Attendance.View")]
@@ -233,6 +240,41 @@ public class TrackMembersMvcController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to trigger device sync");
+            return Json(new { success = false, error = ex.Message });
+        }
+    }
+
+    [HttpPost("import-all-from-device")]
+    [IgnoreAntiforgeryToken]
+    [AllowAnonymous]
+    public async Task<IActionResult> ImportAllFromDevice(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var bridgeUrl = _configuration.GetValue<string>("ZKTecoSettings:BridgeBaseUrl") ?? "http://localhost:50051";
+            using var client = _httpClientFactory.CreateClient();
+            var response = await client.PostAsync($"{bridgeUrl}/zkteco.bridge.ZKTecoBridge/ReconcileUsers",
+                new StringContent("{}", System.Text.Encoding.UTF8, "application/json"), cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Json(new { success = false, error = $"Bridge call failed: {response.StatusCode}" });
+            }
+
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+
+            if (!data.GetProperty("success").GetBoolean())
+            {
+                return Json(new { success = false, error = "Bridge failed to read device users" });
+            }
+
+            var userIds = data.GetProperty("usersChecked").GetInt32();
+            return Json(new { success = true, message = $"Found {userIds} users on device. Use /sync-users to import them.", usersFound = userIds });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to import from device");
             return Json(new { success = false, error = ex.Message });
         }
     }

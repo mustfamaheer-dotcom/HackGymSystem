@@ -270,7 +270,8 @@ public class ZKDeviceManager : IDisposable
 
                 if (connected)
                 {
-                    _client.RegisterEvent(0xFFFF);
+                    // Register events after connect to enable real-time attendance push
+                    try { _client.RegisterEvent(0xFFFF); } catch { }
                     _connectionInfo.IsConnected = true;
                     _connectionInfo.LastConnectedAt = DateTime.UtcNow;
                     _connectionInfo.ConsecutiveFailures = 0;
@@ -325,6 +326,19 @@ public class ZKDeviceManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Raw send/recv diagnostic that shows exact bytes exchanged with the device.
+    /// </summary>
+    public (string sendHex, ushort recvMagic1, ushort recvMagic2, uint payloadSize, string recvPayloadHex, ushort code, int dataLen, ushort sid, ushort rid) TestRawSendRecv(ushort command, byte[] data)
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return ("not connected", 0, 0, 0, "", 0, 0, 0, 0);
+            return _client.RawSendRecv(command, data);
+        }
+    }
+
     public object DiagnoseProtocols()
     {
         lock (_lock)
@@ -337,8 +351,8 @@ public class ZKDeviceManager : IDisposable
             // Test 1: CMD_GET_FREE_SIZES (50) with empty data
             try
             {
-                var (code, dataLen, hex) = _client.TestCommandRaw(50, Array.Empty<byte>());
-                results["get_free_sizes_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(50, Array.Empty<byte>());
+                results["get_free_sizes_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["get_free_sizes_error"] = ex.Message; }
 
@@ -347,8 +361,8 @@ public class ZKDeviceManager : IDisposable
             {
                 byte[] data = new byte[4];
                 BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(0, 2), 5); // FCT_USER
-                var (code, dataLen, hex) = _client.TestCommandRaw(7, data);
-                results["db_rrq_user_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(7, data);
+                results["db_rrq_user_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["db_rrq_user_error"] = ex.Message; }
 
@@ -357,8 +371,8 @@ public class ZKDeviceManager : IDisposable
             {
                 byte[] data = new byte[4];
                 BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(0, 2), 5); // FCT_USER
-                var (code, dataLen, hex) = _client.TestCommandRaw(9, data);
-                results["usertemp_rrq_user_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(9, data);
+                results["usertemp_rrq_user_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["usertemp_rrq_user_error"] = ex.Message; }
 
@@ -370,16 +384,16 @@ public class ZKDeviceManager : IDisposable
                 BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(1, 2), 9); // CMD_USERTEMP_RRQ
                 BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(3, 4), 5); // FCT_USER
                 BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(7, 4), 0); // ext
-                var (code, dataLen, hex) = _client.TestCommandRaw(1503, data);
-                results["prepare_buffer_user_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(1503, data);
+                results["prepare_buffer_user_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["prepare_buffer_user_error"] = ex.Message; }
 
             // Test 5: CMD_ATTLOG_RRQ (13) with empty data - old attendance protocol
             try
             {
-                var (code, dataLen, hex) = _client.TestCommandRaw(13, Array.Empty<byte>());
-                results["attlog_rrq_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(13, Array.Empty<byte>());
+                results["attlog_rrq_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["attlog_rrq_error"] = ex.Message; }
 
@@ -387,8 +401,8 @@ public class ZKDeviceManager : IDisposable
             try
             {
                 byte[] data = System.Text.Encoding.ASCII.GetBytes("~DeviceName\0");
-                var (code, dataLen, hex) = _client.TestCommandRaw(11, data);
-                results["device_name_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(11, data);
+                results["device_name_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["device_name_error"] = ex.Message; }
 
@@ -396,16 +410,16 @@ public class ZKDeviceManager : IDisposable
             try
             {
                 byte[] data = System.Text.Encoding.ASCII.GetBytes("~SerialNumber\0");
-                var (code, dataLen, hex) = _client.TestCommandRaw(11, data);
-                results["serial_number_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(11, data);
+                results["serial_number_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["serial_number_error"] = ex.Message; }
 
             // Test 8: CMD_GET_VERSION (1100)
             try
             {
-                var (code, dataLen, hex) = _client.TestCommandRaw(1100, Array.Empty<byte>());
-                results["get_version_raw"] = new { code, dataLen, hex };
+                var (code, dataLen, hex, sid, rid) = _client.TestCommandRaw(1100, Array.Empty<byte>());
+                results["get_version_raw"] = new { code, dataLen, hex, sessionId = sid, replyId = rid };
             }
             catch (Exception ex) { results["get_version_error"] = ex.Message; }
 

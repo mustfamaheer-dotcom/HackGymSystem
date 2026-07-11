@@ -36,3 +36,6 @@ appsettings.Production.json
 
 # OpenCode
 .opencode/
+
+# Bridge logs
+bridge_*.txt

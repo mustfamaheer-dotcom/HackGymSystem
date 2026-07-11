@@ -8,7 +8,7 @@ internal static class ZKProtocol
 {
     // --- Packet header ---
     public const ushort Magic1 = 0x5050; // first 2 bytes
-    public const ushort Magic2 = 0x827D; // next 2 bytes
+    public const ushort Magic2 = 0x7D82; // next 2 bytes — pyzk compat (pack '<H', 32130)
 
     // --- Command IDs ---
     public const ushort CMD_CONNECT = 1000;

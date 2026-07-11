@@ -226,4 +226,29 @@ app.MapGet("/diagnose/raw", () =>
     }
 });
 
+app.MapGet("/diagnose/rawbytes", () =>
+{
+    if (!deviceManager.IsConnected)
+        return Results.Ok(new { connected = false, error = "Device not connected" });
+
+    try
+    {
+        var rawDiags = new System.Collections.Generic.Dictionary<string, object>();
+
+        // Test 1: CMD_GET_VERSION (simple command, should return version string)
+        var (s1, m1, m2, ps, ph, code1, dl1, sid1, rid1) = deviceManager.TestRawSendRecv(1100, []);
+        rawDiags["get_version"] = new { sendHex = s1, recvMagic1 = $"0x{m1:X4}", recvMagic2 = $"0x{m2:X4}", payloadSize = ps, payloadHex = ph, code = code1, dataLen = dl1, respSid = sid1, respRid = rid1 };
+
+        // Test 2: CMD_GET_FREE_SIZES
+        var (s2, m2_1, m2_2, ps2, ph2, code2, dl2, sid2, rid2) = deviceManager.TestRawSendRecv(50, []);
+        rawDiags["get_free_sizes"] = new { sendHex = s2, recvMagic1 = $"0x{m2_1:X4}", recvMagic2 = $"0x{m2_2:X4}", payloadSize = ps2, payloadHex = ph2, code = code2, dataLen = dl2, respSid = sid2, respRid = rid2 };
+
+        return Results.Ok(new { connected = true, rawDiagnostics = rawDiags });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { connected = true, error = ex.Message, stackTrace = ex.StackTrace });
+    }
+});
+
 app.Run();
