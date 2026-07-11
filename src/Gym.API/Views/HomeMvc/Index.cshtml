@@ -125,11 +125,11 @@
             @if (canAttendance)
             {
                 <div class="col-md-3 col-6">
-                    <a asp-controller="AttendancesMvc" asp-action="Index" class="text-decoration-none">
-                        <div class="mod-card mod-bg-danger">
-                            <i class="bi bi-check-circle-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Attendance"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Check-ins"]</div>
+                    <a asp-controller="TrackMembersMvc" asp-action="Index" class="text-decoration-none">
+                        <div class="mod-card" style="background:linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));">
+                            <i class="bi bi-camera-video-fill mod-icon" style="color:#667eea;"></i>
+                            <div class="mod-title">@SharedLocalizer["Track Members"]</div>
+                            <div class="mod-desc">@SharedLocalizer["Live ZKTeco Attendance"]</div>
                         </div>
                     </a>
                 </div>
@@ -137,11 +137,11 @@
             else
             {
                 <div class="col-md-3 col-6">
-                    <div class="text-decoration-none" style="cursor:pointer;" onclick="showAccessDenied('@SharedLocalizer["Attendance"]')">
-                        <div class="mod-card mod-bg-danger" style="opacity:0.5;">
-                            <i class="bi bi-check-circle-fill mod-icon"></i>
-                            <div class="mod-title">@SharedLocalizer["Attendance"]</div>
-                            <div class="mod-desc">@SharedLocalizer["Check-ins"]</div>
+                    <div class="text-decoration-none" style="cursor:pointer;" onclick="showAccessDenied('@SharedLocalizer["Track Members"]')">
+                        <div class="mod-card" style="background:linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));opacity:0.5;">
+                            <i class="bi bi-camera-video-fill mod-icon" style="color:#667eea;"></i>
+                            <div class="mod-title">@SharedLocalizer["Track Members"]</div>
+                            <div class="mod-desc">@SharedLocalizer["Live ZKTeco Attendance"]</div>
                         </div>
                     </div>
                 </div>

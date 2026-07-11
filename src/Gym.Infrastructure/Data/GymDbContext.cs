@@ -38,6 +38,7 @@ public class GymDbContext : DbContext
     public DbSet<SyncAuditLog> SyncAuditLogs => Set<SyncAuditLog>();
     public DbSet<DailySession> DailySessions => Set<DailySession>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AttendanceSummary> AttendanceSummaries => Set<AttendanceSummary>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

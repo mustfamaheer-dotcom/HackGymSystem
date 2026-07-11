@@ -699,6 +699,14 @@
                     </a>
                 </div>
             }
+            @if (User.HasClaim("permission", "Attendance.View"))
+            {
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "TrackMembersMvc" ? "active" : "")" asp-controller="TrackMembersMvc" asp-action="Index">
+                        <i class="bi bi-camera-video-fill"></i> @SharedLocalizer["Track Members"]
+                    </a>
+                </div>
+            }
             @if (User.HasClaim("permission", "Offers.View"))
             {
                 <div class="nav-item">

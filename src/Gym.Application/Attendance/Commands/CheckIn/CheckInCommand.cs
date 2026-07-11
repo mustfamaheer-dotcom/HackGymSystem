@@ -1,58 +1,108 @@
-using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.Localization;
 using Gym.Application;
-using Gym.Application.Common.DTOs;
-using Gym.Application.Common.Mappings;
+using Gym.Application.Common.Events;
 using Gym.Domain.Entities;
+using Gym.Domain.Events;
 using Gym.Domain.Interfaces;
 using Gym.Shared.Common;
 using MediatR;
 
 namespace Gym.Application.Attendances.Commands.CheckIn;
 
-public record CheckInCommand(Guid MemberId, bool IsManual = false, Guid? DeviceId = null) : IRequest<Result<Guid>>;
+public record CheckInCommand(Guid MemberId, bool IsManual = false, Guid? DeviceId = null, DateTime? DeviceTimestamp = null) : IRequest<Result<Guid>>;
 
 public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid>>
 {
     private readonly IRepository<Attendance> _attendanceRepository;
     private readonly IRepository<Member> _memberRepository;
+    private readonly IRepository<AttendanceSummary> _summaryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventPublisher _eventPublisher;
     private readonly IStringLocalizer<ApplicationResources> _localizer;
 
     public CheckInCommandHandler(
         IRepository<Attendance> attendanceRepository,
         IRepository<Member> memberRepository,
+        IRepository<AttendanceSummary> summaryRepository,
         IUnitOfWork unitOfWork,
+        IEventPublisher eventPublisher,
         IStringLocalizer<ApplicationResources> localizer)
     {
         _attendanceRepository = attendanceRepository;
         _memberRepository = memberRepository;
+        _summaryRepository = summaryRepository;
         _unitOfWork = unitOfWork;
+        _eventPublisher = eventPublisher;
         _localizer = localizer;
     }
 
     public async Task<Result<Guid>> Handle(CheckInCommand request, CancellationToken cancellationToken)
     {
-        var memberExists = await _memberRepository.AnyAsync(m => m.Id == request.MemberId, cancellationToken);
-        if (!memberExists)
+        var member = await _memberRepository.GetByIdAsync(request.MemberId, cancellationToken);
+        if (member == null)
             return Result<Guid>.Failure(_localizer["Member not found"]);
 
+        var checkInTime = request.DeviceTimestamp ?? DateTime.UtcNow;
+
         var existingToday = await _attendanceRepository.AnyAsync(
-            a => a.MemberId == request.MemberId && a.CheckIn.Date == DateTime.UtcNow.Date, cancellationToken);
+            a => a.MemberId == request.MemberId && a.CheckIn.Date == checkInTime.Date, cancellationToken);
         if (existingToday)
             return Result<Guid>.Failure(_localizer["Member already checked in today"]);
 
-        var now = DateTime.UtcNow;
-        var attendance = new Attendance(request.MemberId, now, request.IsManual);
+        var attendance = new Attendance(request.MemberId, checkInTime, request.IsManual);
 
         if (request.DeviceId.HasValue)
             attendance.AssignDevice(request.DeviceId.Value);
 
         await _attendanceRepository.AddAsync(attendance, cancellationToken);
+
+        await UpdateAttendanceSummaryAsync(request.MemberId, checkInTime, cancellationToken);
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var status = CalculateAttendanceStatus(checkInTime);
+        await _eventPublisher.PublishAsync(new AttendanceRecordedEvent
+        {
+            MemberId = request.MemberId,
+            MemberName = member.FullName,
+            Status = status.ToString(),
+            AttendanceTimestamp = checkInTime,
+            Method = request.IsManual ? "Manual" : "Device",
+            IsManual = request.IsManual,
+            Direction = "CheckIn"
+        }, cancellationToken);
+
         return Result<Guid>.Success(attendance.Id);
+    }
+
+    private async Task UpdateAttendanceSummaryAsync(Guid memberId, DateTime checkInTime, CancellationToken cancellationToken)
+    {
+        var today = checkInTime.Date;
+        var summary = await _summaryRepository.FirstOrDefaultAsync(
+            s => s.MemberId == memberId && s.Date == today, cancellationToken);
+
+        if (summary == null)
+        {
+            summary = new AttendanceSummary(memberId, today);
+            summary.SetCheckIn(checkInTime.TimeOfDay);
+            summary.SetStatus(CalculateAttendanceStatus(checkInTime));
+            await _summaryRepository.AddAsync(summary, cancellationToken);
+        }
+        else
+        {
+            summary.SetCheckIn(checkInTime.TimeOfDay);
+            summary.SetStatus(CalculateAttendanceStatus(checkInTime));
+            _summaryRepository.Update(summary);
+        }
+    }
+
+    private static AttendanceStatus CalculateAttendanceStatus(DateTime checkInTime)
+    {
+        var lateThreshold = new DateTime(checkInTime.Year, checkInTime.Month, checkInTime.Day, 9, 15, 0);
+        return checkInTime > lateThreshold
+            ? AttendanceStatus.Late
+            : AttendanceStatus.Present;
     }
 }
 

@@ -10,4 +10,5 @@ public class ZKTecoConfig
     public int RetryDelayMs { get; set; } = 10000;
     public bool FingerprintDuplicateCheck { get; set; } = true;
     public bool AutoSyncOnStartup { get; set; } = true;
+    public int Password { get; set; } = 0;
 }

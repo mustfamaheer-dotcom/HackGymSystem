@@ -6,11 +6,14 @@ using Gym.Application.Attendances.Commands.CreateManualAttendance;
 using Gym.Application.Attendances.DTOs;
 using Gym.Application.Attendances.Queries.GetAllAttendances;
 using Gym.Application.Attendances.Queries.GetAttendanceById;
+using Gym.Application.Attendances.Queries.GetAttendanceSummary;
 using Gym.Application.Attendances.Queries.GetMemberAttendances;
+using Gym.Application.Attendances.Queries.GetMonthlyReport;
 using Gym.Application.Attendances.Queries.GetTodayAttendances;
 using Gym.Application.Common.DTOs;
 using Gym.Domain.Entities;
 using Gym.Domain.Interfaces;
+using Gym.Shared.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,12 +28,14 @@ public class AttendancesController : BaseController
     private readonly IMediator _mediator;
     private readonly IHubContext<AttendanceHub> _hubContext;
     private readonly IRepository<Member> _memberRepo;
+    private readonly IRepository<Device> _deviceRepo;
 
-    public AttendancesController(IMediator mediator, IHubContext<AttendanceHub> hubContext, IRepository<Member> memberRepo)
+    public AttendancesController(IMediator mediator, IHubContext<AttendanceHub> hubContext, IRepository<Member> memberRepo, IRepository<Device> deviceRepo)
     {
         _mediator = mediator;
         _hubContext = hubContext;
         _memberRepo = memberRepo;
+        _deviceRepo = deviceRepo;
     }
 
     [HttpGet]
@@ -124,5 +129,90 @@ public class AttendancesController : BaseController
             return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
 
         return Ok(ApiResponse<Guid>.Ok(result.Data!));
+    }
+
+    [HttpGet("monthly-report")]
+    [RequirePermission("Attendance.View")]
+    public async Task<IActionResult> GetMonthlyReport([FromQuery] int year, [FromQuery] int month, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetMonthlyReportQuery(year, month), cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse<List<MonthlyReportDto>>.Fail(result.Message!));
+
+        return Ok(ApiResponse<List<MonthlyReportDto>>.Ok(result.Data!));
+    }
+
+    [HttpGet("summary/{memberId}")]
+    [RequirePermission("Attendance.View")]
+    public async Task<IActionResult> GetMemberSummary(Guid memberId, [FromQuery] DateTime? date, CancellationToken cancellationToken)
+    {
+        var targetDate = date ?? DateTime.Today;
+        var result = await _mediator.Send(new GetAttendanceSummaryQuery(memberId, targetDate), cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse<AttendanceSummaryDto>.Fail(result.Message!));
+
+        return Ok(ApiResponse<AttendanceSummaryDto>.Ok(result.Data!));
+    }
+
+    [HttpGet("daily-summaries")]
+    [RequirePermission("Attendance.View")]
+    public async Task<IActionResult> GetDailySummaries([FromQuery] DateTime? date, CancellationToken cancellationToken)
+    {
+        var targetDate = date ?? DateTime.Today;
+        var result = await _mediator.Send(new GetDailySummariesQuery(targetDate), cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse<List<AttendanceSummaryDto>>.Fail(result.Message!));
+
+        return Ok(ApiResponse<List<AttendanceSummaryDto>>.Ok(result.Data!));
+    }
+
+    [HttpGet("dashboard-stats")]
+    [RequirePermission("Attendance.View")]
+    public async Task<IActionResult> GetDashboardStats(CancellationToken cancellationToken)
+    {
+        var today = DateTime.Today;
+
+        var totalMembers = await _memberRepo.CountAsync(m => !m.IsDeleted, cancellationToken);
+        var todayAttendances = await _mediator.Send(new GetTodayAttendancesQuery(), cancellationToken);
+
+        var checkedInToday = todayAttendances.IsSuccess ? todayAttendances.Data!.Count : 0;
+        var absentToday = totalMembers - checkedInToday;
+        var devicesOnline = await _deviceRepo.CountAsync(d => d.IsActive && d.Status == Shared.Enums.DeviceStatus.Online, cancellationToken);
+
+        var stats = new DashboardStatsDto
+        {
+            TotalActiveMembers = totalMembers,
+            CheckedInToday = checkedInToday,
+            AbsentToday = absentToday,
+            LateToday = 0,
+            OnLeaveToday = 0,
+            TotalRecordsToday = checkedInToday,
+            DevicesOnline = devicesOnline,
+            LastUpdated = DateTime.UtcNow
+        };
+
+        return Ok(ApiResponse<DashboardStatsDto>.Ok(stats));
+    }
+
+    [HttpGet("device-health")]
+    [RequirePermission("Devices.View")]
+    public async Task<IActionResult> GetDeviceHealth(CancellationToken cancellationToken)
+    {
+        var deviceRepo = HttpContext.RequestServices.GetRequiredService<IRepository<Device>>();
+        var devices = await deviceRepo.Query()
+            .Where(d => d.IsActive)
+            .Select(d => new DeviceHealthDto
+            {
+                DeviceId = d.Id,
+                DeviceName = d.Name,
+                IPAddress = d.IPAddress,
+                Port = d.Port,
+                Status = d.Status.ToString(),
+                LastConnectedAt = d.LastConnectedAt,
+                IsActive = d.IsActive
+            })
+            .ToListAsync(cancellationToken);
+
+        return Ok(ApiResponse<List<DeviceHealthDto>>.Ok(devices));
     }
 }

@@ -1,0 +1,698 @@
+@using Gym.Application.Common.DTOs
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResources> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Track Members"];
+    var totalMembers = ViewBag.TotalMembers ?? 0;
+    var checkedInToday = ViewBag.CheckedInToday ?? 0;
+    var absentToday = ViewBag.AbsentToday ?? 0;
+    var lateToday = ViewBag.LateToday ?? 0;
+    var devicesOnline = ViewBag.DevicesOnline ?? 0;
+    var totalRecordsToday = ViewBag.TotalRecordsToday ?? 0;
+    var onLeaveToday = ViewBag.OnLeaveToday ?? 0;
+    var todayAttendances = ViewBag.TodayAttendances as dynamic ?? new List<dynamic>();
+}
+
+<style>
+    .track-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px 32px;
+        color: white;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .track-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .track-header .subtitle { opacity: 0.85; font-size: 0.9rem; margin-top: 4px; }
+    .track-header .live-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 16px;
+        font-size: 0.85rem; font-weight: 500;
+    }
+    .track-header .live-dot {
+        width: 10px; height: 10px; border-radius: 50%; background: #4ade80;
+        animation: pulse-dot 2s infinite;
+    }
+    @@keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.3); }
+    }
+    .stat-card {
+        background: var(--bs-body-bg, #1a1d23);
+        border: 1px solid var(--bs-border-color, #2a2d35);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: #667eea; }
+    .stat-card .stat-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 12px; font-size: 1.4rem;
+    }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat-card .stat-label { font-size: 0.8rem; opacity: 0.7; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-icon.blue { background: rgba(102,126,234,0.15); color: #667eea; }
+    .stat-icon.green { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .stat-icon.red { background: rgba(248,113,113,0.15); color: #f87171; }
+    .stat-icon.amber { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .stat-icon.cyan { background: rgba(34,211,238,0.15); color: #22d3ee; }
+    .stat-icon.purple { background: rgba(192,132,252,0.15); color: #c084fc; }
+    .stat-icon.pink { background: rgba(244,114,182,0.15); color: #f472b6; }
+
+    .section-card {
+        background: var(--bs-body-bg, #1a1d23);
+        border: 1px solid var(--bs-border-color, #2a2d35);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .section-card .section-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--bs-border-color, #2a2d35);
+        display: flex; justify-content: space-between; align-items: center;
+        font-weight: 600;
+    }
+    .section-card .section-body { padding: 0; }
+    .section-card .section-body.no-pad { padding: 20px; }
+
+    .live-table { width: 100%; border-collapse: collapse; }
+    .live-table th {
+        padding: 12px 16px; text-align: left; font-size: 0.75rem;
+        text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6;
+        border-bottom: 1px solid var(--bs-border-color, #2a2d35);
+        position: sticky; top: 0; background: var(--bs-body-bg, #1a1d23);
+    }
+    .live-table td {
+        padding: 12px 16px; font-size: 0.9rem;
+        border-bottom: 1px solid var(--bs-border-color, #2a2d35);
+    }
+    .live-table tr { transition: background 0.2s; }
+    .live-table tbody tr:hover { background: rgba(102,126,234,0.05); }
+    .live-table .new-row { animation: highlight-new 2s ease-out; }
+    @@keyframes highlight-new {
+        0% { background: rgba(102,126,234,0.2); }
+        100% { background: transparent; }
+    }
+
+    .badge-type {
+        display: inline-block; padding: 3px 10px; border-radius: 12px;
+        font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-checkin { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .badge-checkout { background: rgba(248,113,113,0.15); color: #f87171; }
+
+    .device-status {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;
+    }
+    .device-online { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .device-offline { background: rgba(248,113,113,0.15); color: #f87171; }
+    .device-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .device-online .device-dot { background: #4ade80; }
+    .device-offline .device-dot { background: #f87171; }
+
+    .btn-track {
+        padding: 8px 20px; border-radius: 8px; font-weight: 600;
+        font-size: 0.85rem; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-track-primary { background: #667eea; color: white; }
+    .btn-track-primary:hover { background: #5a6fd6; }
+    .btn-track-success { background: #4ade80; color: #0a0a0a; }
+    .btn-track-success:hover { background: #3ccc6d; }
+    .btn-track-outline {
+        background: transparent; color: var(--bs-body-color, #e2e8f0);
+        border: 1px solid var(--bs-border-color, #2a2d35);
+    }
+    .btn-track-outline:hover { border-color: #667eea; color: #667eea; }
+
+    .feed-scroll { max-height: 500px; overflow-y: auto; }
+    .feed-scroll::-webkit-scrollbar { width: 6px; }
+    .feed-scroll::-webkit-scrollbar-track { background: transparent; }
+    .feed-scroll::-webkit-scrollbar-thumb { background: #4a4d55; border-radius: 3px; }
+
+    .employee-row {
+        display: flex; align-items: center; padding: 12px 16px;
+        border-bottom: 1px solid var(--bs-border-color, #2a2d35);
+        transition: background 0.2s;
+    }
+    .employee-row:hover { background: rgba(102,126,234,0.05); }
+    .employee-avatar {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; font-size: 0.9rem; margin-right: 12px;
+        flex-shrink: 0;
+    }
+    .employee-info { flex: 1; min-width: 0; }
+    .employee-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .employee-meta { font-size: 0.75rem; opacity: 0.6; }
+    .employee-actions { display: flex; gap: 6px; }
+    .btn-sm-track {
+        padding: 4px 12px; border-radius: 6px; font-size: 0.75rem;
+        font-weight: 600; border: none; cursor: pointer;
+    }
+    .btn-sm-in { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .btn-sm-in:hover { background: #4ade80; color: #0a0a0a; }
+    .btn-sm-out { background: rgba(248,113,113,0.15); color: #f87171; }
+    .btn-sm-out:hover { background: #f87171; color: #0a0a0a; }
+
+    .tab-bar { display: flex; gap: 4px; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .tab-btn {
+        padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer;
+        font-size: 0.85rem; font-weight: 500; background: transparent;
+        color: var(--bs-body-color, #e2e8f0); transition: all 0.2s;
+    }
+    .tab-btn.active { background: #667eea; color: white; }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .empty-state {
+        text-align: center; padding: 40px 20px; opacity: 0.5;
+    }
+    .empty-state i { font-size: 2rem; margin-bottom: 8px; }
+
+    @@media (max-width: 768px) {
+        .track-header { flex-direction: column; gap: 12px; text-align: center; }
+        .stat-card .stat-value { font-size: 1.5rem; }
+        .employee-actions { flex-direction: column; }
+    }
+</style>
+
+<div class="content-area">
+    <div class="track-header">
+        <div>
+            <h2>@SharedLocalizer["Track Members"]</h2>
+            <div class="subtitle">@SharedLocalizer["ZKTeco Live Attendance — Real-time Face & Fingerprint Tracking"]</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                <span>@SharedLocalizer["Live"]</span>
+                <span id="clientCount" style="opacity:0.7;">Clients: 1</span>
+            </div>
+            <button class="btn-track btn-track-primary" onclick="simulateAttendance()">
+                <i class="bi bi-play-circle"></i> @SharedLocalizer["Simulate"]
+            </button>
+            <button class="btn-track btn-track-outline" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Refresh"]
+            </button>
+            <button class="btn-track btn-track-success" onclick="syncFromDevice()">
+                <i class="bi bi-cloud-download"></i> @SharedLocalizer["Sync from Device"]
+            </button>
+            <button class="btn-track btn-track-outline" onclick="importAllFromDevice()">
+                <i class="bi bi-database-add"></i> @SharedLocalizer["Import All"]
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-value" id="statTotal">@totalMembers</div>
+                <div class="stat-label">@SharedLocalizer["Active Employees"]</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-value" id="statCheckedIn">@checkedInToday</div>
+                <div class="stat-label">@SharedLocalizer["Checked In Today"]</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="bi bi-clock-fill"></i></div>
+                <div class="stat-value" id="statLate">@lateToday</div>
+                <div class="stat-label">@SharedLocalizer["Late Today"]</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="bi bi-person-x-fill"></i></div>
+                <div class="stat-value" id="statAbsent">@absentToday</div>
+                <div class="stat-label">@SharedLocalizer["Absent Today"]</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon cyan"><i class="bi bi-hdd-network-fill"></i></div>
+                <div class="stat-value" id="statDevices">@devicesOnline</div>
+                <div class="stat-label">@SharedLocalizer["Devices Online"]</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="bi bi-clipboard2-data-fill"></i></div>
+                <div class="stat-value" id="statRecords">@totalRecordsToday</div>
+                <div class="stat-label">@SharedLocalizer["Total Records Today"]</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="section-card mb-3">
+                <div class="section-header">
+                    <span><i class="bi bi-broadcast"></i> @SharedLocalizer["Live Feed"]</span>
+                    <div class="tab-bar">
+                        <button class="tab-btn active" onclick="switchTab('live')">@SharedLocalizer["Today's Live Attendance"]</button>
+                        <button class="tab-btn" onclick="switchTab('employees')">@SharedLocalizer["Employees"]</button>
+                        <button class="tab-btn" onclick="switchTab('devices')">@SharedLocalizer["Devices"]</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div id="tabLive" class="tab-content active">
+                        <div class="feed-scroll" id="feedScroll">
+                            <table class="live-table">
+                                <thead>
+                                    <tr>
+                                        <th>@SharedLocalizer["Time"]</th>
+                                        <th>@SharedLocalizer["ID"]</th>
+                                        <th>@SharedLocalizer["Name"]</th>
+                                        <th>@SharedLocalizer["Type"]</th>
+                                        <th>@SharedLocalizer["Device"]</th>
+                                        <th>@SharedLocalizer["Action"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liveFeedBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="tabEmployees" class="tab-content">
+                        <div id="employeeList" style="max-height:500px;overflow-y:auto;"></div>
+                    </div>
+                    <div id="tabDevices" class="tab-content">
+                        <div id="deviceList" class="section-body no-pad"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="section-card mb-3">
+                <div class="section-header">
+                    <span><i class="bi bi-info-circle"></i> @SharedLocalizer["System Status"]</span>
+                </div>
+                <div class="section-body no-pad" style="padding:20px;">
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bs-border-color,#2a2d35);">
+                        <span style="opacity:0.6;">@SharedLocalizer["Device Connection"]</span>
+                        <span id="deviceConnectionStatus" class="device-status device-offline">
+                            <span class="device-dot"></span> @SharedLocalizer["Checking..."]
+                        </span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bs-border-color,#2a2d35);">
+                        <span style="opacity:0.6;">@SharedLocalizer["Last Sync"]</span>
+                        <span id="lastSyncTime" style="font-weight:600;">--</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bs-border-color,#2a2d35);">
+                        <span style="opacity:0.6;">@SharedLocalizer["SignalR Status"]</span>
+                        <span id="signalrStatus" class="device-status device-offline">
+                            <span class="device-dot"></span> @SharedLocalizer["Disconnected"]
+                        </span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                        <span style="opacity:0.6;">@SharedLocalizer["Total Check-ins Today"]</span>
+                        <span id="totalCheckins" style="font-weight:600;">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="bi bi-lightning"></i> @SharedLocalizer["Quick Actions"]</span>
+                </div>
+                <div class="section-body no-pad" style="padding:16px;">
+                    <button class="btn-track btn-track-success w-100 mb-2" onclick="testDevice()">
+                        <i class="bi bi-plug"></i> @SharedLocalizer["Test Device Connection"]
+                    </button>
+                    <button class="btn-track btn-track-outline w-100" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise"></i> @SharedLocalizer["Force Refresh Data"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="simulateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--bs-body-bg,#1a1d23);border:1px solid var(--bs-border-color,#2a2d35);border-radius:12px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--bs-border-color,#2a2d35);">
+                <h5 class="modal-title">@SharedLocalizer["Simulate Attendance"]</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem;">@SharedLocalizer["Enrollment ID"]</label>
+                    <input type="text" class="form-control" id="simEnrollmentId" placeholder="e.g. 00001"
+                           style="background:rgba(255,255,255,0.05);border:1px solid var(--bs-border-color,#2a2d35);color:var(--bs-body-color,#e2e8f0);border-radius:8px;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem;">@SharedLocalizer["Direction"]</label>
+                    <select class="form-select" id="simDirection"
+                            style="background:rgba(255,255,255,0.05);border:1px solid var(--bs-border-color,#2a2d35);color:var(--bs-body-color,#e2e8f0);border-radius:8px;">
+                        <option value="0">@SharedLocalizer["Check In"]</option>
+                        <option value="1">@SharedLocalizer["Check Out"]</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--bs-border-color,#2a2d35);">
+                <button type="button" class="btn-track btn-track-outline" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn-track btn-track-primary" onclick="submitSimulate()">@SharedLocalizer["Simulate"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var signalRConnection = null;
+
+        function initSignalR() {
+            signalRConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/attendance")
+                .withAutomaticReconnect([0, 2000, 5000, 10000])
+                .build();
+
+            signalRConnection.on("AttendancePushed", function(data) {
+                addFeedItem(data);
+                loadLiveData();
+            });
+
+            signalRConnection.start().then(function() {
+                updateSignalRStatus(true);
+            }).catch(function() {
+                updateSignalRStatus(false);
+            });
+
+            signalRConnection.onclose(function() {
+                updateSignalRStatus(false);
+            });
+
+            signalRConnection.onreconnected(function() {
+                updateSignalRStatus(true);
+            });
+        }
+
+        function updateSignalRStatus(connected) {
+            var el = document.getElementById('signalrStatus');
+            if (connected) {
+                el.className = 'device-status device-online';
+                el.innerHTML = '<span class="device-dot"></span> Connected';
+            } else {
+                el.className = 'device-status device-offline';
+                el.innerHTML = '<span class="device-dot"></span> Disconnected';
+            }
+        }
+
+        function loadLiveData() {
+            fetch('/TrackMembers/get-live-data')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    document.getElementById('statTotal').textContent = data.totalMembers;
+                    document.getElementById('statCheckedIn').textContent = data.checkedInToday;
+                    document.getElementById('statAbsent').textContent = data.absentToday;
+                    document.getElementById('statLate').textContent = data.lateToday;
+                    document.getElementById('statDevices').textContent = data.devicesOnline;
+                    document.getElementById('statRecords').textContent = data.totalRecordsToday;
+                    document.getElementById('totalCheckins').textContent = data.checkedInToday;
+                    document.getElementById('lastSyncTime').textContent = new Date().toLocaleTimeString();
+                    renderFeed(data.todayAttendances);
+                    renderEmployees(data.employees);
+                    updateBridgeStatus(data.bridgeStatus);
+                })
+                .catch(function(err) {
+                    console.error('Failed to load data:', err);
+                    document.getElementById('deviceConnectionStatus').className = 'device-status device-offline';
+                    document.getElementById('deviceConnectionStatus').innerHTML = '<span class="device-dot"></span> Error loading data';
+                });
+        }
+
+        function updateBridgeStatus(status) {
+            var el = document.getElementById('deviceConnectionStatus');
+            if (!status) {
+                el.className = 'device-status device-offline';
+                el.innerHTML = '<span class="device-dot"></span> Unknown';
+                return;
+            }
+            if (status.connected) {
+                el.className = 'device-status device-online';
+                el.innerHTML = '<span class="device-dot"></span> Connected';
+            } else {
+                el.className = 'device-status device-offline';
+                var errorMsg = status.error || 'Bridge offline';
+                el.innerHTML = '<span class="device-dot"></span> ' + errorMsg;
+            }
+        }
+
+        function renderFeed(records) {
+            var tbody = document.getElementById('liveFeedBody');
+            tbody.innerHTML = '';
+            if (!records || records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;opacity:0.5;padding:40px;">No attendance records today</td></tr>';
+                return;
+            }
+            records.forEach(function(r) {
+                var time = new Date(r.checkIn).toLocaleTimeString();
+                var typeBadge = r.checkOut
+                    ? '<span class="badge-type badge-checkout">Check Out</span>'
+                    : '<span class="badge-type badge-checkin">Check In</span>';
+                var actionBtn = r.checkOut
+                    ? ''
+                    : '<button class="btn-sm-track btn-sm-out" onclick="checkOutMember(\'' + r.memberId + '\')">Check Out</button>';
+
+                tbody.innerHTML += '<tr>' +
+                    '<td>' + time + '</td>' +
+                    '<td>' + (r.memberCode || '--') + '</td>' +
+                    '<td>' + r.memberName + '</td>' +
+                    '<td>' + typeBadge + '</td>' +
+                    '<td>' + r.deviceName + '</td>' +
+                    '<td>' + actionBtn + '</td>' +
+                    '</tr>';
+            });
+        }
+
+        function renderEmployees(employees) {
+            var list = document.getElementById('employeeList');
+            list.innerHTML = '';
+            if (!employees || employees.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="bi bi-people"></i><div>No employees found</div></div>';
+                return;
+            }
+            employees.forEach(function(e) {
+                var initials = e.name.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
+                var badge = e.hasActiveSub
+                    ? '<span class="badge-type badge-checkin" style="font-size:0.7rem;">Active</span>'
+                    : '<span class="badge-type badge-checkout" style="font-size:0.7rem;">Inactive</span>';
+                list.innerHTML += '<div class="employee-row">' +
+                    '<div class="employee-avatar">' + initials + '</div>' +
+                    '<div class="employee-info">' +
+                    '<div class="employee-name">' + e.name + '</div>' +
+                    '<div class="employee-meta">ID: ' + (e.code || '--') + ' | ' + (e.phone || '') + ' ' + badge + '</div>' +
+                    '</div>' +
+                    '<div class="employee-actions">' +
+                    '<button class="btn-sm-track btn-sm-in" onclick="checkInMember(\'' + e.id + '\')">Check In</button>' +
+                    '<button class="btn-sm-track btn-sm-out" onclick="checkOutMember(\'' + e.id + '\')">Check Out</button>' +
+                    '</div>' +
+                    '</div>';
+            });
+        }
+
+        function addFeedItem(data) {
+            var tbody = document.getElementById('liveFeedBody');
+            var time = new Date(data.timestamp || data.checkIn || new Date()).toLocaleTimeString();
+            var typeBadge = (data.type === 'check-in' || !data.type)
+                ? '<span class="badge-type badge-checkin">Check In</span>'
+                : '<span class="badge-type badge-checkout">Check Out</span>';
+            var row = document.createElement('tr');
+            row.className = 'new-row';
+            row.innerHTML = '<td>' + time + '</td>' +
+                '<td>--</td>' +
+                '<td>' + (data.memberName || '--') + '</td>' +
+                '<td>' + typeBadge + '</td>' +
+                '<td>Device</td>' +
+                '<td></td>';
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            event.target.classList.add('active');
+            var tabId = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+            var tabEl = document.getElementById(tabId);
+            if (tabEl) tabEl.classList.add('active');
+            if (tab === 'devices') loadDevices();
+        };
+
+        function loadDevices() {
+            fetch('/TrackMembers/get-devices')
+                .then(function(r) { return r.json(); })
+                .then(function(devices) {
+                    var list = document.getElementById('deviceList');
+                    if (!devices || devices.length === 0) {
+                        list.innerHTML = '<div class="empty-state"><i class="bi bi-hdd-network"></i><div>No devices configured</div></div>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    devices.forEach(function(d) {
+                        var statusClass = d.status === 'Online' ? 'device-online' : 'device-offline';
+                        var lastSeen = d.lastConnectedAt ? new Date(d.lastConnectedAt).toLocaleString() : 'Never';
+                        list.innerHTML += '<div class="employee-row">' +
+                            '<div class="employee-avatar" style="background:linear-gradient(135deg,#22d3ee,#06b6d4);"><i class="bi bi-hdd-network"></i></div>' +
+                            '<div class="employee-info">' +
+                            '<div class="employee-name">' + d.name + '</div>' +
+                            '<div class="employee-meta">' + d.ipAddress + ':' + d.port + ' | ' + (d.model || '') + ' | FW: ' + (d.firmwareVersion || 'N/A') + ' | Last: ' + lastSeen + '</div>' +
+                            '</div>' +
+                            '<span class="device-status ' + statusClass + '"><span class="device-dot"></span> ' + d.status + '</span>' +
+                            '</div>';
+                    });
+                });
+        }
+
+        window.simulateAttendance = function() {
+            new bootstrap.Modal(document.getElementById('simulateModal')).show();
+        };
+
+        window.submitSimulate = function() {
+            var enrollmentId = document.getElementById('simEnrollmentId').value;
+            var direction = parseInt(document.getElementById('simDirection').value);
+            if (!enrollmentId) { alert('Please enter enrollment ID'); return; }
+
+            fetch('/api/TrackMembers/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enrollmentId: enrollmentId, direction: direction })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                bootstrap.Modal.getInstance(document.getElementById('simulateModal')).hide();
+                if (data.success) {
+                    loadLiveData();
+                } else {
+                    alert(data.error || data.message || 'Simulation failed');
+                }
+            })
+            .catch(function(err) { alert('Error: ' + err); });
+        };
+
+        window.checkInMember = function(memberId) {
+            fetch('/api/TrackMembers/check-in', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ memberId: memberId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) loadLiveData();
+                else alert(data.error || data.message || 'Check-in failed');
+            })
+            .catch(function(err) { alert('Error: ' + err); });
+        };
+
+        window.checkOutMember = function(memberId) {
+            fetch('/api/TrackMembers/check-out', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ memberId: memberId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) loadLiveData();
+                else alert(data.error || data.message || 'Check-out failed');
+            })
+            .catch(function(err) { alert('Error: ' + err); });
+        };
+
+        window.testDevice = function() {
+            var el = document.getElementById('deviceConnectionStatus');
+            el.className = 'device-status';
+            el.innerHTML = '<span class="device-dot" style="background:#fbbf24;"></span> Testing...';
+
+            fetch('/TrackMembers/test-device', { method: 'POST' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        el.className = 'device-status device-online';
+                        el.innerHTML = '<span class="device-dot"></span> Connected (' + data.latencyMs + 'ms)';
+                    } else {
+                        el.className = 'device-status device-offline';
+                        el.innerHTML = '<span class="device-dot"></span> ' + (data.errorMessage || 'Offline');
+                    }
+                })
+                .catch(function(err) {
+                    el.className = 'device-status device-offline';
+                    el.innerHTML = '<span class="device-dot"></span> Error';
+                });
+        };
+
+        window.refreshData = function() {
+            loadLiveData();
+        };
+
+        window.syncFromDevice = function() {
+            var btn = event.target;
+            var originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Syncing...';
+
+            fetch('/TrackMembers/sync-from-device', { method: 'POST' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    if (data.success) {
+                        alert('Sync triggered: ' + data.message);
+                        loadLiveData();
+                    } else {
+                        alert('Sync failed: ' + data.error);
+                    }
+                })
+                .catch(function(err) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    alert('Error: ' + err);
+                });
+        };
+
+        window.importAllFromDevice = function() {
+            if (!confirm('This will import ALL users from the ZK device as members. Continue?')) return;
+            
+            var btn = event.target;
+            var originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Importing...';
+
+            fetch('/api/zkteco-attendance/import-all-from-device', { method: 'POST' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    if (data.success) {
+                        alert(data.message + '\nFound ' + data.usersFound + ' users on device.');
+                        loadLiveData();
+                    } else {
+                        alert('Import failed: ' + data.error);
+                    }
+                })
+                .catch(function(err) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    alert('Error: ' + err);
+                });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLiveData();
+            initSignalR();
+            setInterval(loadLiveData, 10000);
+        });
+    })();
+</script>

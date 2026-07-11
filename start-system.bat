@@ -12,6 +12,7 @@ set "PROJECT_ROOT=%~dp0"
 set "DB_NAME=GymManagementDb"
 set "BACKUP_DIR=%PROJECT_ROOT%backups"
 set "API_PROJECT=%PROJECT_ROOT%src\Gym.API"
+set "BRIDGE_PROJECT=%PROJECT_ROOT%src\HackGym.ZKTeco.Bridge"
 set "INFRA_PROJECT=%PROJECT_ROOT%src\Gym.Infrastructure"
 set "FRONTEND_DIR=%PROJECT_ROOT%gym-web"
 set "WWWROOT=%API_PROJECT%\wwwroot"
@@ -267,7 +268,7 @@ echo  ===================================================
 echo       HACK GYM SYSTEM - Starting Up
 echo  ===================================================
 echo.
-echo [1/6] Verifying prerequisites...
+echo [1/7] Verifying prerequisites...
 
 where dotnet >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
@@ -302,7 +303,7 @@ if %ERRORLEVEL% EQU 0 (
 :: STEP 2 - Kill old dotnet processes
 :: =============================================
 echo.
-echo [2/6] Stopping any previous instance...
+echo [2/7] Stopping any previous instance...
 taskkill /f /fi "WINDOWTITLE eq Gym API*" >nul 2>&1
 taskkill /f /im dotnet.exe >nul 2>&1
 :: Brief pause to let ports free up
@@ -314,11 +315,11 @@ echo   Done.
 :: =============================================
 echo.
 if not exist "%FRONTEND_DIR%" (
-    echo [3/6] Skipping frontend build (gym-web not found)
+    echo [3/7] Skipping frontend build (gym-web not found)
     echo   The app will serve MVC views from the API directly.
     goto :step4
 )
-echo [3/6] Building frontend...
+echo [3/7] Building frontend...
 
 where node >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
@@ -356,7 +357,7 @@ if exist "%FRONTEND_DIR%\dist" (
 :: STEP 4 - API build
 :: =============================================
 echo.
-echo [4/6] Building API...
+echo [4/7] Building API...
 
 dotnet build "%API_PROJECT%" --nologo -c Release
 if %ERRORLEVEL% NEQ 0 (
@@ -373,14 +374,34 @@ if %ERRORLEVEL% NEQ 0 (
 echo   API: Build complete.
 
 :: =============================================
-:: STEP 5 - Deploy frontend to wwwroot
+:: STEP 5 - Bridge build
+:: =============================================
+echo.
+echo [5/7] Building ZKTeco Bridge...
+
+dotnet build "%BRIDGE_PROJECT%" --nologo -c Release
+if %ERRORLEVEL% NEQ 0 (
+    echo   Bridge build failed - cleaning and retrying...
+    if exist "%BRIDGE_PROJECT%\obj" rmdir /s /q "%BRIDGE_PROJECT%\obj" >nul 2>&1
+    if exist "%BRIDGE_PROJECT%\bin" rmdir /s /q "%BRIDGE_PROJECT%\bin" >nul 2>&1
+    dotnet restore "%BRIDGE_PROJECT%" >nul 2>&1
+    dotnet build "%BRIDGE_PROJECT%" --nologo -c Release
+    if %ERRORLEVEL% NEQ 0 (
+        echo   ERROR: Bridge build failed. Device tracking will be disabled.
+        echo   You can still use manual check-in/check-out.
+    )
+)
+echo   Bridge: Build complete.
+
+:: =============================================
+:: STEP 6 - Deploy frontend to wwwroot
 :: =============================================
 echo.
 if not exist "%FRONTEND_DIR%" (
-    echo [5] Skipping frontend deploy (gym-web not found)
+    echo [6/7] Skipping frontend deploy (gym-web not found)
     goto :step6
 )
-echo [5] Deploying frontend to wwwroot...
+echo [6/7] Deploying frontend to wwwroot...
 if not exist "%WWWROOT%" mkdir "%WWWROOT%"
 
 if exist "%FRONTEND_DIR%\dist" (
@@ -393,10 +414,10 @@ if exist "%FRONTEND_DIR%\dist" (
 :step6
 
 :: =============================================
-:: STEP 6 - Generate run-api.bat and launch
+:: STEP 7 - Generate run scripts and launch
 :: =============================================
 echo.
-echo [6/6] Launching server...
+echo [7/7] Launching server and bridge...
 echo.
 
 :: Write run-api.bat inline (portable, uses relative path)
@@ -423,23 +444,46 @@ set "RUN_API=%PROJECT_ROOT%run-api.bat"
     echo pause ^>nul
 ) > "%RUN_API%"
 
+:: Write run-bridge.bat inline (portable, uses relative path)
+set "RUN_BRIDGE=%PROJECT_ROOT%run-bridge.bat"
+(
+    echo @echo off
+    echo title ZKTeco Bridge Service
+    echo color 0B
+    echo cd /d "%%~dp0src\HackGym.ZKTeco.Bridge"
+    echo echo.
+    echo echo  ============================================================
+    echo echo   Hack Gym - ZKTeco Bridge Service
+    echo echo   Polling device every 3 seconds...
+    echo echo   Press Ctrl+C to stop.
+    echo echo  ============================================================
+    echo echo.
+    echo dotnet run --no-build -c Release
+    echo echo.
+    echo echo  Bridge stopped.
+    echo pause ^>nul
+) > "%RUN_BRIDGE%"
+
 echo  ============================================================
-echo   Opening browser and starting API in a new window...
-echo   Default login: admin / Admin@123
+echo  Opening browser, starting API and ZKTeco Bridge...
+echo  Default login: admin / Admin@123
 echo.
-echo   Close the "Gym API Server" window or press Ctrl+C there to stop.
+echo  Close the respective windows or press Ctrl+C there to stop.
 echo  ============================================================
 echo.
 
-:: Launch API in its own persistent window (not /wait so this window stays here)
+:: Launch API in its own persistent window
 start "Gym API Server" cmd /c ""%RUN_API%""
+
+:: Launch Bridge in its own persistent window
+start "ZKTeco Bridge Service" cmd /c ""%RUN_BRIDGE%""
 
 :: Give API a moment to start, then open browser
 ping -n 4 127.0.0.1 >nul
 start "" http://localhost:5000
 
 echo.
-echo  Launcher done. The API is running in the "Gym API Server" window.
+echo  Launcher done. API and Bridge are running in their own windows.
 echo  This window can be closed safely.
 echo.
 pause

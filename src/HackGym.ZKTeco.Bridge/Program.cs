@@ -187,4 +187,43 @@ app.MapPost("/zkteco.bridge.ZKTecoBridge/EnrollFace", async (HttpContext context
     }
 });
 
+app.MapPost("/zkteco.bridge.ZKTecoBridge/DiagnoseUsers", () =>
+{
+    if (!deviceManager.IsConnected)
+        return Results.Ok(new { connected = false, error = "Device not connected" });
+
+    try
+    {
+        var users = deviceManager.GetAllUsersWithDetails();
+        var ids = users.Take(20).Select(u => new { u.EnrollmentId, u.Name, u.Privilege });
+        return Results.Ok(new
+        {
+            connected = true,
+            userCount = users.Count,
+            sampleUsers = ids,
+            totalSample = users.Count
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { connected = true, error = ex.Message });
+    }
+});
+
+app.MapGet("/diagnose/raw", () =>
+{
+    if (!deviceManager.IsConnected)
+        return Results.Ok(new { connected = false, error = "Device not connected" });
+
+    try
+    {
+        var diag = deviceManager.DiagnoseProtocols();
+        return Results.Ok(new { connected = true, diagnostics = diag });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { connected = true, error = ex.Message, stackTrace = ex.StackTrace });
+    }
+});
+
 app.Run();

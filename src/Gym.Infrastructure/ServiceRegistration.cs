@@ -1,7 +1,11 @@
+using Gym.Application.Common.Events;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Interfaces;
+using Gym.Infrastructure.Caching;
 using Gym.Infrastructure.Data;
+using Gym.Infrastructure.Events;
 using Gym.Infrastructure.Repositories;
+using Gym.Infrastructure.Resilience;
 using Gym.Infrastructure.Security;
 using Gym.Infrastructure.Services;
 using Gym.Infrastructure.Services.ZKTeco;
@@ -53,6 +57,26 @@ public static class ServiceRegistration
         services.AddHostedService<BackgroundJobs.PeriodicReconciliationWorker>();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+        // Event Bus
+        services.AddSingleton<IEventBus, InMemoryEventBus>();
+        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<Events.AttendanceEventHandler>();
+        services.AddScoped<Events.DeviceEventHandler>();
+
+        // Caching
+        services.AddMemoryCache();
+        services.AddScoped<ITrackMembersCache, TrackMembersCache>();
+        services.AddScoped<IMemberLookupCache, MemberLookupCache>();
+
+        // Specialized Repositories
+        services.AddScoped<IDeviceTrackingRepository, DeviceTrackingRepository>();
+        services.AddScoped<IAttendanceTrackingRepository, AttendanceTrackingRepository>();
+        services.AddScoped<IAttendanceSummaryTrackingRepository, AttendanceSummaryTrackingRepository>();
+
+        // Resilience
+        services.Configure<DeviceConnectionManagerOptions>(configuration.GetSection("DeviceConnectionManager"));
+        services.AddScoped<DeviceConnectionManager>();
 
         return services;
     }

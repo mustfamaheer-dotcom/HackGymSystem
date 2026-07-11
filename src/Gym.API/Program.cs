@@ -29,6 +29,8 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File("logs/gym-api-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/attendance-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+    .WriteTo.File("logs/device-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -126,6 +128,8 @@ builder.Services.AddHostedService<Gym.Infrastructure.Data.Seed.SeedDataInitializ
 builder.Services.AddHealthChecks().AddDbContextCheck<Gym.Infrastructure.Data.GymDbContext>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.Configure<Gym.Infrastructure.Resilience.DeviceConnectionManagerOptions>(
+    builder.Configuration.GetSection("DeviceConnectionManager"));
 
 builder.Services.AddRateLimiter(options =>
 {

@@ -1,16 +1,19 @@
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
+using System.Buffers.Binary;
 using HackGym.ZKTeco.Bridge.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace HackGym.ZKTeco.Bridge.Services;
 
+/// <summary>
+/// Manages connection to a ZKTeco device using pure TCP sockets.
+/// No COM DLL required — compatible with Python pyzk / Node.js node-zklib.
+/// </summary>
 public class ZKDeviceManager : IDisposable
 {
     private readonly ILogger<ZKDeviceManager> _logger;
     private readonly ZKTecoConfig _config;
-    private dynamic? _zkem;
+    private readonly ZKTecoTcpClient _client;
     private bool _disposed;
     private readonly object _lock = new();
     private readonly DeviceConnectionInfo _connectionInfo = new();
@@ -18,10 +21,11 @@ public class ZKDeviceManager : IDisposable
     public DeviceConnectionInfo ConnectionInfo => _connectionInfo;
     public bool IsConnected => _connectionInfo.IsConnected;
 
-    public ZKDeviceManager(ILogger<ZKDeviceManager> logger, IOptions<ZKTecoConfig> config)
+    public ZKDeviceManager(ILogger<ZKDeviceManager> logger, ILoggerFactory loggerFactory, IOptions<ZKTecoConfig> config)
     {
         _logger = logger;
         _config = config.Value;
+        _client = new ZKTecoTcpClient(loggerFactory.CreateLogger<ZKTecoTcpClient>());
     }
 
     public bool Connect()
@@ -33,16 +37,15 @@ public class ZKDeviceManager : IDisposable
                 if (_connectionInfo.IsConnected)
                     return true;
 
-                _zkem = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("00853A19-BD51-419B-9269-2DABE57EB61F"))!);
-
-                var connected = (bool)_zkem.Connect_Net(_config.DeviceIp, _config.DevicePort);
+                var connected = _client.Connect(_config.DeviceIp, _config.DevicePort, _config.ConnectionTimeoutMs, _config.Password);
                 if (!connected)
                 {
                     _logger.LogWarning("Failed to connect to device at {Ip}:{Port}", _config.DeviceIp, _config.DevicePort);
                     return false;
                 }
 
-                _zkem.RegEvent(1, 65535);
+                _client.RegisterEvent(0xFFFF);
+
                 _connectionInfo.IsConnected = true;
                 _connectionInfo.LastConnectedAt = DateTime.UtcNow;
                 _connectionInfo.ConsecutiveFailures = 0;
@@ -51,15 +54,9 @@ public class ZKDeviceManager : IDisposable
                 _logger.LogInformation("Connected to ZKTeco device at {Ip}:{Port}", _config.DeviceIp, _config.DevicePort);
                 return true;
             }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error connecting to device at {Ip}:{Port}", _config.DeviceIp, _config.DevicePort);
-                _connectionInfo.IsConnected = false;
-                return false;
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error connecting to device at {Ip}:{Port}", _config.DeviceIp, _config.DevicePort);
+                _logger.LogError(ex, "Error connecting to device at {Ip}:{Port}", _config.DeviceIp, _config.DevicePort);
                 _connectionInfo.IsConnected = false;
                 return false;
             }
@@ -72,9 +69,9 @@ public class ZKDeviceManager : IDisposable
         {
             try
             {
-                if (_zkem is not null && _connectionInfo.IsConnected)
+                if (_connectionInfo.IsConnected)
                 {
-                    _zkem.Disconnect();
+                    _client.Disconnect();
                 }
             }
             catch (Exception ex)
@@ -95,63 +92,25 @@ public class ZKDeviceManager : IDisposable
 
         lock (_lock)
         {
-            if (!_connectionInfo.IsConnected || _zkem is null)
+            if (!_connectionInfo.IsConnected)
                 return events;
 
             try
             {
-                var machineNumber = 1;
-                _zkem.EnableDevice(machineNumber, false);
-
+                _client.EnableDevice(false);
                 try
                 {
-                    var dwEnrollNumber = string.Empty;
-                    var dwVerifyMode = 0;
-                    var dwInOutMode = 0;
-                    var dwYear = 0;
-                    var dwMonth = 0;
-                    var dwDay = 0;
-                    var dwHour = 0;
-                    var dwMinute = 0;
-                    var dwSecond = 0;
-
-                    _zkem.ReadAllGLogData(machineNumber);
-
-                    while (_zkem.SSR_GetGeneralLogData(
-                        machineNumber,
-                        out dwEnrollNumber,
-                        out dwVerifyMode,
-                        out dwInOutMode,
-                        out dwYear,
-                        out dwMonth,
-                        out dwDay,
-                        out dwHour,
-                        out dwMinute,
-                        out dwSecond))
-                    {
-                        events.Add(new ZKAttendanceEvent
-                        {
-                            EnrollmentId = dwEnrollNumber,
-                            Method = (VerifyMethod)dwVerifyMode,
-                            Timestamp = new DateTime(dwYear, dwMonth, dwDay, dwHour, dwMinute, dwSecond, DateTimeKind.Local).ToUniversalTime(),
-                            Direction = dwInOutMode,
-                            MachineNumber = machineNumber
-                        });
-                    }
+                    events = _client.GetAttendanceLogs();
                 }
                 finally
                 {
-                    _zkem.EnableDevice(machineNumber, true);
+                    _client.EnableDevice(true);
                 }
-            }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error reading attendance logs");
-                _connectionInfo.IsConnected = false;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reading attendance logs");
+                _connectionInfo.IsConnected = false;
             }
         }
 
@@ -160,210 +119,135 @@ public class ZKDeviceManager : IDisposable
 
     public bool SetUserPrivilege(string enrollmentId, int privilege, DateTime? expiryDate = null)
     {
-        lock (_lock)
-        {
-            if (!_connectionInfo.IsConnected || _zkem is null)
-                return false;
-
-            try
-            {
-                var machineNumber = 1;
-                if (expiryDate.HasValue)
-                {
-                    return (bool)_zkem.SetUserPrivilege(
-                        machineNumber,
-                        enrollmentId,
-                        privilege,
-                        true,
-                        expiryDate.Value.Year,
-                        expiryDate.Value.Month,
-                        expiryDate.Value.Day);
-                }
-
-                return (bool)_zkem.SetUserPrivilege(
-                    machineNumber,
-                    enrollmentId,
-                    privilege,
-                    false,
-                    0, 0, 0);
-            }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error setting user privilege for {EnrollmentId}", enrollmentId);
-                return false;
-            }
-        }
+        // TCP protocol doesn't directly support privilege setting via simple command
+        // This would require CMD_USER_WRQ with full user record
+        _logger.LogDebug("SetUserPrivilege not yet implemented for TCP protocol");
+        return false;
     }
 
     public bool DeleteUser(string enrollmentId)
     {
-        lock (_lock)
-        {
-            if (!_connectionInfo.IsConnected || _zkem is null)
-                return false;
-
-            try
-            {
-                return (bool)_zkem.DeleteUserInfo(1, enrollmentId);
-            }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error deleting user {EnrollmentId}", enrollmentId);
-                return false;
-            }
-        }
+        // Would require CMD_DELETE_USER with the user's uid
+        _logger.LogDebug("DeleteUser not yet implemented for TCP protocol");
+        return false;
     }
 
     public (bool Success, string? Error) EnrollFingerprint(string enrollmentId, string name, int fingerIndex, int timeoutSeconds = 60)
     {
-        lock (_lock)
-        {
-            if (!_connectionInfo.IsConnected || _zkem is null)
-                return (false, "Device not connected");
-
-            try
-            {
-                var machineNumber = 1;
-                _zkem.EnableDevice(machineNumber, false);
-
-                try
-                {
-                    _zkem.SetUserInfo(machineNumber, enrollmentId, name, "", 0, false);
-
-                    var started = (bool)_zkem.StartEnroll(machineNumber, enrollmentId, fingerIndex);
-                    if (!started)
-                        return (false, "Failed to start enrollment. Ensure member is at the device.");
-
-                    var tcs = new TaskCompletionSource<bool>();
-                    _zkem.OnEnrollComplete += new Action<int, int, int>(OnEnrollCompleteHandler);
-                    // Poll for completion
-                    var enrolled = WaitForEnrollment(enrollmentId, fingerIndex, timeoutSeconds);
-                    _zkem.OnEnrollComplete -= new Action<int, int, int>(OnEnrollCompleteHandler);
-
-                    if (!enrolled)
-                        return (false, "Enrollment timed out or failed");
-
-                    return (true, null);
-                }
-                finally
-                {
-                    _zkem.EnableDevice(machineNumber, true);
-                }
-            }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error during fingerprint enrollment for {EnrollmentId}", enrollmentId);
-                return (false, $"Device error: {ex.Message}");
-            }
-        }
+        return (false, "Fingerprint enrollment requires the ZKTeco COM SDK");
     }
 
     public (bool Success, string? Error) EnrollFace(string enrollmentId, string name, int timeoutSeconds = 60)
     {
-        lock (_lock)
-        {
-            if (!_connectionInfo.IsConnected || _zkem is null)
-                return (false, "Device not connected");
-
-            try
-            {
-                var machineNumber = 1;
-                _zkem.EnableDevice(machineNumber, false);
-
-                try
-                {
-                    _zkem.SetUserInfo(machineNumber, enrollmentId, name, "", 0, false);
-
-                    var started = (bool)_zkem.StartFaceEnroll(machineNumber, enrollmentId);
-                    if (!started)
-                        return (false, "Failed to start face enrollment. Ensure member is at the device.");
-
-                    var enrolled = WaitForFaceEnrollment(enrollmentId, timeoutSeconds);
-                    if (!enrolled)
-                        return (false, "Face enrollment timed out or failed");
-
-                    return (true, null);
-                }
-                finally
-                {
-                    _zkem.EnableDevice(machineNumber, true);
-                }
-            }
-            catch (COMException ex)
-            {
-                _logger.LogError(ex, "COM error during face enrollment for {EnrollmentId}", enrollmentId);
-                return (false, $"Device error: {ex.Message}");
-            }
-        }
-    }
-
-    private void OnEnrollCompleteHandler(int machineNumber, int enrollId, int errorCode)
-    {
-        _logger.LogInformation("Enrollment complete callback: Machine={Machine}, EnrollId={EnrollId}, Error={Error}",
-            machineNumber, enrollId, errorCode);
-    }
-
-    private bool WaitForEnrollment(string enrollmentId, int fingerIndex, int timeoutSeconds)
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
-        try
-        {
-            while (!cts.Token.IsCancellationRequested)
-            {
-                var enrolled = (bool)_zkem.CheckEnrolled(1, enrollmentId, fingerIndex);
-                if (enrolled)
-                    return true;
-
-                Thread.Sleep(500);
-            }
-        }
-        catch { }
-        return false;
-    }
-
-    private bool WaitForFaceEnrollment(string enrollmentId, int timeoutSeconds)
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
-        try
-        {
-            while (!cts.Token.IsCancellationRequested)
-            {
-                _zkem.GetUserFace(1, enrollmentId, out object faceData);
-                if (faceData is not null && faceData.ToString()?.Length > 0)
-                    return true;
-
-                Thread.Sleep(500);
-            }
-        }
-        catch { }
-        return false;
+        return (false, "Face enrollment requires the ZKTeco COM SDK");
     }
 
     public (int EnrolledCount, long FreeMemory, string? FirmwareVersion) GetDeviceStatus()
     {
         lock (_lock)
         {
-            if (!_connectionInfo.IsConnected || _zkem is null)
+            if (!_connectionInfo.IsConnected)
                 return (0, 0, null);
 
             try
             {
-                var machineNumber = 1;
-                var enrolledCount = (int)_zkem.GetDeviceStatus(machineNumber, 1);
-                var freeMemory = (long)(int)_zkem.GetDeviceStatus(machineNumber, 2);
-                var firmware = (string)_zkem.GetFirmwareVersion(machineNumber);
+                var sizes = _client.GetFreeSizes();
+                var firmware = _client.GetFirmwareVersion();
 
-                _connectionInfo.EnrolledUserCount = enrolledCount;
-                _connectionInfo.FreeMemory = freeMemory;
+                _connectionInfo.EnrolledUserCount = sizes.Users;
+                _connectionInfo.FreeMemory = sizes.RecCap - sizes.Records;
                 _connectionInfo.FirmwareVersion = firmware;
 
-                return (enrolledCount, freeMemory, firmware);
+                return (sizes.Users, sizes.RecCap - sizes.Records, firmware);
             }
-            catch (COMException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "COM error getting device status");
+                _logger.LogError(ex, "Error getting device status");
                 _connectionInfo.IsConnected = false;
                 return (0, 0, null);
+            }
+        }
+    }
+
+    public List<ZKUserInfo> GetAllUsersWithDetails()
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return new List<ZKUserInfo>();
+
+            try
+            {
+                var users = _client.GetUsers();
+                _logger.LogInformation("Read {Count} users from device", users.Count);
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading users from device");
+                _connectionInfo.IsConnected = false;
+                return new List<ZKUserInfo>();
+            }
+        }
+    }
+
+    public bool ClearAttendanceLogs()
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return false;
+
+            try
+            {
+                var result = _client.ClearAttendanceLogs();
+                if (result)
+                    _logger.LogInformation("Cleared attendance logs from device");
+                else
+                    _logger.LogWarning("Failed to clear attendance logs from device");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error clearing attendance logs");
+                _connectionInfo.IsConnected = false;
+                return false;
+            }
+        }
+    }
+
+    public ZKDeviceInfo? GetDeviceInfo()
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return null;
+
+            try
+            {
+                var model = _client.GetDeviceModel();
+                var serial = _client.GetSerialNumber();
+                var firmware = _client.GetFirmwareVersion();
+                var sizes = _client.GetFreeSizes();
+
+                _connectionInfo.EnrolledUserCount = sizes.Users;
+                _connectionInfo.FreeMemory = sizes.RecCap - sizes.Records;
+                _connectionInfo.FirmwareVersion = firmware;
+
+                return new ZKDeviceInfo
+                {
+                    Model = model,
+                    SerialNumber = serial,
+                    FirmwareVersion = firmware,
+                    EnrolledUserCount = sizes.Users,
+                    FreeMemory = sizes.RecCap - sizes.Records
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting device info");
+                _connectionInfo.IsConnected = false;
+                return null;
             }
         }
     }
@@ -381,13 +265,12 @@ public class ZKDeviceManager : IDisposable
 
             try
             {
-                _zkem = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("00853A19-BD51-419B-9269-2DABE57EB61F"))!);
-                var connected = (bool)_zkem.Connect_Net(_config.DeviceIp, _config.DevicePort);
+                var connected = _client.Connect(_config.DeviceIp, _config.DevicePort, _config.ConnectionTimeoutMs, _config.Password);
                 sw.Stop();
 
                 if (connected)
                 {
-                    _zkem.RegEvent(1, 65535);
+                    _client.RegisterEvent(0xFFFF);
                     _connectionInfo.IsConnected = true;
                     _connectionInfo.LastConnectedAt = DateTime.UtcNow;
                     _connectionInfo.ConsecutiveFailures = 0;
@@ -409,29 +292,13 @@ public class ZKDeviceManager : IDisposable
         var ids = new List<string>();
         lock (_lock)
         {
-            if (!_connectionInfo.IsConnected || _zkem is null)
+            if (!_connectionInfo.IsConnected)
                 return (ids, false);
 
             try
             {
-                _zkem.ReadAllUserID(1);
-                var total = (int)_zkem.GetDeviceStatus(1, 1);
-
-                string enrollId = string.Empty;
-                string name = string.Empty;
-                string password = string.Empty;
-                int privilege = 0;
-                bool enabled = false;
-
-                for (int i = 0; i < total; i++)
-                {
-                    if ((bool)_zkem.SSR_GetAllUserInfo(1, out enrollId, out name, out password, out privilege, out enabled))
-                    {
-                        ids.Add(enrollId);
-                    }
-                }
-
-                return (ids, true);
+                var users = _client.GetUsers();
+                return (users.Select(u => u.EnrollmentId).ToList(), true);
             }
             catch (Exception ex)
             {
@@ -453,16 +320,96 @@ public class ZKDeviceManager : IDisposable
         if (!_disposed)
         {
             Disconnect();
-            if (_zkem is not null)
-            {
-                try
-                {
-                    Marshal.ReleaseComObject(_zkem);
-                }
-                catch { }
-                _zkem = null;
-            }
+            _client?.Dispose();
             _disposed = true;
+        }
+    }
+
+    public object DiagnoseProtocols()
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return new { connected = false };
+
+            var results = new Dictionary<string, object>();
+
+            // Test 1: CMD_GET_FREE_SIZES (50) with empty data
+            try
+            {
+                var (code, dataLen, hex) = _client.TestCommandRaw(50, Array.Empty<byte>());
+                results["get_free_sizes_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["get_free_sizes_error"] = ex.Message; }
+
+            // Test 2: CMD_DB_RRQ (7) with FCT_USER (5) - old protocol
+            try
+            {
+                byte[] data = new byte[4];
+                BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(0, 2), 5); // FCT_USER
+                var (code, dataLen, hex) = _client.TestCommandRaw(7, data);
+                results["db_rrq_user_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["db_rrq_user_error"] = ex.Message; }
+
+            // Test 3: CMD_USERTEMP_RRQ (9) with FCT_USER (5) - like pyzk
+            try
+            {
+                byte[] data = new byte[4];
+                BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(0, 2), 5); // FCT_USER
+                var (code, dataLen, hex) = _client.TestCommandRaw(9, data);
+                results["usertemp_rrq_user_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["usertemp_rrq_user_error"] = ex.Message; }
+
+            // Test 4: CMD_PREPARE_BUFFER (1503) with user read command
+            try
+            {
+                byte[] data = new byte[11];
+                data[0] = 1;
+                BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(1, 2), 9); // CMD_USERTEMP_RRQ
+                BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(3, 4), 5); // FCT_USER
+                BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(7, 4), 0); // ext
+                var (code, dataLen, hex) = _client.TestCommandRaw(1503, data);
+                results["prepare_buffer_user_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["prepare_buffer_user_error"] = ex.Message; }
+
+            // Test 5: CMD_ATTLOG_RRQ (13) with empty data - old attendance protocol
+            try
+            {
+                var (code, dataLen, hex) = _client.TestCommandRaw(13, Array.Empty<byte>());
+                results["attlog_rrq_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["attlog_rrq_error"] = ex.Message; }
+
+            // Test 6: CMD_OPTIONS_RRQ (11) with ~DeviceName
+            try
+            {
+                byte[] data = System.Text.Encoding.ASCII.GetBytes("~DeviceName\0");
+                var (code, dataLen, hex) = _client.TestCommandRaw(11, data);
+                results["device_name_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["device_name_error"] = ex.Message; }
+
+            // Test 7: CMD_OPTIONS_RRQ (11) with ~SerialNumber
+            try
+            {
+                byte[] data = System.Text.Encoding.ASCII.GetBytes("~SerialNumber\0");
+                var (code, dataLen, hex) = _client.TestCommandRaw(11, data);
+                results["serial_number_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["serial_number_error"] = ex.Message; }
+
+            // Test 8: CMD_GET_VERSION (1100)
+            try
+            {
+                var (code, dataLen, hex) = _client.TestCommandRaw(1100, Array.Empty<byte>());
+                results["get_version_raw"] = new { code, dataLen, hex };
+            }
+            catch (Exception ex) { results["get_version_error"] = ex.Message; }
+
+            return results;
         }
     }
 }
