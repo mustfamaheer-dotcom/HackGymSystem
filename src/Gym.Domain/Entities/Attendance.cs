@@ -12,7 +12,7 @@ public class Attendance : BaseEntity
     public bool IsManual { get; set; }
     public AttendanceSyncStatus SyncStatus { get; set; } = AttendanceSyncStatus.Synced;
 
-    public Member Member { get; set; } = null!;
+    public Member? Member { get; set; }
     public Device? Device { get; set; }
 
     private Attendance() { }

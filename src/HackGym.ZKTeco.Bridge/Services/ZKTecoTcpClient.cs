@@ -633,40 +633,7 @@ public class ZKTecoTcpClient : IDisposable
             byte[] packet = ZKProtocol.BuildPacket(command, data, _sessionId, _replyId);
             _stream.Write(packet, 0, packet.Length);
 
-            byte[] topHeader = ReadExact(8);
-            if (topHeader == null)
-                return new CommandResponse { Code = 0, IsOk = false };
-
-            ushort magic1 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(0, 2));
-            ushort magic2 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(2, 2));
-            uint payloadSize = BitConverter.ToUInt32(topHeader, 4);
-
-            if (magic1 != ZKProtocol.Magic1 || magic2 != ZKProtocol.Magic2 || payloadSize < 8)
-                return new CommandResponse { Code = 0, IsOk = false };
-
-            byte[] payload = ReadExact((int)payloadSize);
-            if (payload == null)
-                return new CommandResponse { Code = 0, IsOk = false };
-
-            ushort respCode = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(0, 2));
-            ushort respSessionId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(4, 2));
-            // pyzk: self.__reply_id = self.__header[3] (reads from response)
-            _replyId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(6, 2));
-            // NOTE: pyzk does NOT update session_id from response — only during connect()
-            byte[] respData = payload[8..];
-
-            bool isOk = respCode == ZKProtocol.CMD_ACK_OK
-                     || respCode == ZKProtocol.CMD_PREPARE_DATA
-                     || respCode == ZKProtocol.CMD_ACK_DATA
-                     || respCode == ZKProtocol.CMD_DATA;
-
-            return new CommandResponse
-            {
-                Code = respCode,
-                IsOk = isOk,
-                Data = respData,
-                SessionId = respSessionId
-            };
+            return ReadCommandResponse();
         }
         catch (Exception ex)
         {
@@ -675,6 +642,87 @@ public class ZKTecoTcpClient : IDisposable
             _logger.LogDebug(ex, "SendCommand error for cmd={Command}", command);
             return new CommandResponse { Code = 0, IsOk = false };
         }
+    }
+
+    /// <summary>
+    /// Read one response frame from the device.
+    /// Skips async REG_EVENT packets by discarding them and reading the next response.
+    /// </summary>
+    private CommandResponse ReadCommandResponse(int maxEventSkips = 10)
+    {
+        if (_stream == null)
+            return new CommandResponse { Code = 0, IsOk = false };
+
+        try
+        {
+            for (int skip = 0; skip < maxEventSkips; skip++)
+            {
+                byte[] topHeader = ReadExact(8);
+                if (topHeader == null)
+                    return new CommandResponse { Code = 0, IsOk = false };
+
+                ushort magic1 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(0, 2));
+                ushort magic2 = BinaryPrimitives.ReadUInt16LittleEndian(topHeader.AsSpan(2, 2));
+                uint payloadSize = BitConverter.ToUInt32(topHeader, 4);
+
+                if (magic1 != ZKProtocol.Magic1 || magic2 != ZKProtocol.Magic2 || payloadSize < 8)
+                    return new CommandResponse { Code = 0, IsOk = false };
+
+                byte[] payload = ReadExact((int)payloadSize);
+                if (payload == null)
+                    return new CommandResponse { Code = 0, IsOk = false };
+
+                ushort respCode = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(0, 2));
+                ushort respSessionId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(4, 2));
+                _replyId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(6, 2));
+                byte[] respData = payload[8..];
+
+                // Discard async events (CMD_REG_EVENT = 500) and read next response
+                if (respCode == ZKProtocol.CMD_REG_EVENT)
+                {
+                    _logger.LogDebug("ReadCommandResponse: discarding async REG_EVENT, reading next response (skip={Skip})", skip + 1);
+                    SendInternalAck();
+                    continue;
+                }
+
+                bool isOk = respCode == ZKProtocol.CMD_ACK_OK
+                         || respCode == ZKProtocol.CMD_PREPARE_DATA
+                         || respCode == ZKProtocol.CMD_ACK_DATA
+                         || respCode == ZKProtocol.CMD_DATA;
+
+                return new CommandResponse
+                {
+                    Code = respCode,
+                    IsOk = isOk,
+                    Data = respData,
+                    SessionId = respSessionId
+                };
+            }
+
+            _logger.LogWarning("ReadCommandResponse: exceeded max event skips ({MaxSkips})", maxEventSkips);
+            return new CommandResponse { Code = 0, IsOk = false };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "ReadCommandResponse error");
+            return new CommandResponse { Code = 0, IsOk = false };
+        }
+    }
+
+    /// <summary>
+    /// Send CMD_ACK_OK to acknowledge a data packet.
+    /// pyzk: uses USHRT_MAX - 1 as reply_id for ack_ok.
+    /// </summary>
+    private void SendInternalAck()
+    {
+        if (_stream == null) return;
+        try
+        {
+            // pyzk __ack_ok uses const.USHRT_MAX - 1 for reply_id
+            byte[] packet = ZKProtocol.BuildPacket(ZKProtocol.CMD_ACK_OK, Array.Empty<byte>(), _sessionId, (ushort)(ZKProtocol.USHRT_MAX - 1));
+            _stream.Write(packet, 0, packet.Length);
+        }
+        catch { }
     }
 
     /// <summary>

@@ -10,7 +10,7 @@ public class Notification : BaseEntity
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
 
-    public Member Member { get; set; } = null!;
+    public Member? Member { get; set; }
 
     private Notification() { }
 

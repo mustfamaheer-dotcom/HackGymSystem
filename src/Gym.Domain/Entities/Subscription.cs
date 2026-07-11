@@ -22,7 +22,7 @@ public class Subscription : BaseEntity
     public string? AdminSignature { get; set; }
     public string? Notes { get; set; }
 
-    public Member Member { get; set; } = null!;
+    public Member? Member { get; set; }
     public MembershipPlan Plan { get; set; } = null!;
     public Offer? Offer { get; set; }
     public ICollection<SubscriptionPayment> Payments { get; set; } = new List<SubscriptionPayment>();

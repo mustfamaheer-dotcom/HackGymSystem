@@ -7,7 +7,7 @@ public class LeadFollowUp : BaseEntity
     public Guid LeadId { get; set; }
     public string Notes { get; set; } = string.Empty;
 
-    public Lead Lead { get; set; } = null!;
+    public Lead? Lead { get; set; }
 
     private LeadFollowUp() { }
 

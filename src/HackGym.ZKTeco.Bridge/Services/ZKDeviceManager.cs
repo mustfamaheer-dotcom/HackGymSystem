@@ -180,6 +180,15 @@ public class ZKDeviceManager : IDisposable
             {
                 var users = _client.GetUsers();
                 _logger.LogInformation("Read {Count} users from device", users.Count);
+
+                // If device has users but we got 0, connection is stale — force reconnect on next cycle
+                if (users.Count == 0 && _connectionInfo.EnrolledUserCount > 0)
+                {
+                    _logger.LogWarning("Device read returned 0 users but expected {Expected}, reconnecting",
+                        _connectionInfo.EnrolledUserCount);
+                    _connectionInfo.IsConnected = false;
+                }
+
                 return users;
             }
             catch (Exception ex)

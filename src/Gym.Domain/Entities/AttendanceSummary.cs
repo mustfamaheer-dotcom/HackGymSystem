@@ -19,7 +19,7 @@ public class AttendanceSummary : BaseEntity
     public int OnLeaveDays { get; set; }
     public double TotalWorkHours { get; set; }
 
-    public Member Member { get; set; } = null!;
+    public Member? Member { get; set; }
 
     private AttendanceSummary() { }
 
