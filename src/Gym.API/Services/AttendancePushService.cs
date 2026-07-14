@@ -60,6 +60,8 @@ public class AttendancePushService
 
         _logger.LogInformation("Mapping found: EnrollmentId={EnrollmentId} -> MemberId={MemberId}", request.EnrollmentId, mapping.MemberId);
 
+        var config = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ZKTecoSettings>>().Value;
+
         var hasActiveSub = await subscriptionRepo.AnyAsync(
             s => s.MemberId == mapping.MemberId
               && s.Status == SubscriptionStatus.Active
@@ -67,11 +69,14 @@ public class AttendancePushService
 
         if (!hasActiveSub)
         {
-            _logger.LogWarning("No active subscription for MemberId={MemberId} — attendance rejected", mapping.MemberId);
-            return new AttendancePushResult { Success = false, Error = "No active subscription" };
+            if (config.RequireActiveSubscriptionForAttendance)
+            {
+                _logger.LogWarning("No active subscription for MemberId={MemberId} — attendance rejected", mapping.MemberId);
+                return new AttendancePushResult { Success = false, Error = "No active subscription" };
+            }
+            _logger.LogWarning("No active subscription for MemberId={MemberId}, but RequireActiveSubscriptionForAttendance=false — allowing attendance", mapping.MemberId);
         }
 
-        var config = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ZKTecoSettings>>().Value;
         var device = await deviceRepo.FirstOrDefaultAsync(d => d.IPAddress == config.DeviceIp, ct);
         if (device == null)
         {

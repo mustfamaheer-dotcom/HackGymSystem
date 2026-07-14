@@ -135,7 +135,7 @@ public class ZKTecoAttendanceController : ControllerBase
                       && s.Status == SubscriptionStatus.Active
                       && s.ExpirationDate > DateTime.UtcNow, ct);
 
-                if (!hasActiveSub)
+                if (!hasActiveSub && _zktecoConfig.Value.RequireActiveSubscriptionForAttendance)
                 {
                     failCount++;
                     results.Add(new { enrollmentId = request.EnrollmentId, success = false, error = "No active subscription" });
