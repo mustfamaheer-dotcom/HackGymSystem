@@ -7,7 +7,8 @@ namespace Gym.Infrastructure.Services.ZKTeco;
 
 public class ZKTecoBridgeOptions
 {
-    public string GrpcUrl { get; set; } = "http://localhost:50051";
+    public string GrpcUrl { get; set; } = "http://localhost:50054";
+    public string ApiKey { get; set; } = "";
 }
 
 public class ZKTecoBridgeGrpcClient : IZKTecoBridgeClient
@@ -199,6 +200,11 @@ public class ZKTecoBridgeGrpcClient : IZKTecoBridgeClient
                 RoundTripLatencyMs = data.GetProperty("roundTripLatencyMs").GetInt64(),
                 ErrorMessage = data.GetProperty("errorMessage").GetString()
             };
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is System.Net.Sockets.SocketException)
+        {
+            _logger.LogWarning("ZKTeco Bridge is not running at {Url}. Start the Bridge first.", _baseUrl);
+            return new TestConnectionResult { Success = false, ErrorMessage = "ZKTeco Bridge is not running. Start the Bridge first (run-bridge.bat or start-all.ps1)." };
         }
         catch (Exception ex)
         {

@@ -20,9 +20,11 @@ builder.Services.AddHttpClient("MainApi", client =>
 });
 
 builder.Services.AddSingleton<ZKDeviceManager>();
+builder.Services.AddSingleton<BridgeWebSocketClient>();
 builder.Services.AddSingleton<DeviceHealthMonitor>();
 builder.Services.AddHostedService<AttendancePollingWorker>();
 builder.Services.AddHostedService<DeviceHealthMonitor>();
+builder.Services.AddHostedService<BridgeWebSocketHostedService>();
 
 var app = builder.Build();
 
@@ -228,11 +230,14 @@ app.MapGet("/diagnose/raw", () =>
 
 app.MapGet("/diagnose/rawbytes", () =>
 {
-    if (!deviceManager.IsConnected)
-        return Results.Ok(new { connected = false, error = "Device not connected" });
-
     try
     {
+        // Fresh connect for reliable diagnostics
+        deviceManager.Disconnect();
+        var connected = deviceManager.Connect();
+        if (!connected)
+            return Results.Ok(new { connected = false, error = "Device not connected" });
+
         var rawDiags = new System.Collections.Generic.Dictionary<string, object>();
 
         // Test 1: CMD_GET_VERSION (simple command, should return version string)
@@ -243,11 +248,41 @@ app.MapGet("/diagnose/rawbytes", () =>
         var (s2, m2_1, m2_2, ps2, ph2, code2, dl2, sid2, rid2) = deviceManager.TestRawSendRecv(50, []);
         rawDiags["get_free_sizes"] = new { sendHex = s2, recvMagic1 = $"0x{m2_1:X4}", recvMagic2 = $"0x{m2_2:X4}", payloadSize = ps2, payloadHex = ph2, code = code2, dataLen = dl2, respSid = sid2, respRid = rid2 };
 
+        // Test 3: CMD_CONNECT fresh (raw)
+        deviceManager.Disconnect();
+        deviceManager.Connect();
+        var (s3, m3_1, m3_2, ps3, ph3, code3, dl3, sid3, rid3) = deviceManager.TestRawSendRecv(1000, []);
+        rawDiags["cmd_connect_raw"] = new { sendHex = s3, recvMagic1 = $"0x{m3_1:X4}", recvMagic2 = $"0x{m3_2:X4}", payloadSize = ps3, payloadHex = ph3, code = code3, dataLen = dl3, respSid = sid3, respRid = rid3 };
+
+        // Test 4: CMD_GET_FREE_SIZES right after fresh connect
+        var (s4, m4_1, m4_2, ps4, ph4, code4, dl4, sid4, rid4) = deviceManager.TestRawSendRecv(50, []);
+        rawDiags["get_free_sizes_after_connect"] = new { sendHex = s4, recvMagic1 = $"0x{m4_1:X4}", recvMagic2 = $"0x{m4_2:X4}", payloadSize = ps4, payloadHex = ph4, code = code4, dataLen = dl4, respSid = sid4, respRid = rid4 };
+
         return Results.Ok(new { connected = true, rawDiagnostics = rawDiags });
     }
     catch (Exception ex)
     {
         return Results.Ok(new { connected = true, error = ex.Message, stackTrace = ex.StackTrace });
+    }
+});
+
+app.MapGet("/diagnose/getusers", () =>
+{
+    if (!deviceManager.IsConnected)
+        return Results.Ok(new { connected = false });
+
+    try
+    {
+        var users = deviceManager.GetAllUsersWithDetails();
+        return Results.Ok(new
+        {
+            count = users.Count,
+            sample = users.Take(5).Select(u => new { u.EnrollmentId, u.Name, u.Privilege })
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { error = ex.Message, stackTrace = ex.StackTrace });
     }
 });
 

@@ -37,6 +37,7 @@ public class TrackMembersController : BaseController
     private readonly IDeviceTrackingRepository _deviceTracking;
     private readonly DeviceConnectionManager _connectionManager;
     private readonly ILogger<TrackMembersController> _logger;
+    private readonly IConfiguration _configuration;
 
     public TrackMembersController(
         IMediator mediator,
@@ -52,7 +53,8 @@ public class TrackMembersController : BaseController
         IAttendanceTrackingRepository attendanceTracking,
         IDeviceTrackingRepository deviceTracking,
         DeviceConnectionManager connectionManager,
-        ILogger<TrackMembersController> logger)
+        ILogger<TrackMembersController> logger,
+        IConfiguration configuration)
     {
         _mediator = mediator;
         _attendanceRepo = attendanceRepo;
@@ -68,6 +70,7 @@ public class TrackMembersController : BaseController
         _deviceTracking = deviceTracking;
         _connectionManager = connectionManager;
         _logger = logger;
+        _configuration = configuration;
     }
 
     [HttpGet("stats")]
@@ -297,6 +300,173 @@ public class TrackMembersController : BaseController
             timestamp = DateTime.UtcNow
         }));
     }
+
+    // ==================== MANUAL TESTING APIS ====================
+    
+    /// <summary>
+    /// Manual check-in by member ID (for testing when device is offline)
+    /// </summary>
+    [HttpPost("manual-check-in")]
+    public async Task<IActionResult> ManualCheckInTest([FromBody] TrackMemberCheckInRequest request, CancellationToken ct)
+    {
+        // Validate member exists and is active
+        var member = await _memberRepo.FirstOrDefaultAsync(m => m.Id == request.MemberId && !m.IsDeleted, ct);
+        if (member == null)
+            return BadRequest(ApiResponse.Fail("Member not found"));
+
+        // Check if member already checked in today
+        var existing = await _attendanceRepo.FirstOrDefaultAsync(
+            a => a.MemberId == request.MemberId && a.CheckIn.Date == DateTime.UtcNow.Date && a.CheckOut == null, ct);
+        
+        if (existing != null)
+            return BadRequest(ApiResponse.Fail("Member already checked in today"));
+
+        // Create manual attendance record
+        var result = await _mediator.Send(new CheckInCommand(request.MemberId, true, null, DateTime.UtcNow), ct);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message!));
+
+        // Fetch member with package for SignalR payload
+        var memberWithPackage = await _cache.GetMemberByIdAsync(
+            request.MemberId,
+            async (token) => await _memberRepo.Query()
+                .Include(m => m.Package)
+                .FirstOrDefaultAsync(m => m.Id == request.MemberId, token), ct);
+
+        // Push real-time update via SignalR
+        await _hubContext.Clients.All.SendAsync("AttendancePushed", new
+        {
+            memberId = request.MemberId,
+            memberName = member.FullName,
+            imagePath = member.ImagePath ?? "",
+            packageName = memberWithPackage?.Package?.Name ?? "",
+            phoneNumber = member.PhoneNumber ?? "",
+            timestamp = DateTime.UtcNow,
+            type = "check-in",
+            attendanceId = result.Data!,
+            deviceName = "MANUAL"
+        }, ct);
+
+        _cache.InvalidateAttendanceCache();
+
+        _logger.LogInformation("Manual check-in recorded for member {MemberId} ({MemberName})", request.MemberId, member.FullName);
+
+        return Ok(ApiResponse<object>.Ok(new 
+        { 
+            attendanceId = result.Data!, 
+            type = "check-in",
+            memberName = member.FullName,
+            message = "Manual check-in recorded successfully",
+            timestamp = DateTime.UtcNow
+        }));
+    }
+
+    /// <summary>
+    /// Manual check-out by member ID (for testing when device is offline)
+    /// </summary>
+    [HttpPost("manual-check-out")]
+    public async Task<IActionResult> ManualCheckOutTest([FromBody] TrackMemberCheckOutRequest request, CancellationToken ct)
+    {
+        // Validate member exists
+        var member = await _memberRepo.FirstOrDefaultAsync(m => m.Id == request.MemberId && !m.IsDeleted, ct);
+        if (member == null)
+            return BadRequest(ApiResponse.Fail("Member not found"));
+
+        // Find active check-in for today
+        var existing = await _attendanceRepo.FirstOrDefaultAsync(
+            a => a.MemberId == request.MemberId && a.CheckIn.Date == DateTime.UtcNow.Date && a.CheckOut == null, ct);
+
+        if (existing == null)
+            return BadRequest(ApiResponse.Fail("No active check-in found for this member today"));
+
+        // Process check-out
+        var result = await _mediator.Send(new CheckOutCommand(existing.Id, null, DateTime.UtcNow), ct);
+        if (result.IsFailure)
+            return BadRequest(ApiResponse.Fail(result.Message!));
+
+        // Push real-time update via SignalR
+        await _hubContext.Clients.All.SendAsync("AttendancePushed", new
+        {
+            memberId = request.MemberId,
+            memberName = member.FullName,
+            timestamp = DateTime.UtcNow,
+            type = "check-out",
+            attendanceId = existing.Id,
+            deviceName = "MANUAL"
+        }, ct);
+
+        _cache.InvalidateAttendanceCache();
+
+        _logger.LogInformation("Manual check-out recorded for member {MemberId} ({MemberName})", request.MemberId, member.FullName);
+
+        return Ok(ApiResponse<object>.Ok(new 
+        { 
+            attendanceId = existing.Id, 
+            type = "check-out",
+            memberName = member.FullName,
+            message = "Manual check-out recorded successfully",
+            timestamp = DateTime.UtcNow
+        }));
+    }
+
+    /// <summary>
+    /// Get system status for manual testing dashboard
+    /// </summary>
+    [HttpGet("manual-status")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetManualStatus(CancellationToken ct)
+    {
+        var isDeviceOnline = _connectionManager.IsConnected;
+        var bridgeHealth = (DeviceHealthStatus?)null;
+        
+        try
+        {
+            bridgeHealth = await _bridgeClient.CheckHealthAsync(ct);
+        }
+        catch { /* ignore */ }
+
+        var totalMembers = await _memberRepo.CountAsync(m => !m.IsDeleted, ct);
+        var checkedInToday = await _attendanceTracking.GetTodayCheckInCountAsync(ct);
+        var attendanceToday = await _attendanceTracking.GetTodayAttendancesAsync(50, ct);
+
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            timestamp = DateTime.UtcNow,
+            deviceOnline = isDeviceOnline,
+            bridgeConnected = bridgeHealth?.IsConnected ?? false,
+            bridgeStatus = bridgeHealth,
+            deviceInfo = new
+            {
+                ip = _configuration["ZKTeco:DeviceIp"] ?? "192.168.1.201",
+                port = int.Parse(_configuration["ZKTeco:DevicePort"] ?? "4370"),
+                isConnected = _connectionManager.IsConnected
+            },
+            stats = new
+            {
+                totalMembers,
+                checkedInToday = await _attendanceTracking.GetTodayCheckInCountAsync(ct),
+                absentToday = totalMembers - (await _attendanceTracking.GetTodayCheckInCountAsync(ct)),
+                lateToday = await _attendanceTracking.GetTodayLateCountAsync(ct),
+                devicesOnline = await _deviceTracking.GetOnlineCountAsync(ct)
+            },
+            recentAttendance = attendanceToday.Select(a => new
+            {
+                id = a.Id,
+                memberId = a.MemberId,
+                memberName = a.Member?.FullName ?? "",
+                memberCode = a.Member?.Code,
+                checkIn = a.CheckIn,
+                checkOut = a.CheckOut,
+                deviceName = a.Device?.Name ?? "MANUAL",
+                isManual = a.IsManual
+            }).ToList(),
+            mode = _connectionManager.IsConnected ? "device" : "manual",
+            message = _connectionManager.IsConnected 
+                ? "Device online - automatic attendance active" 
+                : "Device offline - manual mode available"
+        }));
+    }
+
 }
 
 public class TrackMemberCheckInRequest

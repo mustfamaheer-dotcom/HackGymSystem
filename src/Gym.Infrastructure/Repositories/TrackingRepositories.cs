@@ -93,26 +93,29 @@ public class AttendanceTrackingRepository : IAttendanceTrackingRepository
 
     public async Task<int> GetTodayCheckInCountAsync(CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
         return await _context.Attendances
-            .CountAsync(a => a.CheckIn.Date == today, ct);
+            .CountAsync(a => a.CheckIn >= start && a.CheckIn < end, ct);
     }
 
     public async Task<int> GetTodayLateCountAsync(CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
-        var lateThreshold = new DateTime(today.Year, today.Month, today.Day, 9, 15, 0, DateTimeKind.Utc);
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
+        var lateThreshold = new DateTime(start.Year, start.Month, start.Day, 9, 15, 0, DateTimeKind.Utc);
         return await _context.Attendances
-            .CountAsync(a => a.CheckIn.Date == today && a.CheckIn > lateThreshold, ct);
+            .CountAsync(a => a.CheckIn >= start && a.CheckIn < end && a.CheckIn > lateThreshold, ct);
     }
 
     public async Task<IReadOnlyList<Attendance>> GetTodayAttendancesAsync(int limit = 100, CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
         return await _context.Attendances
             .Include(a => a.Member)
             .Include(a => a.Device)
-            .Where(a => a.CheckIn.Date == today)
+            .Where(a => a.CheckIn >= start && a.CheckIn < end)
             .OrderByDescending(a => a.CheckIn)
             .Take(limit)
             .ToListAsync(ct);
@@ -131,9 +134,10 @@ public class AttendanceTrackingRepository : IAttendanceTrackingRepository
 
     public async Task<int> GetCheckedInMembersTodayAsync(CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
         return await _context.Attendances
-            .Where(a => a.CheckIn.Date == today)
+            .Where(a => a.CheckIn >= start && a.CheckIn < end)
             .Select(a => a.MemberId)
             .Distinct()
             .CountAsync(ct);
@@ -160,9 +164,10 @@ public class AttendanceSummaryTrackingRepository : IAttendanceSummaryTrackingRep
 
     public async Task<int> GetTodayAbsentCountAsync(int totalMembers, CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
         var checkedIn = await _context.Attendances
-            .Where(a => a.CheckIn.Date == today)
+            .Where(a => a.CheckIn >= start && a.CheckIn < end)
             .Select(a => a.MemberId)
             .Distinct()
             .CountAsync(ct);

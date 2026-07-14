@@ -24,5 +24,5 @@ public class ZKTecoSettings
 
     public bool FingerprintDuplicateCheck { get; set; } = true;
     public bool AutoSyncOnStartup { get; set; } = true;
-    public string BridgeBaseUrl { get; set; } = "http://localhost:50051";
+    public string BridgeBaseUrl { get; set; } = "http://localhost:50054";
 }

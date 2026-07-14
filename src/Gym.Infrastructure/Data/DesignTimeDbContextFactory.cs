@@ -8,10 +8,10 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GymDbConte
     public GymDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-            ?? "Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+            ?? "Data Source=GymManagementDb.sqlite";
 
         var optionsBuilder = new DbContextOptionsBuilder<GymDbContext>();
-        optionsBuilder.UseSqlServer(connectionString);
+        optionsBuilder.UseSqlite(connectionString);
 
         return new GymDbContext(optionsBuilder.Options);
     }

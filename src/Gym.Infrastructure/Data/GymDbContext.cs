@@ -4,6 +4,7 @@ using Gym.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,10 +41,29 @@ public class GymDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AttendanceSummary> AttendanceSummaries => Set<AttendanceSummary>();
 
+    // When true (set by ServiceRegistration for SQLite), neutralizes the SQL Server
+    // [Timestamp] RowVersion concurrency token so EnsureCreated/Migrations succeed on SQLite.
+    public static bool UseSqliteRowVersionWorkaround { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GymDbContext).Assembly);
         Seed.SeedData.Seed(modelBuilder);
+
+        if (UseSqliteRowVersionWorkaround)
+        {
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var rowVersion = entityType.FindProperty("RowVersion");
+                if (rowVersion is not null)
+                {
+                    rowVersion.ValueGenerated = ValueGenerated.Never;
+                    rowVersion.IsConcurrencyToken = false;
+                    rowVersion.IsNullable = true;
+                }
+            }
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 

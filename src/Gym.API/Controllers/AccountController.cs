@@ -32,7 +32,7 @@ public class AccountController : Controller
     public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)
-            return RedirectToAction("Index", "HomeMvc");
+            return Redirect("/Home");
 
         ViewData["Title"] = _localizer["Login"];
         ViewBag.CaptchaSiteKey = _captchaSiteKey;
@@ -172,6 +172,6 @@ public class AccountController : Controller
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
-        return RedirectToAction("Index", "HomeMvc");
+        return Redirect("/Home");
     }
 }

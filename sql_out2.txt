@@ -1,0 +1,16 @@
+Changed database context to 'GymManagementDb'.
+
+(3 rows affected)
+
+(1 rows affected)
+
+(15 rows affected)
+
+(15 rows affected)
+
+(6 rows affected)
+
+(3 rows affected)
+
+(10 rows affected)
+GymManagementDb initialization completed successfully.

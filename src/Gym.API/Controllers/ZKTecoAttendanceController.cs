@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Gym.API.Filters;
 using Gym.API.Hubs;
+using Gym.API.Services;
+using Gym.API.WebSockets;
 using Gym.Application.Attendances.Commands.CheckIn;
 using Gym.Application.Attendances.Commands.CheckOut;
 using Gym.Application.Common.DTOs;
@@ -17,6 +19,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace Gym.API.Controllers;
 
@@ -38,6 +41,8 @@ public class ZKTecoAttendanceController : ControllerBase
     private readonly IZKTecoBridgeClient _bridgeClient;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ZKTecoAttendanceController> _logger;
+    private readonly AttendancePushService _attendancePush;
+    private readonly IConfiguration _configuration;
 
     public ZKTecoAttendanceController(
         IMediator mediator,
@@ -51,7 +56,9 @@ public class ZKTecoAttendanceController : ControllerBase
         IHubContext<AttendanceHub> hubContext,
         IZKTecoBridgeClient bridgeClient,
         IHttpClientFactory httpClientFactory,
-        ILogger<ZKTecoAttendanceController> logger)
+        ILogger<ZKTecoAttendanceController> logger,
+        AttendancePushService attendancePush,
+        IConfiguration configuration)
     {
         _mediator = mediator;
         _mappingRepo = mappingRepo;
@@ -65,76 +72,31 @@ public class ZKTecoAttendanceController : ControllerBase
         _bridgeClient = bridgeClient;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _attendancePush = attendancePush;
+        _configuration = configuration;
     }
 
     [HttpPost("push")]
     public async Task<IActionResult> PushAttendance([FromBody] DeviceAttendancePushRequest request, CancellationToken ct)
     {
-        var mapping = await _mappingRepo.GetByEnrollmentIdAsync(request.EnrollmentId, ct);
-        if (mapping == null)
-            return NotFound(ApiResponse.Fail($"No member mapping found for enrollment ID '{request.EnrollmentId}'"));
-
-        var hasActiveSub = await _subscriptionRepo.AnyAsync(
-            s => s.MemberId == mapping.MemberId
-              && s.Status == SubscriptionStatus.Active
-              && s.ExpirationDate > DateTime.UtcNow, ct);
-
-        if (!hasActiveSub)
-            return BadRequest(ApiResponse.Fail("Member has no active subscription"));
-
-        var device = await _deviceRepo.FirstOrDefaultAsync(d => d.IPAddress == _zktecoConfig.Value.DeviceIp, ct);
-        if (device == null)
+        var payload = new AttendancePushPayload
         {
-            device = new Device("ZKMB2000", _zktecoConfig.Value.DeviceIp, _zktecoConfig.Value.DevicePort, "ZKMB2000", "");
-            device.MarkOnline();
-            await _deviceRepo.AddAsync(device, ct);
-        }
+            EnrollmentId = request.EnrollmentId,
+            Timestamp = request.Timestamp,
+            Direction = request.Direction,
+            VerifyMethod = request.VerifyMethod
+        };
 
-        if (request.Direction == 0)
-        {
-            var result = await _mediator.Send(new CheckInCommand(mapping.MemberId, false, device?.Id, request.Timestamp), ct);
-            if (result.IsFailure)
-                return BadRequest(ApiResponse<Guid>.Fail(result.Message!));
+        var result = await _attendancePush.ProcessAttendanceAsync(payload, ct);
 
-            var member = await _memberRepo.Query()
-                .Include(m => m.Package)
-                .FirstOrDefaultAsync(m => m.Id == mapping.MemberId, ct);
+        if (result.Success)
+            return result.Type == "check-in"
+                ? Ok(ApiResponse<Guid>.Ok(result.AttendanceId!.Value))
+                : Ok(ApiResponse.Ok("Check-out recorded"));
 
-            await _hubContext.Clients.All.SendAsync("AttendancePushed", new
-            {
-                memberId = mapping.MemberId,
-                memberName = member?.FullName ?? "",
-                imagePath = member?.ImagePath ?? "",
-                packageName = member?.Package?.Name ?? "",
-                phoneNumber = member?.PhoneNumber ?? "",
-                timestamp = request.Timestamp,
-                type = "check-in",
-                attendanceId = result.Data!
-            }, ct);
-
-            return Ok(ApiResponse<Guid>.Ok(result.Data!));
-        }
-        else
-        {
-            var existing = await _attendanceRepo.FirstOrDefaultAsync(
-                a => a.MemberId == mapping.MemberId && a.CheckIn.Date == request.Timestamp.Date && a.CheckOut == null, ct);
-            if (existing == null)
-                return NotFound(ApiResponse.Fail("No active check-in found for check-out"));
-
-            var result = await _mediator.Send(new CheckOutCommand(existing.Id, device?.Id, request.Timestamp), ct);
-            if (result.IsFailure)
-                return BadRequest(ApiResponse.Fail(result.Message!));
-
-            await _hubContext.Clients.All.SendAsync("AttendancePushed", new
-            {
-                memberId = mapping.MemberId,
-                timestamp = request.Timestamp,
-                type = "check-out",
-                attendanceId = existing.Id
-            }, ct);
-
-            return Ok(ApiResponse.Ok("Check-out recorded"));
-        }
+        if (result.Error?.Contains("mapping") == true)
+            return NotFound(ApiResponse.Fail(result.Error));
+        return BadRequest(ApiResponse.Fail(result.Error!));
     }
 
     [HttpGet("health")]
@@ -306,6 +268,8 @@ public class ZKTecoAttendanceController : ControllerBase
         var skippedCount = 0;
         var createdCount = 0;
 
+        var lastCode = await _memberRepo.Query().IgnoreQueryFilters().MaxAsync(m => (int?)m.Code, ct) ?? 0;
+
         foreach (var user in request)
         {
             var existingMapping = await _mappingRepo.GetByEnrollmentIdAsync(user.EnrollmentId, ct);
@@ -329,10 +293,11 @@ public class ZKTecoAttendanceController : ControllerBase
             {
                 // Create new member from device user
                 var receiptNumber = $"AUTO-{user.EnrollmentId}";
-                var phoneNumber = $"DEVICE-{user.EnrollmentId}";
+                var phoneNumber = $"D{user.EnrollmentId}";
                 var registrationDate = DateTime.UtcNow;
+                lastCode++;
 
-                var newMember = new Member(receiptNumber, user.Name, phoneNumber, registrationDate);
+                var newMember = new Member(receiptNumber, user.Name, phoneNumber, registrationDate) { Code = lastCode, NationalId = phoneNumber };
                 await _memberRepo.AddAsync(newMember, ct);
                 memberId = newMember.Id;
                 createdCount++;
@@ -363,7 +328,7 @@ public class ZKTecoAttendanceController : ControllerBase
         try
         {
             // Call bridge to get all user IDs
-            var bridgeUrl = _zktecoConfig.Value.BridgeBaseUrl ?? "http://localhost:50051";
+            var bridgeUrl = _configuration.GetValue<string>("ZKTecoBridge:GrpcUrl") ?? "http://localhost:50054";
             var response = await _httpClientFactory.CreateClient().PostAsync($"{bridgeUrl}/zkteco.bridge.ZKTecoBridge/ReconcileUsers",
                 new StringContent("{}", System.Text.Encoding.UTF8, "application/json"), ct);
 

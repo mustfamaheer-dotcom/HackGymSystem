@@ -97,15 +97,7 @@ public class ZKDeviceManager : IDisposable
 
             try
             {
-                _client.EnableDevice(false);
-                try
-                {
-                    events = _client.GetAttendanceLogs();
-                }
-                finally
-                {
-                    _client.EnableDevice(true);
-                }
+                events = _client.GetAttendanceLogs();
             }
             catch (Exception ex)
             {
@@ -149,16 +141,37 @@ public class ZKDeviceManager : IDisposable
             if (!_connectionInfo.IsConnected)
                 return (0, 0, null);
 
+            // Check if the TCP-level connection is still alive
+            if (!_client.IsConnected)
+            {
+                _logger.LogWarning("Device status: TCP client disconnected, attempting reconnect...");
+                if (!_client.Connect(_config.DeviceIp, _config.DevicePort, _config.ConnectionTimeoutMs, _config.Password))
+                {
+                    _logger.LogWarning("Device status: reconnect failed, marking device disconnected");
+                    _connectionInfo.IsConnected = false;
+                    return (0, 0, null);
+                }
+                _logger.LogInformation("Device status: TCP reconnected successfully");
+            }
+
             try
             {
                 var sizes = _client.GetFreeSizes();
                 var firmware = _client.GetFirmwareVersion();
 
-                _connectionInfo.EnrolledUserCount = sizes.Users;
-                _connectionInfo.FreeMemory = sizes.RecCap - sizes.Records;
-                _connectionInfo.FirmwareVersion = firmware;
+                // Valid data — update cached info
+                if (sizes.Users > 0 || !string.IsNullOrEmpty(firmware))
+                {
+                    _connectionInfo.EnrolledUserCount = sizes.Users;
+                    _connectionInfo.FreeMemory = sizes.RecCap - sizes.Records;
+                    _connectionInfo.FirmwareVersion = firmware;
+                    return (sizes.Users, sizes.RecCap - sizes.Records, firmware);
+                }
 
-                return (sizes.Users, sizes.RecCap - sizes.Records, firmware);
+                // GetFreeSizes returned 0 — device may be temporarily in a weird state
+                // (e.g., after a ReadUsersDirect). Don't mark disconnected — just return
+                // cached values. The next poll cycle will retry.
+                return (_connectionInfo.EnrolledUserCount, _connectionInfo.FreeMemory, _connectionInfo.FirmwareVersion);
             }
             catch (Exception ex)
             {
@@ -225,6 +238,49 @@ public class ZKDeviceManager : IDisposable
         }
     }
 
+    public bool ResetAttendancePointerForFreshData()
+    {
+        lock (_lock)
+        {
+            if (!_connectionInfo.IsConnected)
+                return false;
+
+            try
+            {
+                // Force a reconnect to reset the device's read pointer to start
+                // This is needed because after reading all attendance logs,
+                // the device reserves the next check-in check-in for new data
+                _logger.LogInformation("Resetting attendance pointer by reconnecting to device");
+                _connectionInfo.IsConnected = false;
+                _client.Disconnect();
+
+                // Reconnect to get fresh data capture
+                var connected = _client.Connect(_config.DeviceIp, _config.DevicePort, _config.ConnectionTimeoutMs, _config.Password);
+                if (connected)
+                {
+                    _connectionInfo.IsConnected = true;
+                    _connectionInfo.LastConnectedAt = DateTime.UtcNow;
+                    _connectionInfo.ConsecutiveFailures = 0;
+                    _connectionInfo.CurrentBackoffDelay = TimeSpan.FromSeconds(10);
+
+                    _logger.LogInformation("Reconnected to device, attendance pointer reset");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to reconnect device to reset attendance pointer");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting attendance pointer");
+                _connectionInfo.IsConnected = false;
+                return false;
+            }
+        }
+    }
+
     public ZKDeviceInfo? GetDeviceInfo()
     {
         lock (_lock)
@@ -279,8 +335,6 @@ public class ZKDeviceManager : IDisposable
 
                 if (connected)
                 {
-                    // Register events after connect to enable real-time attendance push
-                    try { _client.RegisterEvent(0xFFFF); } catch { }
                     _connectionInfo.IsConnected = true;
                     _connectionInfo.LastConnectedAt = DateTime.UtcNow;
                     _connectionInfo.ConsecutiveFailures = 0;

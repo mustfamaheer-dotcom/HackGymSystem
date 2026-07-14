@@ -20,6 +20,13 @@ public class ZKTecoTcpClient : IDisposable
     private ushort _replyId;
     private bool _disposed;
 
+    // Stored connection parameters so we can self-recover from a protocol state desync.
+    private string? _lastIp;
+    private int _lastPort;
+    private int _lastTimeoutMs;
+    private int _lastPassword;
+    private int _consecutiveEmptyReads;
+
     public bool IsConnected { get; private set; }
 
     public ZKTecoTcpClient(ILogger<ZKTecoTcpClient> logger)
@@ -37,6 +44,12 @@ public class ZKTecoTcpClient : IDisposable
 
         try
         {
+            // Capture parameters so we can reconnect on a protocol state desync.
+            _lastIp = ip;
+            _lastPort = port;
+            _lastTimeoutMs = timeoutMs;
+            _lastPassword = password;
+
             _tcp = new TcpClient();
             _tcp.ReceiveTimeout = timeoutMs;
             _tcp.SendTimeout = timeoutMs;
@@ -55,6 +68,15 @@ public class ZKTecoTcpClient : IDisposable
             _stream = _tcp.GetStream();
             _stream.ReadTimeout = timeoutMs;
             _stream.WriteTimeout = timeoutMs;
+
+            // Drain any initial packet the device might send on connect
+            // (some ZK devices send an unsolicited "hello" packet)
+            if (_stream.DataAvailable)
+            {
+                byte[] initial = new byte[8192];
+                int drained = _stream.Read(initial, 0, 8192);
+                _logger.LogDebug("Drained {Count} bytes of initial device data", drained);
+            }
 
             _sessionId = 0;
             _replyId = ZKProtocol.USHRT_MAX - 1;
@@ -89,6 +111,19 @@ public class ZKTecoTcpClient : IDisposable
             Disconnect();
             return false;
         }
+    }
+
+    /// <summary>
+    /// Force a disconnect + reconnect using the parameters from the last successful
+    /// <see cref="Connect"/>. Used to recover from a protocol state desync (e.g. after
+    /// repeated empty attendance reads) where the device stops responding normally.
+    /// </summary>
+    private bool ForceReconnect()
+    {
+        _logger.LogWarning("Forcing device reconnect to recover from protocol state desync");
+        try { Disconnect(); } catch { }
+        if (_lastIp == null) return false;
+        return Connect(_lastIp, _lastPort, _lastTimeoutMs, _lastPassword);
     }
 
     /// <summary>
@@ -219,16 +254,27 @@ public class ZKTecoTcpClient : IDisposable
         _logger.LogWarning("GetFreeSizes result: Users={Users}, Records={Records}, Faces={Faces}, UsersCap={UsersCap}, RecCap={RecCap}, FacesCap={FacesCap}",
             sizes.Users, sizes.Records, sizes.Faces, sizes.UsersCap, sizes.RecCap, sizes.FacesCap);
 
-        byte[] userdata = ReadWithBuffer(ZKProtocol.CMD_USERTEMP_RRQ, ZKProtocol.FCT_USER);
-        _logger.LogWarning("ReadWithBuffer for users returned {Len} bytes, first 32 hex: {Hex}",
-            userdata.Length, userdata.Length > 0 ? Convert.ToHexString(userdata.AsSpan(0, Math.Min(32, userdata.Length))) : "(empty)");
-        if (userdata.Length <= 4) return users;
+        byte[] userdata = ReadUsersDirect();
+        _logger.LogWarning("ReadUsersDirect for users returned {Len} bytes, first 100 hex: {Hex}",
+            userdata.Length, userdata.Length > 0 ? Convert.ToHexString(userdata.AsSpan(0, Math.Min(100, userdata.Length))) : "(empty)");
+        if (userdata.Length <= 8) return users;
 
-        int totalSize = BinaryPrimitives.ReadInt32LittleEndian(userdata.AsSpan(0, 4));
+        // The data begins with an 8-byte header: [maxChunkSize(4)][totalSize(4)].
+        // Detect and strip it so records start at offset 8. (ReadUsersDirect may or may not
+        // have already stripped it depending on the response path, so detect explicitly.)
+        int totalSize = BinaryPrimitives.ReadInt32LittleEndian(userdata.AsSpan(4, 4));
+        if (totalSize == userdata.Length - 8 || Math.Abs(totalSize - (userdata.Length - 8)) < 72)
+        {
+            userdata = userdata[8..];
+        }
+        else
+        {
+            int totalSize4 = BinaryPrimitives.ReadInt32LittleEndian(userdata.AsSpan(0, 4));
+            if (totalSize4 == userdata.Length - 4)
+                userdata = userdata[4..];
+        }
+
         int packetSize = sizes.Users > 0 ? totalSize / sizes.Users : 0;
-        _logger.LogDebug("User data: totalSize={Total}, usersFromSizes={Users}, computed packetSize={PacketSize}, dataLen={DataLen}",
-            totalSize, sizes.Users, packetSize, userdata.Length - 4);
-        userdata = userdata[4..];
 
         // If packet size is unknown (sizes.Users==0), try to auto-detect
         if (packetSize != 72 && packetSize != 28)
@@ -249,18 +295,28 @@ public class ZKTecoTcpClient : IDisposable
             {
                 ushort uid = BinaryPrimitives.ReadUInt16LittleEndian(userdata.AsSpan(0, 2));
                 byte privilege = userdata[2];
-                string password = ReadNullTerminated(userdata, 3, 8);
+                string password = ReadNullTerminated(userdata, 3, 8).Trim();
                 string name = ReadNullTerminated(userdata, 11, 24).Trim();
                 // card at 35 (4 bytes) - skip
                 string groupId = ReadNullTerminated(userdata, 40, 7).Trim();
                 string userId = ReadNullTerminated(userdata, 48, 24).Trim();
 
+                // Some devices (e.g. MB2000 face terminals) store the enrollment/employee
+                // ID in the 8-byte password field rather than the 24-byte userId field.
+                // Prefer the standard userId field when it looks like a real ID, otherwise
+                // fall back to the password field so attendance can be matched.
+                string enrollmentId = userId;
+                bool userIdFieldValid = !string.IsNullOrWhiteSpace(userId)
+                    && userId.All(c => char.IsLetterOrDigit(c) || c == '-' || c == '_');
+                if (!userIdFieldValid && !string.IsNullOrWhiteSpace(password))
+                    enrollmentId = password;
+
                 if (string.IsNullOrEmpty(name))
-                    name = $"NN-{userId}";
+                    name = $"NN-{enrollmentId}";
 
                 users.Add(new ZKUserInfo
                 {
-                    EnrollmentId = userId,
+                    EnrollmentId = enrollmentId,
                     Name = name,
                     Privilege = privilege,
                     Enabled = true
@@ -299,123 +355,319 @@ public class ZKTecoTcpClient : IDisposable
         }
 
         _logger.LogInformation("Read {Count} users from device", users.Count);
+        for (int i = 0; i < Math.Min(5, users.Count); i++)
+            _logger.LogWarning("PARSE user[{I}]: EnrollmentId='{Eid}' Name='{Name}' Priv={P}", i, users[i].EnrollmentId, users[i].Name, users[i].Privilege);
         return users;
     }
 
     /// <summary>
     /// Get attendance logs from the device.
-    /// Uses CMD_DB_RRQ + FCT_ATTLOG with buffer-based transfer.
+    /// Tries CMD_PREPARE_BUFFER protocol first, then falls back to classic CMD_ATTLOG_RRQ direct protocol.
     /// </summary>
     public List<ZKAttendanceEvent> GetAttendanceLogs()
     {
         var logs = new List<ZKAttendanceEvent>();
         if (!IsConnected) return logs;
 
-        byte[] data = ReadWithBuffer(ZKProtocol.CMD_ATTLOG_RRQ);
-        if (data.Length <= 4) return logs;
+        byte[] data = ReadAttendanceDirect();
 
-        int totalSize = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(0, 4));
-        data = data[4..];
-        int offset = 0;
+        // The first 4 bytes are a count header; records follow (40 bytes each).
+        if (data.Length < 4 + ZKProtocol.ATT_LOG_TCP_RECORD) return logs;
 
-        while (offset + 10 <= data.Length && offset + 10 <= totalSize)
+        int offset = 4;
+        while (offset + ZKProtocol.ATT_LOG_TCP_RECORD <= data.Length)
         {
             try
             {
-                // Attendance record format (varies by device):
-                // 10 bytes: uid(2) + status(1) + punch(1) + timestamp(6)
-                // 12 bytes: uid(4) + status(1) + punch(1) + timestamp(6)
-                // 14 bytes: uid(2) + status(1) + punch(1) + timestamp(6) + reserved(4)
-                // 32 bytes: userId_string(24) + status(1) + punch(1) + timestamp(6)
-                // 36 bytes: userId_string(24) + status(1) + punch(1) + timestamp(6) + reserved(4)
-                // 52 bytes: userId_string(24) + status(1) + punch(1) + timestamp(6) + reserved(20)
+                // 40-byte attendance record (MB2000 / FW 6.60 TCP):
+                //   uid(2)@0, deviceUserId string(9)@2, recordTime uint32@27
+                int uid = BinaryPrimitives.ReadUInt16LittleEndian(data.AsSpan(offset, 2));
+                string userId = System.Text.Encoding.ASCII
+                    .GetString(data, offset + 2, 9)
+                    .TrimEnd('\0').Trim();
 
-                int recordSize = 10;
-                string userId;
-                byte status, punch;
-                byte[] timeHex;
-
-                // Try to detect record size by checking patterns
-                if (offset + 52 <= data.Length && (data.Length - offset) >= 52)
-                {
-                    // Try 52-byte format first (most common for face devices)
-                    var nameBytes = data[offset..(offset + 24)];
-                    status = data[offset + 24];
-                    punch = data[offset + 25];
-                    timeHex = data[(offset + 26)..(offset + 32)];
-                    userId = System.Text.Encoding.ASCII.GetString(nameBytes).TrimEnd('\0').Trim();
-                    recordSize = 52;
-                }
-                else if (offset + 36 <= data.Length)
-                {
-                    var nameBytes = data[offset..(offset + 24)];
-                    status = data[offset + 24];
-                    punch = data[offset + 25];
-                    timeHex = data[(offset + 26)..(offset + 32)];
-                    userId = System.Text.Encoding.ASCII.GetString(nameBytes).TrimEnd('\0').Trim();
-                    recordSize = 36;
-                }
-                else if (offset + 12 <= data.Length)
-                {
-                    // 12-byte format
-                    uint uidVal = BitConverter.ToUInt32(data, offset);
-                    status = data[offset + 4];
-                    punch = data[offset + 5];
-                    timeHex = data[(offset + 6)..(offset + 12)];
-                    userId = uidVal.ToString();
-                    recordSize = 12;
-                }
-                else
-                {
-                    // 10-byte format (smallest)
-                    ushort uidVal = BinaryPrimitives.ReadUInt16LittleEndian(data.AsSpan(offset, 2));
-                    status = data[offset + 2];
-                    punch = data[offset + 3];
-                    timeHex = data[(offset + 4)..(offset + 10)];
-                    userId = uidVal.ToString();
-                    recordSize = 10;
-                }
-
-                DateTime timestamp = ZKProtocol.DecodeTimeHex(timeHex);
+                byte[] timeBytes = data[(offset + 27)..(offset + 31)];
+                DateTime timestamp = ZKProtocol.DecodeTime(timeBytes);
 
                 logs.Add(new ZKAttendanceEvent
                 {
-                    EnrollmentId = userId,
-                    Method = MapVerifyMethod(status),
+                    EnrollmentId = string.IsNullOrWhiteSpace(userId) ? uid.ToString() : userId,
+                    Method = MapVerifyMethod(0),
                     Timestamp = timestamp.ToUniversalTime(),
-                    Direction = punch,
+                    Direction = 0,
                     MachineNumber = 1
                 });
 
-                offset += recordSize;
+                offset += ZKProtocol.ATT_LOG_TCP_RECORD;
             }
             catch
             {
-                // If parsing fails, skip one byte and try again
                 offset++;
             }
         }
 
         _logger.LogInformation("Read {Count} attendance logs from device", logs.Count);
+        for (int i = 0; i < Math.Min(5, logs.Count); i++)
+            _logger.LogWarning("PARSE att[{I}]: EnrollmentId='{Eid}' Time={T} uid={U}", i, logs[i].EnrollmentId, logs[i].Timestamp, logs[i].MachineNumber);
         return logs;
     }
 
     /// <summary>
+    /// Attendance read using the buffered-transfer protocol that works on this device
+    /// (MB2000 / FW 6.60). Request data with CMD_DATA_WRRQ, which returns CMD_PREPARE_DATA
+    /// with the total size; then pull each chunk via CMD_DATA_RDY carrying [start(4)][size(4)].
+    /// Returns the raw record payload (with the 4-byte count header still in front — the
+    /// caller strips it before parsing 40-byte records).
+    /// </summary>
+    private byte[] ReadAttendanceDirect()
+    {
+        // Reset the device state before a bulk read. Disabling the device stops it from
+        // accepting new check-ins and clears any half-open buffer transfer — this is the
+        // standard pyzk pattern and prevents the "first read works, subsequent reads return
+        // 0 bytes" protocol state desync. The device is re-enabled in the finally block.
+        try { EnableDevice(false); } catch { }
+        try { FreeData(); } catch { }
+
+        try
+                {
+                    // STRATEGY 1: Try direct CMD_ATTLOG_RRQ (command 13) — simpler protocol,
+                    // works better on newer firmware (6.x). Returns logs directly without
+                    // the buffered transfer handshake.
+                    _logger.LogInformation("ReadAttendanceDirect: trying CMD_ATTLOG_RRQ (direct)");
+                    var resp = SendCommand(ZKProtocol.CMD_ATTLOG_RRQ, Array.Empty<byte>());
+                    _logger.LogWarning("ReadAttendanceDirect: CMD_ATTLOG_RRQ resp.Code={Code} dataLen={Len}", resp.Code, resp.Data.Length);
+
+                    // Success with data — parse it (skip 8-byte header)
+                    if (resp.Code == ZKProtocol.CMD_ACK_OK && resp.Data.Length > 8)
+                    {
+                        _consecutiveEmptyReads = 0;
+                        var records = resp.Data[8..];
+                        _logger.LogInformation("ReadAttendanceDirect: CMD_ATTLOG_RRQ returned {Count} bytes", records.Length);
+                        FreeData();
+                        return records;
+                    }
+
+                    // Empty or error response — fall through to STRATEGY 2 (buffered protocol)
+                    _logger.LogWarning("ReadAttendanceDirect: CMD_ATTLOG_RRQ returned empty (Code={Code}), trying CMD_DB_RRQ+FCT_ATTLOG", resp.Code);
+            
+                    // STRATEGY 2: Buffered transfer protocol (fallback)
+                    byte[] fctData = new byte[4];
+                    BinaryPrimitives.WriteUInt16LittleEndian(fctData.AsSpan(0, 2), ZKProtocol.FCT_ATTLOG);
+                    resp = SendCommand(ZKProtocol.CMD_DB_RRQ, fctData);
+                    _logger.LogWarning("ReadAttendanceDirect: CMD_DB_RRQ+FCT_ATTLOG resp.Code={Code} dataLen={Len}", resp.Code, resp.Data.Length);
+
+            // No new logs: device read pointer is at the end of available data.
+                        if (resp.Code == ZKProtocol.CMD_ACK_OK && resp.Data.Length == 0)
+                        {
+                            _consecutiveEmptyReads++;
+                            _logger.LogWarning(
+                                "ReadAttendanceDirect: no new attendance logs (ACK_OK, dataLen=0). Consecutive empties={N}",
+                                _consecutiveEmptyReads);
+                            FreeData();
+                            if (_consecutiveEmptyReads >= 2)
+                            {
+                                _logger.LogWarning("ReadAttendanceDirect: 2 consecutive empty reads — clearing logs and reconnecting");
+                                _consecutiveEmptyReads = 0;
+                                try
+                                {
+                                    var clearResp = SendCommand(ZKProtocol.CMD_CLEAR_ATTLOG, Array.Empty<byte>());
+                                    _logger.LogInformation("ReadAttendanceDirect: CMD_CLEAR_ATTLOG returned Code={Code}", clearResp.Code);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogWarning(ex, "ReadAttendanceDirect: CMD_CLEAR_ATTLOG failed");
+                                }
+                                ForceReconnect();
+                            }
+                            return Array.Empty<byte>();
+                        }
+
+            // We actually got data — reset the empty-read counter.
+            _consecutiveEmptyReads = 0;
+
+            if (resp.Code == ZKProtocol.CMD_PREPARE_DATA && resp.Data.Length >= 4)
+            {
+                int totalSize = BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(0, 4));
+                int maxChunk = (resp.Data.Length >= 8)
+                    ? BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(4, 4))
+                    : ZKProtocol.MAX_CHUNK;
+                if (maxChunk <= 0 || maxChunk > ZKProtocol.MAX_CHUNK) maxChunk = ZKProtocol.MAX_CHUNK;
+                _logger.LogWarning("ATT PREPARE_DATA totalSize={Total} maxChunk={Max}", totalSize, maxChunk);
+
+                // Pull the data: send the chunk request WITHOUT draining the stream
+                // (the device may have already pushed the first frames unsolicited right
+                // after PREPARE_DATA — draining would lose them). Then read every frame
+                // the device sends and collect any that carry payload.
+                using var ms = new MemoryStream();
+                int guard = 0;
+                byte[] req = new byte[8];
+                BinaryPrimitives.WriteInt32LittleEndian(req.AsSpan(0, 4), 0);
+                BinaryPrimitives.WriteInt32LittleEndian(req.AsSpan(4, 4), totalSize);
+                SendRawNoDrain(ZKProtocol.CMD_DATA_RDY, req);
+
+                while (guard++ < 16)
+                {
+                    var f = ReadCommandResponse();
+                    string hex = f.Data.Length > 0
+                        ? BitConverter.ToString(f.Data, 0, Math.Min(f.Data.Length, 48))
+                        : "-";
+                    _logger.LogWarning("ATT capture frame#{N} code={Code} len={Len} hex={Hex}", guard, f.Code, f.Data.Length, hex);
+                    if (f.Data.Length > 0)
+                    {
+                        ms.Write(f.Data, 0, f.Data.Length);
+                    }
+                    else if (f.Code == ZKProtocol.CMD_ACK_OK && (ms.Length > 0 || guard > 3))
+                    {
+                        break;
+                    }
+                    if (ms.Length >= totalSize) break;
+                }
+                FreeData();
+                return ms.ToArray();
+            }
+
+            // Some devices return the data inline (no PREPARE_DATA).
+            if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 8)
+            {
+                var records = resp.Data[8..];
+                FreeData();
+                return records;
+            }
+
+            _logger.LogWarning("ReadAttendanceDirect: unsupported resp code={Code}", resp.Code);
+            FreeData();
+            return Array.Empty<byte>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ReadAttendanceDirect error");
+            try { FreeData(); } catch { }
+            // On a hard error, mark desync so the next cycle can recover via reconnect.
+            _consecutiveEmptyReads++;
+            return Array.Empty<byte>();
+        }
+        finally
+        {
+            // Re-enable the device so it can resume normal check-in operation.
+            try { EnableDevice(true); } catch { }
+        }
+    }
+
+    private byte[] ReadUsersDirect()
+    {
+        try
+        {
+            byte[] fctData = new byte[4];
+            BinaryPrimitives.WriteUInt16LittleEndian(fctData.AsSpan(0, 2), ZKProtocol.FCT_USER);
+
+            var resp = SendCommand(ZKProtocol.CMD_USERTEMP_RRQ, fctData);
+            _logger.LogWarning("ReadUsersDirect: CMD_USERTEMP_RRQ resp.Code={Code} dataLen={Len} (CMD_DATA={Cd})", resp.Code, resp.Data.Length, ZKProtocol.CMD_DATA);
+
+            if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 8)
+            {
+                // CMD_DATA inline response includes a small header: [maxChunkSize(4)][totalSize(4)]
+                // Strip it and return raw user records
+                var records = resp.Data[8..];
+                _logger.LogDebug("ReadUsersDirect: CMD_USERTEMP_RRQ returned {Total} bytes ({Rec} records)",
+                    records.Length, records.Length / 72);
+                FreeData();
+                return records;
+            }
+
+            // Fallback: CMD_DB_RRQ (7) with FCT_USER
+            resp = SendCommand(ZKProtocol.CMD_DB_RRQ, fctData);
+
+            if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 4)
+            {
+                var records = resp.Data.Length > 8 ? resp.Data[8..] : resp.Data;
+                _logger.LogDebug("ReadUsersDirect: CMD_DB_RRQ returned {Total} bytes", records.Length);
+                FreeData();
+                return records;
+            }
+
+            if (resp.Code != ZKProtocol.CMD_PREPARE_DATA || resp.Data.Length < 4)
+            {
+                _logger.LogWarning("ReadUsersDirect: both protocols failed, last code={Code}, dataLen={DataLen}", resp.Code, resp.Data.Length);
+                return Array.Empty<byte>();
+            }
+
+            int totalSize = BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(0, 4));
+            _logger.LogDebug("ReadUsersDirect: CMD_DB_RRQ totalSize={Size}, reading chunks", totalSize);
+
+            using var ms = new MemoryStream();
+            if (resp.Data.Length > 4)
+                ms.Write(resp.Data, 4, resp.Data.Length - 4);
+
+            while (ms.Length < totalSize)
+            {
+                byte[] offsetData = new byte[4];
+                BinaryPrimitives.WriteInt32LittleEndian(offsetData, (int)ms.Length);
+                var chunkResp = SendCommand(ZKProtocol.CMD_DATA, offsetData);
+
+                if (chunkResp.Data.Length == 0)
+                {
+                    _logger.LogWarning("ReadUsersDirect: empty chunk at offset={Offset}", ms.Length);
+                    break;
+                }
+
+                ms.Write(chunkResp.Data, 0, chunkResp.Data.Length);
+            }
+
+            byte[] result = ms.ToArray();
+            _logger.LogDebug("ReadUsersDirect: completed, total {Total} bytes", result.Length);
+            FreeData();
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ReadUsersDirect error");
+            return Array.Empty<byte>();
+        }
+    }
+
+    /// <summary>
     /// Clear all attendance logs from the device.
+    /// Sends CMD_CLEAR_ATTLOG (14) with the current session id and checksum, validates
+    /// the response code, and logs the raw hex on failure for diagnostics.
     /// </summary>
     public bool ClearAttendanceLogs()
     {
         if (!IsConnected) return false;
 
-        EnableDevice(false);
+        // Disable the device while clearing so no check-in races the clear operation.
+        try { EnableDevice(false); } catch { }
+
         try
         {
             var resp = SendCommand(ZKProtocol.CMD_CLEAR_ATTLOG, Array.Empty<byte>());
-            return resp.IsOk;
+            bool ok = resp.Code == ZKProtocol.CMD_ACK_OK;
+
+            if (ok)
+            {
+                _logger.LogInformation("Cleared attendance logs from device (code={Code})", resp.Code);
+            }
+            else
+            {
+                string hex = resp.Data.Length > 0
+                    ? Convert.ToHexString(resp.Data.AsSpan(0, Math.Min(resp.Data.Length, 64)))
+                    : "(empty)";
+                _logger.LogWarning(
+                    "ClearAttendanceLogs failed: code={Code} (0x{CodeHex}) IsOk={IsOk} dataLen={Len} hex={Hex}",
+                    resp.Code, resp.Code.ToString("X4"), resp.IsOk, resp.Data.Length, hex);
+            }
+
+            // Always free any buffer the device may have opened for the command.
+            try { FreeData(); } catch { }
+            return ok;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ClearAttendanceLogs error");
+            return false;
         }
         finally
         {
-            EnableDevice(true);
+            try { EnableDevice(true); } catch { }
         }
     }
 
@@ -586,12 +838,41 @@ public class ZKTecoTcpClient : IDisposable
     {
         try
         {
-            SendCommand(ZKProtocol.CMD_FREE_DATA, Array.Empty<byte>());
-            _logger.LogDebug("FreeData: sent CMD_FREE_DATA");
+            if (_stream == null) return;
+
+            // Send raw CMD_FREE_DATA instead of using SendCommand, so we can
+            // drain ALL stale responses (not just the first one).
+            _replyId++;
+            if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
+            var packet = ZKProtocol.BuildPacket(ZKProtocol.CMD_FREE_DATA, Array.Empty<byte>(), _sessionId, _replyId);
+            _stream.Write(packet, 0, packet.Length);
+
+            // Drain ALL response packets to clear stale buffer data.
+            // After ReadWithBuffer, the device may still send leftover DATA/PREPARE_DATA
+            // chunks that would corrupt subsequent commands.
+            int drained = 0;
+            while (_stream.DataAvailable)
+            {
+                var header = ReadExact(8);
+                if (header == null) break;
+                ushort m1 = BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(0, 2));
+                ushort m2 = BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(2, 2));
+                if (m1 != ZKProtocol.Magic1 || m2 != ZKProtocol.Magic2) break;
+                uint ps = BitConverter.ToUInt32(header, 4);
+                if (ps < 8) break;
+                var payload = ReadExact((int)ps);
+                if (payload == null) break;
+                var code = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(0, 2));
+                if (code == ZKProtocol.CMD_REG_EVENT)
+                    SendInternalAck();
+                drained++;
+                if (code == ZKProtocol.CMD_ACK_OK) break;
+            }
+            _logger.LogDebug("FreeData: drained {Count} packets", drained);
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "FreeData: error sending CMD_FREE_DATA");
+            _logger.LogDebug(ex, "FreeData: error");
         }
     }
 
@@ -605,11 +886,41 @@ public class ZKTecoTcpClient : IDisposable
         int offset = 0;
         while (offset < count)
         {
-            int read = _stream.Read(buffer, offset, count - offset);
-            if (read == 0) return null;
+            int read;
+            try
+            {
+                read = _stream.Read(buffer, offset, count - offset);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "ReadExact: exception reading from stream");
+                CleanupConnection();
+                return null;
+            }
+            if (read == 0)
+            {
+                _logger.LogWarning("ReadExact: connection closed by device (received 0 bytes)");
+                CleanupConnection();
+                return null;
+            }
             offset += read;
         }
         return buffer;
+    }
+
+    private void CleanupConnection()
+    {
+        if (_stream != null)
+        {
+            try { _stream.Dispose(); } catch { }
+            _stream = null;
+        }
+        if (_tcp != null)
+        {
+            try { _tcp.Dispose(); } catch { }
+            _tcp = null;
+        }
+        IsConnected = false;
     }
 
     /// <summary>
@@ -622,10 +933,27 @@ public class ZKTecoTcpClient : IDisposable
     private CommandResponse SendCommand(ushort command, byte[] data)
     {
         if (_stream == null)
+        {
+            _replyId++;
+            if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
             return new CommandResponse { Code = 0, IsOk = false };
+        }
 
         try
         {
+            // Drain any pending async data before sending command.
+            // After REG_EVENT registration, the device streams unsolicited
+            // attendance packets (CMD_DATA). If not drained, these get consumed
+            // as responses to subsequent commands, corrupting the protocol.
+            int drained = 0;
+            var buffer = new byte[4096];
+            while (_stream.DataAvailable)
+            {
+                drained += _stream.Read(buffer, 0, buffer.Length);
+            }
+            if (drained > 0)
+                _logger.LogDebug("Drained {Count} bytes before command {Command}", drained, command);
+
             // pyzk __create_header: increments reply_id, then builds packet with incremented value
             _replyId++;
             if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
@@ -640,15 +968,31 @@ public class ZKTecoTcpClient : IDisposable
             _replyId++;
             if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
             _logger.LogDebug(ex, "SendCommand error for cmd={Command}", command);
+            CleanupConnection();
             return new CommandResponse { Code = 0, IsOk = false };
         }
     }
 
     /// <summary>
+    /// Write a command packet WITHOUT draining the stream first. Used when pulling
+    /// prepared attendance data: the device may have already pushed the first frames
+    /// unsolicited right after PREPARE_DATA, and draining would discard them.
+    /// </summary>
+    private void SendRawNoDrain(ushort command, byte[] data)
+    {
+        if (_stream == null) return;
+        _replyId++;
+        if (_replyId >= ZKProtocol.USHRT_MAX) _replyId -= ZKProtocol.USHRT_MAX;
+        byte[] packet = ZKProtocol.BuildPacket(command, data, _sessionId, _replyId);
+        _stream.Write(packet, 0, packet.Length);
+    }
+
+    /// <summary>
     /// Read one response frame from the device.
     /// Skips async REG_EVENT packets by discarding them and reading the next response.
+    /// Increased skips to 200 to handle async events that pile up between polls.
     /// </summary>
-    private CommandResponse ReadCommandResponse(int maxEventSkips = 10)
+    private CommandResponse ReadCommandResponse(int maxEventSkips = 200)
     {
         if (_stream == null)
             return new CommandResponse { Code = 0, IsOk = false };
@@ -674,7 +1018,10 @@ public class ZKTecoTcpClient : IDisposable
 
                 ushort respCode = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(0, 2));
                 ushort respSessionId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(4, 2));
-                _replyId = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(6, 2));
+                // IMPORTANT: Do NOT overwrite _replyId from the device response.
+                // pyzk maintains an independent counter (increments before each send).
+                // The device can return unexpected reply_ids (e.g., REG_EVENT echoes rid=3
+                // for our replyId=1), and overwriting derails the sequence.
                 byte[] respData = payload[8..];
 
                 // Discard async events (CMD_REG_EVENT = 500) and read next response
@@ -705,6 +1052,7 @@ public class ZKTecoTcpClient : IDisposable
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "ReadCommandResponse error");
+            CleanupConnection();
             return new CommandResponse { Code = 0, IsOk = false };
         }
     }
@@ -828,7 +1176,7 @@ public class ZKTecoTcpClient : IDisposable
             ushort respSid = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(4, 2));
             ushort respRid = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(6, 2));
 
-            _replyId = respRid;
+            // Do NOT overwrite _replyId — same reason as ReadCommandResponse
 
             return (sendHex, magic1, magic2, payloadSize, payloadHex, respCode, (int)(payloadSize - 8), respSid, respRid);
         }

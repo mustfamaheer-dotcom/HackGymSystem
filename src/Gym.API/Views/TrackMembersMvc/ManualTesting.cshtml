@@ -1,0 +1,693 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@model dynamic
+@{
+    ViewData["Title"] = Model.PageTitle;
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        .manual-testing-panel {
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .manual-testing-panel .card-header {
+            background-color: #e9ecef;
+            padding: 12px 20px;
+        }
+
+        .manual-testing-panel .card-body {
+            padding: 20px;
+        }
+
+        .manual-testing-panel .badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+        }
+
+        .employee-select {
+            max-width: 300px;
+        }
+
+        .manual-testing-panel .alert {
+            margin-bottom: 0;
+        }
+
+        .device-status-badge {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let currentOperation = 'check-in';
+
+        function manualCheckIn() {
+            currentOperation = 'check-in';
+            $('#memberSelectModal').modal('show');
+        }
+
+        function manualCheckOut() {
+            currentOperation = 'check-out';
+            $('#memberSelectModal').modal('show');
+        }
+
+        function showAdvancedManualModal() {
+            $('#advancedManualModal').modal('show');
+        }
+
+        $('#memberSelectModal').on('show.bs.modal', function (e) {
+            const button = $(e.relatedTarget);
+            const memberId = button.data('member-id');
+            if (memberId) {
+                $('#confirmOperationBtn').attr('data-member-id', memberId);
+            }
+        });
+
+        $('#confirmOperationBtn').click(function () {
+            const memberId = $(this).attr('data-member-id');
+            const operation = currentOperation;
+
+            if (!memberId) {
+                alert('Please select a member first');
+                return;
+            }
+
+            performManualOperation(memberId, operation);
+        });
+
+        function performManualOperation(memberId, operation) {
+            const endpoint = operation === 'check-in'
+                ? '/api/TrackMembers/manual-check-in'
+                : '/api/TrackMembers/manual-check-out';
+
+            $.ajax({
+                url: endpoint,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ memberId: memberId }),
+                success: function (response) {
+                    alert(`${operation === 'check-in' ? 'Check-in' : 'Check-out'} recorded successfully!`);
+                    $('#memberSelectModal').modal('hide');
+                    // Refresh the page to show updated data
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function advancedManualCheckIn() {
+            const memberId = $('#advancedMemberId').val();
+            const customTime = $('#customTimestamp').val();
+
+            if (!memberId) {
+                alert('Please enter a Member ID');
+                return;
+            }
+
+            const payload = { memberId: memberId };
+            if (customTime) {
+                payload.timestamp = customTime;
+            }
+
+            $.ajax({
+                url: '/api/TrackMembers/manual-check-in',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (response) {
+                    alert('Advanced check-in recorded successfully!');
+                    $('#advancedManualModal').modal('hide');
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function advancedManualCheckOut() {
+            const memberId = $('#advancedMemberId').val();
+            const customTime = $('#customTimestamp').val();
+
+            if (!memberId) {
+                alert('Please enter a Member ID');
+                return;
+            }
+
+            const payload = { memberId: memberId };
+            if (customTime) {
+                payload.timestamp = customTime;
+            }
+
+            $.ajax({
+                url: '/api/TrackMembers/manual-check-out',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (response) {
+                    alert('Advanced check-out recorded successfully!');
+                    $('#advancedManualModal').modal('hide');
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function refreshSystemStatus() {
+            $.ajax({
+                url: '/api/system/status',
+                type: 'GET',
+                success: function (response) {
+                    updateStatusDisplay(response);
+                },
+                error: function () {
+                    console.error('Failed to fetch system status');
+                }
+            });
+        }
+
+        function updateStatusDisplay(status) {
+            $('#statusTimestamp').text(new Date(status.timestamp).toLocaleString());
+            $('#statusOverall').text(status.overallStatus).removeClass('badge-success badge-warning badge-danger')
+                .addClass(status.overallStatus === 'Operational' ? 'badge-success' :
+                    status.overallStatus === 'Degraded' ? 'badge-warning' : 'badge-danger');
+
+            if (status.deviceStatus) {
+                const device = status.deviceStatus;
+                $('#statusDeviceConnected').text(device.isConnected ? 'Yes' : 'No')
+                    .removeClass('badge-success badge-warning badge-danger')
+                    .addClass(device.isConnected ? 'badge-success' : 'badge-danger');
+                $('#statusBridgeConnected').text(device.bridgeConnected ? 'Yes' : 'No')
+                    .removeClass('badge-success badge-warning badge-danger')
+                    .addClass(device.bridgeConnected ? 'badge-success' : 'badge-danger');
+                $('#statusDeviceIp').text(device.deviceInfo?.ip || 'N/A');
+                $('#statusDevicePort').text(device.deviceInfo?.port || 'N/A');
+                $('#statusEnrolledUsers').text(device.bridgeStatus?.enrolledUserCount || 0);
+            }
+
+            if (status.stats) {
+                const stats = status.stats;
+                $('#statTotalMembers').text(stats.totalMembers);
+                $('#statCheckedIn').text(stats.checkedInToday);
+                $('#statAbsent').text(stats.absentToday);
+            }
+        }
+
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshSystemStatus, 30000);
+        $(document).ready(function () {
+            refreshSystemStatus();
+        });
+    </script>
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@Model.PageTitle</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshSystemStatus()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh Status
+            </button>
+            <a href="/TrackMembers" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Track Members
+            </a>
+        </div>
+    </div>
+
+    <!-- System Status Panel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> System Health Status</h5>
+                    <span id="statusOverall" class="badge badge-secondary">Loading...</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Device Status</h6>
+                            <div class="small">
+                                <div>Connected: <span id="statusDeviceConnected" class="badge badge-secondary">Checking...</span></div>
+                                <div>Bridge Connected: <span id="statusBridgeConnected" class="badge badge-secondary">Checking...</span></div>
+                                <div>IP: <span id="statusDeviceIp">N/A</span></div>
+                                <div>Port: <span id="statusDevicePort">N/A</span></div>
+                                <div>Enrolled Users: <span id="statusEnrolledUsers">0</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Database</h6>
+                            <div class="small">
+                                <div id="statusDatabase">Checking...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Statistics</h6>
+                            <div class="small">
+                                <div>Total Members: <span id="statTotalMembers">0</span></div>
+                                <div>Checked In Today: <span id="statCheckedIn">0</span></div>
+                                <div>Absent Today: <span id="statAbsent">0</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>System</h6>
+                            <div class="small">
+                                <div>Status: <span id="statusOverall" class="badge badge-secondary">Loading...</span></div>
+                                <div>Last Check: <span id="statusTimestamp">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Testing Panel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card manual-testing-panel">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-tools"></i> Manual Testing Controls</h5>
+                    <span class="badge device-status-badge @(Model.IsDeviceOnline ? "bg-success" : "bg-warning")">
+                        Device: @(Model.IsDeviceOnline ? "Online" : "Offline")
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Quick Actions</h6>
+                            <button class="btn btn-primary btn-sm mb-2" onclick="manualCheckIn()">
+                                <i class="bi bi-box-arrow-in-right"></i> Manual Check In
+                            </button>
+                            <button class="btn btn-danger btn-sm mb-2" onclick="manualCheckOut()">
+                                <i class="bi bi-box-arrow-right"></i> Manual Check Out
+                            </button>
+                            <button class="btn btn-info btn-sm mb-2" onclick="showAdvancedManualModal()">
+                                <i class="bi bi-pencil"></i> Advanced Manual Entry
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Device Status</h6>
+                            <div class="small">
+                                <div>IP: @(Model.DeviceInfo?.Ip ?? "N/A")</div>
+                                <div>Port: @(Model.DeviceInfo?.Port ?? "N/A")</div>
+                                <div class="mt-2">
+                                    <span class="badge @(Model.IsDeviceOnline ? "bg-success" : "bg-warning")">
+                                        @(Model.IsDeviceOnline ? "Connected" : "Disconnected")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert @(Model.IsDeviceOnline ? "alert-success" : "alert-warning")" role="alert">
+                                <i class="bi @(Model.IsDeviceOnline ? "bi-check-circle" : "bi-exclamation-triangle")"></i>
+                                <strong>System Status:</strong> 
+                                @(Model.IsDeviceOnline 
+                                    ? "Device is online - automatic and manual attendance available" 
+                                    : "Device is offline - using manual testing mode only")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Feed & Stats (from main Track Members page) -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Members</h6>
+                    <h2 class="card-text" id="statTotal">@ViewBag.TotalMembers</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Checked In Today</h6>
+                    <h2 class="card-text text-success" id="statCheckedIn">@ViewBag.CheckedInToday</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Absent Today</h6>
+                    <h2 class="card-text text-danger" id="statAbsent">@ViewBag.AbsentToday</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Late Today</h6>
+                    <h2 class="card-text text-warning" id="statLate">@ViewBag.LateToday</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Live Attendance Feed</h5>
+                    <span class="badge bg-secondary" id="lastSyncTime">-</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="liveFeedTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Device</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liveFeedBody">
+                                @foreach (var record in Model.TodayAttendances)
+                                {
+                                    <tr>
+                                        <td>@record.CheckIn.ToString("HH:mm:ss")</td>
+                                        <td>@record.MemberCode</td>
+                                        <td>@record.MemberName</td>
+                                        <td>
+                                            @if (record.CheckOut.HasValue)
+                                            {
+                                                <span class="badge bg-secondary">Check Out</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Check In</span>
+                                            }
+                                        </td>
+                                        <td>@record.DeviceName</td>
+                                        <td>
+                                            @if (!record.CheckOut.HasValue)
+                                            {
+                                                <button class="btn btn-sm btn-outline-danger" onclick="checkOutMember('@record.MemberId')">
+                                                    <i class="bi bi-box-arrow-right"></i> Check Out
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Employees</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="employeeList" class="list-group list-group-flush">
+                        @foreach (var emp in Model.Employees)
+                        {
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" style="cursor: pointer;" 
+                                 onclick="selectMember('@emp.id', '@emp.name', '@emp.code')">
+                                <div>
+                                    <div class="fw-bold">@emp.name</div>
+                                    <small class="text-muted">ID: @emp.code</small>
+                                </div>
+                                <span class="badge @(emp.hasActiveSub ? "bg-success" : "bg-secondary")">
+                                    @(emp.hasActiveSub ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Member Selection Modal -->
+<div class="modal fade" id="memberSelectModal" tabindex="-1" aria-labelledby="memberSelectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="memberSelectModalLabel">Select Member for <span id="operationTypeDisplay"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="memberSelect" class="form-label">Select Member</label>
+                    <select class="form-select employee-select" id="memberSelect">
+                        <option value="">-- Select Member --</option>
+                        @foreach (var emp in Model.Employees)
+                        {
+                            <option value="@emp.id" data-name="@emp.name" data-code="@emp.code">@emp.name (@emp.code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="text-muted small">
+                    Selected: <span id="selectedMemberName">-</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmOperationBtn" data-member-id="">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Manual Entry Modal -->
+    <div class="modal fade" id="advancedManualModal" tabindex="-1" aria-labelledby="advancedManualModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="advancedManualModalLabel">Advanced Manual Entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="advancedMemberId" class="form-label">Member ID <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="advancedMemberId" placeholder="Enter member GUID">
+                    <div class="form-text">Enter the member's GUID (e.g., 123e4567-e89b-12d3-a456-426614174000)</div>
+                </div>
+                <div class="mb-3">
+                    <label for="customTimestamp" class="form-label">Custom Timestamp (Optional)</label>
+                    <input type="datetime-local" class="form-control" id="customTimestamp">
+                    <div class="form-text">Leave empty to use current time. Format: YYYY-MM-DDTHH:MM</div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Use this for back-dating or testing specific timestamps.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="advancedManualCheckIn()">Check In</button>
+                <button type="button" class="btn btn-danger" onclick="advancedManualCheckOut()">Check Out</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOperation = 'check-in';
+
+        function selectMember(memberId, memberName, memberCode) {
+            $('#memberSelect').val(memberId);
+            $('#selectedMemberName').text(`${memberName} (${memberCode})`);
+        }
+
+        function manualCheckIn() {
+            currentOperation = 'check-in';
+            $('#operationTypeDisplay').text('Check In');
+            $('#memberSelectModal').modal('show');
+        }
+
+        function manualCheckOut() {
+            currentOperation = 'check-out';
+            $('#operationTypeDisplay').text('Check Out');
+            $('#memberSelectModal').modal('show');
+        }
+
+        function showAdvancedManualModal() {
+            $('#advancedManualModal').modal('show');
+        }
+
+        $('#memberSelectModal').on('show.bs.modal', function (e) {
+            const button = $(e.relatedTarget);
+            const memberId = button.data('member-id');
+            if (memberId) {
+                $('#confirmOperationBtn').attr('data-member-id', memberId);
+            }
+        });
+
+        $('#confirmOperationBtn').click(function () {
+            const memberId = $(this).attr('data-member-id');
+            const operation = currentOperation;
+
+            if (!memberId) {
+                alert('Please select a member first');
+                return;
+            }
+
+            performManualOperation(memberId, operation);
+        });
+
+        function performManualOperation(memberId, operation) {
+            const endpoint = operation === 'check-in'
+                ? '/api/TrackMembers/manual-check-in'
+                : '/api/TrackMembers/manual-check-out';
+
+            $.ajax({
+                url: endpoint,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ memberId: memberId }),
+                success: function (response) {
+                    alert(`${operation === 'check-in' ? 'Check-in' : 'Check-out'} recorded successfully!`);
+                    $('#memberSelectModal').modal('hide');
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function advancedManualCheckIn() {
+            const memberId = $('#advancedMemberId').val();
+            const customTime = $('#customTimestamp').val();
+
+            if (!memberId) {
+                alert('Please enter a Member ID');
+                return;
+            }
+
+            const payload = { memberId: memberId };
+            if (customTime) {
+                payload.timestamp = customTime;
+            }
+
+            $.ajax({
+                url: '/api/TrackMembers/manual-check-in',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (response) {
+                    alert('Advanced check-in recorded successfully!');
+                    $('#advancedManualModal').modal('hide');
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function advancedManualCheckOut() {
+            const memberId = $('#advancedMemberId').val();
+            const customTime = $('#customTimestamp').val();
+
+            if (!memberId) {
+                alert('Please enter a Member ID');
+                return;
+            }
+
+            const payload = { memberId: memberId };
+            if (customTime) {
+                payload.timestamp = customTime;
+            }
+
+            $.ajax({
+                url: '/api/TrackMembers/manual-check-out',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (response) {
+                    alert('Advanced check-out recorded successfully!');
+                    $('#advancedManualModal').modal('hide');
+                    loadLiveData();
+                },
+                error: function (xhr, status, error) {
+                    const errorMsg = xhr.responseJSON?.message || error;
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+
+        function refreshSystemStatus() {
+            $.ajax({
+                url: '/api/system/status',
+                type: 'GET',
+                success: function (response) {
+                    updateStatusDisplay(response);
+                },
+                error: function () {
+                    console.error('Failed to fetch system status');
+                }
+            });
+        }
+
+        function updateStatusDisplay(status) {
+            $('#statusTimestamp').text(new Date(status.timestamp).toLocaleString());
+            $('#statusOverall').text(status.overallStatus)
+                .removeClass('badge-success badge-warning badge-danger')
+                .addClass(status.overallStatus === 'Operational' ? 'badge-success' :
+                    status.overallStatus === 'Degraded' ? 'badge-warning' : 'badge-danger');
+
+            if (status.deviceStatus) {
+                const device = status.deviceStatus;
+                $('#statusDeviceConnected').text(device.isConnected ? 'Yes' : 'No')
+                    .removeClass('badge-success badge-warning badge-danger')
+                    .addClass(device.isConnected ? 'badge-success' : 'badge-danger');
+                $('#statusBridgeConnected').text(device.bridgeConnected ? 'Yes' : 'No')
+                    .removeClass('badge-success badge-warning badge-danger')
+                    .addClass(device.bridgeConnected ? 'badge-success' : 'badge-danger');
+                $('#statusDeviceIp').text(device.deviceInfo?.ip || 'N/A');
+                $('#statusDevicePort').text(device.deviceInfo?.port || 'N/A');
+                $('#statusEnrolledUsers').text(device.bridgeStatus?.enrolledUserCount || 0);
+            }
+
+            if (status.stats) {
+                const stats = status.stats;
+                $('#statTotalMembers').text(stats.totalMembers);
+                $('#statCheckedIn').text(stats.checkedInToday);
+                $('#statAbsent').text(stats.absentToday);
+            }
+        }
+
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshSystemStatus, 30000);
+        $(document).ready(function () {
+            refreshSystemStatus();
+        });
+
+        // Employee list selection
+        $('#employeeList .list-group-item').click(function () {
+            const memberId = $(this).data('member-id');
+            const memberName = $(this).data('member-name');
+            const memberCode = $(this).data('member-code');
+            selectMember(memberId, memberName, memberCode);
+        });
+    </script>

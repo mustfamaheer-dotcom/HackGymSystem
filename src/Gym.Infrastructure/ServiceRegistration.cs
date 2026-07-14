@@ -1,3 +1,5 @@
+using System.IO;
+using System;
 using Gym.Application.Common.Events;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Interfaces;
@@ -20,16 +22,23 @@ public static class ServiceRegistration
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<GymDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(GymDbContext).Assembly.FullName);
-                    sqlOptions.EnableRetryOnFailure(3);
-                    sqlOptions.CommandTimeout(60);
-                })
-                );
+GymDbContext.UseSqliteRowVersionWorkaround = true;
+var connString = configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connString))
+{
+    // Fallback to a database file in the repository root if the config is missing
+    var baseDir = AppContext.BaseDirectory;
+    var repoRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", ".."));
+    var dbPath = Path.Combine(repoRoot, "GymDb.db");
+    connString = $"Data Source={dbPath};Cache=Shared;";
+}
+services.AddDbContext<GymDbContext>(options =>
+    options.UseSqlite(
+        connString,
+        sqliteOptions =>
+        {
+            sqliteOptions.MigrationsAssembly(typeof(GymDbContext).Assembly.FullName);
+        }));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -50,6 +59,13 @@ public static class ServiceRegistration
         services.AddHttpClient("ZKTecoBridge", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        // Named client for SystemHealthMonitor — short timeout, reused
+        // instance (avoids socket exhaustion from `new HttpClient()` per
+        // check cycle). The monitor uses this in CheckApiEndpoints.
+        services.AddHttpClient("SystemHealthMonitor", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
         });
         services.AddScoped<IZKTecoBridgeClient, ZKTecoBridgeGrpcClient>();
         services.Configure<ZKTecoBridgeOptions>(configuration.GetSection("ZKTecoBridge"));

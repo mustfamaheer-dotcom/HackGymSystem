@@ -1,5 +1,5 @@
 @{
-    var error = ViewBag.Error as string;
+    var error = ViewBag.Error as string ?? TempData["Error"] as string;
     Layout = null;
     var isRtl = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("ar");
     var lang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;

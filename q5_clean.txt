@@ -1,0 +1,6 @@
+AuditLogs|EntityId
+Members|FingerprintDeviceId
+Members|NationalId
+Subscriptions|AmountPaid
+
+(4 rows affected)

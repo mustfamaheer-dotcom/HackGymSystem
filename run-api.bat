@@ -3,7 +3,7 @@ title Gym API Server
 color 0A
 cd /d "%~dp0src\Gym.API"
 if not defined ConnectionStrings__DefaultConnection (
-    set "ConnectionStrings__DefaultConnection=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+    set "ConnectionStrings__DefaultConnection=Data Source=D:\Hack gym system\GymDb.db; Cache=Shared;"
 )
 echo.
 echo  ============================================================

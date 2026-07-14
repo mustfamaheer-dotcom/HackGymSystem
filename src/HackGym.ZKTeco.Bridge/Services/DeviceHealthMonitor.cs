@@ -1,7 +1,3 @@
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using HackGym.ZKTeco.Bridge;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,7 +8,7 @@ public class DeviceHealthMonitor : BackgroundService
 {
     private readonly ZKDeviceManager _deviceManager;
     private readonly ILogger<DeviceHealthMonitor> _logger;
-    private readonly HttpClient _httpClient;
+    private readonly BridgeWebSocketClient _wsClient;
     private readonly ZKTecoConfig _config;
     private static readonly TimeSpan HealthCheckInterval = TimeSpan.FromSeconds(30);
     private bool _lastKnownConnected;
@@ -20,12 +16,12 @@ public class DeviceHealthMonitor : BackgroundService
     public DeviceHealthMonitor(
         ZKDeviceManager deviceManager,
         ILogger<DeviceHealthMonitor> logger,
-        IHttpClientFactory httpClientFactory,
+        BridgeWebSocketClient wsClient,
         IOptions<ZKTecoConfig> config)
     {
         _deviceManager = deviceManager;
         _logger = logger;
-        _httpClient = httpClientFactory.CreateClient("MainApi");
+        _wsClient = wsClient;
         _config = config.Value;
     }
 
@@ -67,17 +63,15 @@ public class DeviceHealthMonitor : BackgroundService
                     }
                 }
 
-                // Detect state changes and push to API
                 if (currentlyConnected != _lastKnownConnected)
                 {
-                    await PushStatusChangeAsync(currentlyConnected, stoppingToken);
+                    await PushStatusAsync(currentlyConnected, stoppingToken);
                     _lastKnownConnected = currentlyConnected;
                 }
-                
-                // Also push periodic heartbeat when connected
+
                 if (currentlyConnected)
                 {
-                    await PushStatusChangeAsync(true, stoppingToken);
+                    await PushStatusAsync(true, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -89,14 +83,10 @@ public class DeviceHealthMonitor : BackgroundService
         }
     }
 
-    private async Task PushStatusChangeAsync(bool isConnected, CancellationToken ct)
+    private async Task PushStatusAsync(bool isConnected, CancellationToken ct)
     {
         try
         {
-            var endpoint = isConnected
-                ? "/api/zkteco-attendance/heartbeat"
-                : "/api/zkteco-attendance/device-offline";
-
             int count = 0;
             long memory = 0;
             string firmware = "";
@@ -109,57 +99,24 @@ public class DeviceHealthMonitor : BackgroundService
                 firmware = f ?? "";
             }
 
-            var payload = new DeviceInfoPayload
+            var payload = new
             {
-                Model = "ZKMB2000",
-                SerialNumber = string.Empty,
-                FirmwareVersion = firmware,
-                EnrolledUserCount = count,
-                FreeMemory = memory,
-                IpAddress = _config.DeviceIp,
-                Port = _config.DevicePort
+                enrolledUserCount = count,
+                freeMemory = memory,
+                firmwareVersion = firmware,
+                isConnected,
+                ipAddress = _config.DeviceIp,
+                port = _config.DevicePort
             };
 
-            var response = await _httpClient.PostAsJsonAsync(endpoint, payload, ct);
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Device status change pushed to API: {Status} (Users: {Count}, FW: {FW})",
-                    isConnected ? "Online" : "Offline", count, firmware);
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("Failed to push device status change: {Status} {Error}",
-                    response.StatusCode, error);
-            }
+            var type = isConnected ? "heartbeat" : "device_offline";
+            await _wsClient.SendMessageAsync(type, payload, ct);
+            _logger.LogInformation("Device status pushed via WS: {Type} (Users: {Count}, FW: {FW})",
+                type, count, firmware);
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Error pushing device status change");
+            _logger.LogDebug(ex, "Error pushing device status via WS");
         }
-    }
-
-    private class DeviceInfoPayload
-    {
-        [JsonPropertyName("model")]
-        public string Model { get; set; } = "ZKMB2000";
-
-        [JsonPropertyName("serialNumber")]
-        public string SerialNumber { get; set; } = string.Empty;
-
-        [JsonPropertyName("firmwareVersion")]
-        public string FirmwareVersion { get; set; } = string.Empty;
-
-        [JsonPropertyName("enrolledUserCount")]
-        public int EnrolledUserCount { get; set; }
-
-        [JsonPropertyName("freeMemory")]
-        public long FreeMemory { get; set; }
-
-        [JsonPropertyName("ipAddress")]
-        public string IpAddress { get; set; } = string.Empty;
-
-        [JsonPropertyName("port")]
-        public int Port { get; set; }
     }
 }

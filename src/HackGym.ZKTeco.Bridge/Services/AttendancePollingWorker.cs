@@ -1,7 +1,4 @@
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 using HackGym.ZKTeco.Bridge.Models;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +10,7 @@ public class AttendancePollingWorker : BackgroundService
     private readonly ZKDeviceManager _deviceManager;
     private readonly ILogger<AttendancePollingWorker> _logger;
     private readonly ZKTecoConfig _config;
-    private readonly HttpClient _httpClient;
+    private readonly BridgeWebSocketClient _wsClient;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> _processedLogs = new();
     private readonly TimeSpan _dedupWindow = TimeSpan.FromHours(1);
     private DateTime _lastLogTimestamp = DateTime.MinValue;
@@ -26,12 +23,12 @@ public class AttendancePollingWorker : BackgroundService
         ZKDeviceManager deviceManager,
         ILogger<AttendancePollingWorker> logger,
         IOptions<ZKTecoConfig> config,
-        IHttpClientFactory httpClientFactory)
+        BridgeWebSocketClient wsClient)
     {
         _deviceManager = deviceManager;
         _logger = logger;
         _config = config.Value;
-        _httpClient = httpClientFactory.CreateClient("MainApi");
+        _wsClient = wsClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,7 +47,6 @@ public class AttendancePollingWorker : BackgroundService
                     continue;
                 }
 
-                // On first connect (or reconnect), sync device info and users
                 if (!_deviceInfoSynced)
                 {
                     await SyncDeviceInfoAsync(stoppingToken);
@@ -60,7 +56,6 @@ public class AttendancePollingWorker : BackgroundService
                     await SyncUsersAsync(stoppingToken);
                 }
 
-                // Periodic heartbeat - push device status to API every 30s
                 if ((DateTime.UtcNow - _lastHeartbeat) >= HeartbeatInterval)
                 {
                     await PushHeartbeatAsync(stoppingToken);
@@ -73,6 +68,7 @@ public class AttendancePollingWorker : BackgroundService
                 var maxTimestamp = _lastLogTimestamp;
                 var now = DateTime.UtcNow;
                 var processedCount = 0;
+                var failedCount = 0;
                 foreach (var evt in events)
                 {
                     if (evt.Timestamp <= _lastLogTimestamp)
@@ -95,18 +91,22 @@ public class AttendancePollingWorker : BackgroundService
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to process attendance event for {EnrollmentId}", evt.EnrollmentId);
+                        failedCount++;
                     }
                 }
 
                 _lastLogTimestamp = maxTimestamp;
 
-                // Clear device attendance logs after successful sync
-                if (processedCount > 0)
+                if (processedCount > 0 && failedCount == 0)
                 {
                     await ClearDeviceAttendanceAsync();
                 }
+                else if (failedCount > 0)
+                {
+                    _logger.LogWarning("Skipping log clear: {Failed}/{Total} events failed to push",
+                        failedCount, processedCount + failedCount);
+                }
 
-                // Evict stale keys periodically (every ~300 events)
                 if (_processedLogs.Count > 1000)
                 {
                     var cutoff = now - _dedupWindow;
@@ -135,29 +135,21 @@ public class AttendancePollingWorker : BackgroundService
                 return;
             }
 
-            var payload = new DeviceInfoPayload
+            var payload = new
             {
-                Model = deviceInfo.Model,
-                SerialNumber = deviceInfo.SerialNumber,
-                FirmwareVersion = deviceInfo.FirmwareVersion,
-                EnrolledUserCount = deviceInfo.EnrolledUserCount,
-                FreeMemory = deviceInfo.FreeMemory,
-                IpAddress = _config.DeviceIp,
-                Port = _config.DevicePort
+                model = deviceInfo.Model,
+                serialNumber = deviceInfo.SerialNumber,
+                firmwareVersion = deviceInfo.FirmwareVersion,
+                enrolledUserCount = deviceInfo.EnrolledUserCount,
+                freeMemory = deviceInfo.FreeMemory,
+                ipAddress = _config.DeviceIp,
+                port = _config.DevicePort
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/zkteco-attendance/device-info", payload, ct);
-            if (response.IsSuccessStatusCode)
-            {
-                _deviceInfoSynced = true;
-                _logger.LogInformation("Device info synced: {Model}, SN: {Serial}, FW: {Firmware}",
-                    deviceInfo.Model, deviceInfo.SerialNumber, deviceInfo.FirmwareVersion);
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("Device info sync failed: {Status} {Error}", response.StatusCode, error);
-            }
+            await _wsClient.SendMessageAsync("sync_device_info", payload, ct);
+            _deviceInfoSynced = true;
+            _logger.LogInformation("Device info synced via WS: {Model}, SN: {Serial}, FW: {Firmware}",
+                deviceInfo.Model, deviceInfo.SerialNumber, deviceInfo.FirmwareVersion);
         }
         catch (Exception ex)
         {
@@ -170,27 +162,21 @@ public class AttendancePollingWorker : BackgroundService
         try
         {
             var (count, memory, firmware) = _deviceManager.GetDeviceStatus();
-            var payload = new DeviceInfoPayload
+            var payload = new
             {
-                Model = "ZKMB2000",
-                SerialNumber = "",
-                FirmwareVersion = firmware ?? "",
-                EnrolledUserCount = count,
-                FreeMemory = memory,
-                IpAddress = _config.DeviceIp,
-                Port = _config.DevicePort
+                enrolledUserCount = count,
+                freeMemory = memory,
+                firmwareVersion = firmware ?? "",
+                isConnected = true,
+                ipAddress = _config.DeviceIp,
+                port = _config.DevicePort
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/zkteco-attendance/heartbeat", payload, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("Heartbeat push failed: {Status} {Error}", response.StatusCode, error);
-            }
+            await _wsClient.SendMessageAsync("heartbeat", payload, ct);
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Error pushing heartbeat");
+            _logger.LogDebug(ex, "Error pushing heartbeat via WS");
         }
     }
 
@@ -206,25 +192,17 @@ public class AttendancePollingWorker : BackgroundService
                 return;
             }
 
-            var payload = users.Select(u => new UserSyncPayload
+            var payload = users.Select(u => new
             {
-                EnrollmentId = u.EnrollmentId,
-                Name = u.Name,
-                Privilege = u.Privilege,
-                Enabled = u.Enabled
+                enrollmentId = u.EnrollmentId,
+                name = u.Name,
+                privilege = u.Privilege,
+                enabled = u.Enabled
             }).ToList();
 
-            var response = await _httpClient.PostAsJsonAsync("/api/zkteco-attendance/sync-users", payload, ct);
-            if (response.IsSuccessStatusCode)
-            {
-                _usersSynced = true;
-                _logger.LogInformation("Synced {Count} users from device", users.Count);
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogWarning("User sync failed: {Status} {Error}", response.StatusCode, error);
-            }
+            await _wsClient.SendMessageAsync("sync_users", payload, ct);
+            _usersSynced = true;
+            _logger.LogInformation("Synced {Count} users from device via WS", users.Count);
         }
         catch (Exception ex)
         {
@@ -250,111 +228,61 @@ public class AttendancePollingWorker : BackgroundService
 
     private async Task ProcessAttendanceEvent(ZKAttendanceEvent evt, CancellationToken ct)
     {
-        var payload = new AttendanceEventPayload
+        _logger.LogInformation("Processing attendance event: EnrollmentId={EnrollmentId}, Timestamp={Timestamp}, Direction={Direction}, Method={Method}",
+            evt.EnrollmentId, evt.Timestamp, evt.Direction, evt.Method);
+
+        var payload = new
         {
-            EnrollmentId = evt.EnrollmentId,
-            Timestamp = evt.Timestamp,
-            Direction = evt.Direction,
-            VerifyMethod = (int)evt.Method
+            enrollmentId = evt.EnrollmentId,
+            timestamp = evt.Timestamp,
+            direction = evt.Direction,
+            verifyMethod = (int)evt.Method
         };
 
-        var response = await _httpClient.PostAsJsonAsync("/api/zkteco-attendance/push", payload, ct);
-        if (!response.IsSuccessStatusCode)
-        {
-            var error = await response.Content.ReadAsStringAsync(ct);
-            _logger.LogWarning("Attendance push failed for {EnrollmentId}: {Status} {Error}",
-                evt.EnrollmentId, response.StatusCode, error);
-        }
+        await _wsClient.SendMessageAsync("attendance_push", payload, ct);
+        _logger.LogInformation("attendance_push sent for EnrollmentId={EnrollmentId}", evt.EnrollmentId);
     }
 
     private async Task ConnectWithRetryAsync(CancellationToken ct)
     {
-        var attempts = 0;
-        while (!ct.IsCancellationRequested && attempts < _config.MaxRetryAttempts)
+        // Retry forever with capped exponential backoff. The previous version
+        // gave up after MaxRetryAttempts and the worker sat idle — the page
+        // would never recover even after the device came back online.
+        var attempt = 0;
+        while (!ct.IsCancellationRequested)
         {
+            attempt++;
             if (_deviceManager.Connect())
             {
                 _deviceInfoSynced = false;
                 _usersSynced = false;
+                _logger.LogInformation("Connected to device after {Attempt} attempt(s)", attempt);
                 return;
             }
 
-            attempts++;
-            _logger.LogWarning("Connection attempt {Attempt}/{Max} failed", attempts, _config.MaxRetryAttempts);
-            await Task.Delay(_config.RetryDelayMs, ct);
+            var delay = Math.Min(300, Math.Pow(2, Math.Min(attempt, 8)) * 2);
+            _logger.LogWarning("Connection attempt {Attempt} failed — retrying in {Delay}s", attempt, (int)delay);
+            await Task.Delay(TimeSpan.FromSeconds((int)delay), ct);
         }
-
-        _logger.LogError("Failed to connect to device after {Max} attempts", _config.MaxRetryAttempts);
     }
 
     private async Task ReconnectWithBackoffAsync(CancellationToken ct)
     {
-        _logger.LogInformation("Attempting reconnection...");
+        // Keep trying — the previous version only attempted ONE reconnect per
+        // poll cycle. If it failed, the worker would spin in a tight loop
+        // calling RecordFailure() every 3 seconds, growing the backoff to
+        // 300s which made the page appear dead for 5 minutes.
         _deviceManager.RecordFailure();
         var delay = _deviceManager.ConnectionInfo.CurrentBackoffDelay;
 
-        await Task.Delay(delay, ct);
+        _logger.LogInformation("Reconnecting to device (delay {Delay:s\\}", delay);
 
         if (_deviceManager.Connect())
         {
             _lastLogTimestamp = DateTime.MinValue;
             _deviceInfoSynced = false;
             _usersSynced = false;
-            _logger.LogInformation("Reconnected successfully after {Delay}", delay);
+            _logger.LogInformation("Reconnected to device after {Delay}s", delay.TotalSeconds);
         }
-    }
-
-    private class AttendanceEventPayload
-    {
-        [JsonPropertyName("enrollmentId")]
-        public string EnrollmentId { get; set; } = string.Empty;
-
-        [JsonPropertyName("timestamp")]
-        public DateTime Timestamp { get; set; }
-
-        [JsonPropertyName("direction")]
-        public int Direction { get; set; }
-
-        [JsonPropertyName("verifyMethod")]
-        public int VerifyMethod { get; set; }
-    }
-
-    private class DeviceInfoPayload
-    {
-        [JsonPropertyName("model")]
-        public string Model { get; set; } = string.Empty;
-
-        [JsonPropertyName("serialNumber")]
-        public string SerialNumber { get; set; } = string.Empty;
-
-        [JsonPropertyName("firmwareVersion")]
-        public string FirmwareVersion { get; set; } = string.Empty;
-
-        [JsonPropertyName("enrolledUserCount")]
-        public int EnrolledUserCount { get; set; }
-
-        [JsonPropertyName("freeMemory")]
-        public long FreeMemory { get; set; }
-
-        [JsonPropertyName("ipAddress")]
-        public string IpAddress { get; set; } = string.Empty;
-
-        [JsonPropertyName("port")]
-        public int Port { get; set; }
-    }
-
-    private class UserSyncPayload
-    {
-        [JsonPropertyName("enrollmentId")]
-        public string EnrollmentId { get; set; } = string.Empty;
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("privilege")]
-        public int Privilege { get; set; }
-
-        [JsonPropertyName("enabled")]
-        public bool Enabled { get; set; }
     }
 }

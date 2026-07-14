@@ -374,6 +374,22 @@
 <script>
     (function() {
         var signalRConnection = null;
+        var loadDataInFlight = false;
+        var pendingReload = false;
+        var refreshDebounceTimer = null;
+
+        function scheduleRefresh() {
+            // Coalesce a burst of SignalR pushes (e.g. several check-ins at
+            // once) into one reload. The previous version called
+            // loadLiveData() on every push — each call paid ~1.5s of
+            // backend work, and they stacked because there was no
+            // in-flight guard. Now we wait 400ms of quiet before reloading.
+            if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
+            refreshDebounceTimer = setTimeout(function() {
+                refreshDebounceTimer = null;
+                loadLiveData();
+            }, 400);
+        }
 
         function initSignalR() {
             signalRConnection = new signalR.HubConnectionBuilder()
@@ -383,7 +399,10 @@
 
             signalRConnection.on("AttendancePushed", function(data) {
                 addFeedItem(data);
-                loadLiveData();
+                // Don't reload synchronously — the optimistic UI update
+                // (addFeedItem) already shows the new row. Schedule a
+                // debounced reload to refresh the stats counters.
+                scheduleRefresh();
             });
 
             signalRConnection.start().then(function() {
@@ -398,6 +417,7 @@
 
             signalRConnection.onreconnected(function() {
                 updateSignalRStatus(true);
+                loadLiveData();
             });
         }
 
@@ -413,6 +433,16 @@
         }
 
         function loadLiveData() {
+            // In-flight guard: if a reload is already pending, callers
+            // get the result of that one. Without this, a SignalR push
+            // arriving during an already-running refresh would stack a
+            // second fetch behind it, doubling backend load.
+            if (loadDataInFlight) {
+                pendingReload = true;
+                return;
+            }
+            loadDataInFlight = true;
+
             fetch('/TrackMembers/get-live-data')
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
@@ -425,13 +455,22 @@
                     document.getElementById('totalCheckins').textContent = data.checkedInToday;
                     document.getElementById('lastSyncTime').textContent = new Date().toLocaleTimeString();
                     renderFeed(data.todayAttendances);
-                    renderEmployees(data.employees);
                     updateBridgeStatus(data.bridgeStatus);
                 })
                 .catch(function(err) {
                     console.error('Failed to load data:', err);
                     document.getElementById('deviceConnectionStatus').className = 'device-status device-offline';
                     document.getElementById('deviceConnectionStatus').innerHTML = '<span class="device-dot"></span> Error loading data';
+                })
+                .finally(function() {
+                    loadDataInFlight = false;
+                    // If another refresh request came in while we were
+                    // running, do one more — but only one — to pick up
+                    // any newer state.
+                    if (pendingReload) {
+                        pendingReload = false;
+                        loadLiveData();
+                    }
                 });
         }
 
@@ -454,12 +493,17 @@
 
         function renderFeed(records) {
             var tbody = document.getElementById('liveFeedBody');
-            tbody.innerHTML = '';
             if (!records || records.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;opacity:0.5;padding:40px;">No attendance records today</td></tr>';
                 return;
             }
-            records.forEach(function(r) {
+            // Build all rows with string concatenation first, then assign
+            // innerHTML once.  The previous version called innerHTML += in
+            // a loop, triggering a DOM reflow on every row (50 reflows for
+            // 50 rows = visible page freeze).
+            var html = '';
+            for (var i = 0; i < records.length; i++) {
+                var r = records[i];
                 var time = new Date(r.checkIn).toLocaleTimeString();
                 var typeBadge = r.checkOut
                     ? '<span class="badge-type badge-checkout">Check Out</span>'
@@ -467,34 +511,35 @@
                 var actionBtn = r.checkOut
                     ? ''
                     : '<button class="btn-sm-track btn-sm-out" onclick="checkOutMember(\'' + r.memberId + '\')">Check Out</button>';
-
-                tbody.innerHTML += '<tr>' +
+                html += '<tr>' +
                     '<td>' + time + '</td>' +
                     '<td>' + (r.memberCode || '--') + '</td>' +
-                    '<td>' + r.memberName + '</td>' +
+                    '<td>' + (r.memberName || '--') + '</td>' +
                     '<td>' + typeBadge + '</td>' +
-                    '<td>' + r.deviceName + '</td>' +
+                    '<td>' + (r.deviceName || '--') + '</td>' +
                     '<td>' + actionBtn + '</td>' +
                     '</tr>';
-            });
+            }
+            tbody.innerHTML = html;
         }
 
         function renderEmployees(employees) {
             var list = document.getElementById('employeeList');
-            list.innerHTML = '';
             if (!employees || employees.length === 0) {
                 list.innerHTML = '<div class="empty-state"><i class="bi bi-people"></i><div>No employees found</div></div>';
                 return;
             }
-            employees.forEach(function(e) {
+            var html = '';
+            for (var i = 0; i < employees.length; i++) {
+                var e = employees[i];
                 var initials = e.name.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
                 var badge = e.hasActiveSub
                     ? '<span class="badge-type badge-checkin" style="font-size:0.7rem;">Active</span>'
                     : '<span class="badge-type badge-checkout" style="font-size:0.7rem;">Inactive</span>';
-                list.innerHTML += '<div class="employee-row">' +
+                html += '<div class="employee-row">' +
                     '<div class="employee-avatar">' + initials + '</div>' +
                     '<div class="employee-info">' +
-                    '<div class="employee-name">' + e.name + '</div>' +
+                    '<div class="employee-name">' + (e.name || '--') + '</div>' +
                     '<div class="employee-meta">ID: ' + (e.code || '--') + ' | ' + (e.phone || '') + ' ' + badge + '</div>' +
                     '</div>' +
                     '<div class="employee-actions">' +
@@ -502,7 +547,8 @@
                     '<button class="btn-sm-track btn-sm-out" onclick="checkOutMember(\'' + e.id + '\')">Check Out</button>' +
                     '</div>' +
                     '</div>';
-            });
+            }
+            list.innerHTML = html;
         }
 
         function addFeedItem(data) {
@@ -532,6 +578,17 @@
             if (tab === 'devices') loadDevices();
         };
 
+        function loadEmployees() {
+            fetch('/TrackMembers/get-employees')
+                .then(function(r) { return r.json(); })
+                .then(function(employees) {
+                    renderEmployees(employees);
+                })
+                .catch(function(err) {
+                    console.error('Failed to load employees:', err);
+                });
+        }
+
         function loadDevices() {
             fetch('/TrackMembers/get-devices')
                 .then(function(r) { return r.json(); })
@@ -541,19 +598,21 @@
                         list.innerHTML = '<div class="empty-state"><i class="bi bi-hdd-network"></i><div>No devices configured</div></div>';
                         return;
                     }
-                    list.innerHTML = '';
-                    devices.forEach(function(d) {
+                    var html = '';
+                    for (var i = 0; i < devices.length; i++) {
+                        var d = devices[i];
                         var statusClass = d.status === 'Online' ? 'device-online' : 'device-offline';
                         var lastSeen = d.lastConnectedAt ? new Date(d.lastConnectedAt).toLocaleString() : 'Never';
-                        list.innerHTML += '<div class="employee-row">' +
+                        html += '<div class="employee-row">' +
                             '<div class="employee-avatar" style="background:linear-gradient(135deg,#22d3ee,#06b6d4);"><i class="bi bi-hdd-network"></i></div>' +
                             '<div class="employee-info">' +
-                            '<div class="employee-name">' + d.name + '</div>' +
+                            '<div class="employee-name">' + (d.name || '--') + '</div>' +
                             '<div class="employee-meta">' + d.ipAddress + ':' + d.port + ' | ' + (d.model || '') + ' | FW: ' + (d.firmwareVersion || 'N/A') + ' | Last: ' + lastSeen + '</div>' +
                             '</div>' +
                             '<span class="device-status ' + statusClass + '"><span class="device-dot"></span> ' + d.status + '</span>' +
                             '</div>';
-                    });
+                    }
+                    list.innerHTML = html;
                 });
         }
 
@@ -576,6 +635,7 @@
                 bootstrap.Modal.getInstance(document.getElementById('simulateModal')).hide();
                 if (data.success) {
                     loadLiveData();
+                    loadEmployees();
                 } else {
                     alert(data.error || data.message || 'Simulation failed');
                 }
@@ -591,7 +651,7 @@
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) loadLiveData();
+                if (data.success) { loadLiveData(); loadEmployees(); }
                 else alert(data.error || data.message || 'Check-in failed');
             })
             .catch(function(err) { alert('Error: ' + err); });
@@ -691,8 +751,13 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             loadLiveData();
+            loadEmployees();
             initSignalR();
-            setInterval(loadLiveData, 10000);
+            // No setInterval polling — SignalR AttendancePushed already
+            // triggers a debounced reload via scheduleRefresh(). The 10s
+            // timer that used to live here was the primary cause of
+            // constant background lag: every 10s it paid ~1.5s of backend
+            // work even when nothing changed.
         });
     })();
 </script>

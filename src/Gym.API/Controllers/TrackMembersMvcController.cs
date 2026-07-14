@@ -57,26 +57,31 @@ public class TrackMembersMvcController : Controller
     {
         ViewData["Title"] = _localizer["Track Members"];
 
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
+        var lateThreshold = new DateTime(start.Year, start.Month, start.Day, 9, 15, 0, DateTimeKind.Utc);
 
-        var totalMembers = await _memberRepo.CountAsync(m => !m.IsDeleted, cancellationToken);
-        var checkedInToday = await _attendanceRepo.CountAsync(
-            a => a.CheckIn.Date == today, cancellationToken);
-        var absentToday = totalMembers - checkedInToday;
+        // Single round-trip: get all counts in one SQL query (avoids SQLite
+        // lock contention from parallel CountAsync calls).
+        var stats = await _memberRepo.Query()
+            .AsNoTracking()
+            .Select(m => new
+            {
+                TotalMembers = _memberRepo.Query().Count(x => !x.IsDeleted),
+                CheckedInToday = _attendanceRepo.Query().Count(a => a.CheckIn >= start && a.CheckIn < end),
+                LateToday = _attendanceRepo.Query().Count(a => a.CheckIn >= start && a.CheckIn < end && a.CheckIn > lateThreshold),
+                DevicesOnline = _deviceRepo.Query().Count(d => d.IsActive && d.Status == Shared.Enums.DeviceStatus.Online)
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var lateToday = await _attendanceRepo.CountAsync(
-            a => a.CheckIn.Date == today && a.CheckIn.Hour > 9 ||
-                 (a.CheckIn.Date == today && a.CheckIn.Hour == 9 && a.CheckIn.Minute > 15), cancellationToken);
-
-        var devicesOnline = await _deviceRepo.CountAsync(d => d.IsActive && d.Status == Shared.Enums.DeviceStatus.Online, cancellationToken);
-        var totalRecordsToday = checkedInToday;
+        var totalMembers = stats?.TotalMembers ?? 0;
+        var checkedInToday = stats?.CheckedInToday ?? 0;
 
         var todayAttendances = await _attendanceRepo.Query()
-            .Include(a => a.Member)
-            .Include(a => a.Device)
-            .Where(a => a.CheckIn.Date == today)
+            .AsNoTracking()
+            .Where(a => a.CheckIn >= start && a.CheckIn < end)
             .OrderByDescending(a => a.CheckIn)
-            .Take(100)
+            .Take(50)
             .Select(a => new
             {
                 Id = a.Id,
@@ -92,10 +97,10 @@ public class TrackMembersMvcController : Controller
 
         ViewBag.TotalMembers = totalMembers;
         ViewBag.CheckedInToday = checkedInToday;
-        ViewBag.AbsentToday = absentToday;
-        ViewBag.LateToday = lateToday;
-        ViewBag.DevicesOnline = devicesOnline;
-        ViewBag.TotalRecordsToday = totalRecordsToday;
+        ViewBag.AbsentToday = totalMembers - checkedInToday;
+        ViewBag.LateToday = stats?.LateToday ?? 0;
+        ViewBag.DevicesOnline = stats?.DevicesOnline ?? 0;
+        ViewBag.TotalRecordsToday = checkedInToday;
         ViewBag.OnLeaveToday = 0;
         ViewBag.TodayAttendances = todayAttendances;
 
@@ -105,25 +110,31 @@ public class TrackMembersMvcController : Controller
     [HttpGet("get-live-data")]
     public async Task<IActionResult> GetLiveData(CancellationToken cancellationToken)
     {
-        var today = DateTime.UtcNow.Date;
+        var start = DateTime.UtcNow.Date;
+        var end = start.AddDays(1);
+        var lateThreshold = new DateTime(start.Year, start.Month, start.Day, 9, 15, 0, DateTimeKind.Utc);
 
-        var totalMembers = await _memberRepo.CountAsync(m => !m.IsDeleted, cancellationToken);
-        var checkedInToday = await _attendanceRepo.CountAsync(
-            a => a.CheckIn.Date == today, cancellationToken);
-        var absentToday = totalMembers - checkedInToday;
+        // Single round-trip aggregate — SQLite handles this far better than
+        // 4-5 parallel CountAsync calls that fight for the read lock.
+        var stats = await _memberRepo.Query()
+            .AsNoTracking()
+            .Select(m => new
+            {
+                TotalMembers = _memberRepo.Query().Count(x => !x.IsDeleted),
+                CheckedInToday = _attendanceRepo.Query().Count(a => a.CheckIn >= start && a.CheckIn < end),
+                LateToday = _attendanceRepo.Query().Count(a => a.CheckIn >= start && a.CheckIn < end && a.CheckIn > lateThreshold),
+                DevicesOnline = _deviceRepo.Query().Count(d => d.IsActive && d.Status == Shared.Enums.DeviceStatus.Online)
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var lateToday = await _attendanceRepo.CountAsync(
-            a => a.CheckIn.Date == today && a.CheckIn.Hour > 9 ||
-                 (a.CheckIn.Date == today && a.CheckIn.Hour == 9 && a.CheckIn.Minute > 15), cancellationToken);
-
-        var devicesOnline = await _deviceRepo.CountAsync(d => d.IsActive && d.Status == Shared.Enums.DeviceStatus.Online, cancellationToken);
+        var totalMembers = stats?.TotalMembers ?? 0;
+        var checkedInToday = stats?.CheckedInToday ?? 0;
 
         var todayAttendances = await _attendanceRepo.Query()
-            .Include(a => a.Member)
-            .Include(a => a.Device)
-            .Where(a => a.CheckIn.Date == today)
+            .AsNoTracking()
+            .Where(a => a.CheckIn >= start && a.CheckIn < end)
             .OrderByDescending(a => a.CheckIn)
-            .Take(100)
+            .Take(50)
             .Select(a => new
             {
                 id = a.Id,
@@ -137,8 +148,24 @@ public class TrackMembersMvcController : Controller
             })
             .ToListAsync(cancellationToken);
 
+        return Json(new
+        {
+            totalMembers,
+            checkedInToday,
+            absentToday = totalMembers - checkedInToday,
+            lateToday = stats?.LateToday ?? 0,
+            devicesOnline = stats?.DevicesOnline ?? 0,
+            totalRecordsToday = checkedInToday,
+            onLeaveToday = 0,
+            todayAttendances,
+            bridgeStatus = (object?)null
+        });
+    }
+
+    [HttpGet("get-employees")]
+    public async Task<IActionResult> GetEmployees(CancellationToken cancellationToken)
+    {
         var employees = await _memberRepo.Query()
-            .Include(m => m.Subscriptions.Where(s => s.Status == Shared.Enums.SubscriptionStatus.Active))
             .Where(m => !m.IsDeleted)
             .Select(m => new
             {
@@ -151,21 +178,7 @@ public class TrackMembersMvcController : Controller
             })
             .ToListAsync(cancellationToken);
 
-        var bridgeStatus = await GetBridgeStatusAsync(cancellationToken);
-
-        return Json(new
-        {
-            totalMembers,
-            checkedInToday,
-            absentToday,
-            lateToday,
-            devicesOnline,
-            totalRecordsToday = checkedInToday,
-            onLeaveToday = 0,
-            todayAttendances,
-            employees,
-            bridgeStatus
-        });
+        return Json(employees);
     }
 
     [HttpGet("get-devices")]
@@ -251,7 +264,7 @@ public class TrackMembersMvcController : Controller
     {
         try
         {
-            var bridgeUrl = _configuration.GetValue<string>("ZKTecoSettings:BridgeBaseUrl") ?? "http://localhost:50051";
+            var bridgeUrl = _configuration.GetValue<string>("ZKTecoBridge:GrpcUrl") ?? "http://localhost:50054";
             using var client = _httpClientFactory.CreateClient();
             var response = await client.PostAsync($"{bridgeUrl}/zkteco.bridge.ZKTecoBridge/ReconcileUsers",
                 new StringContent("{}", System.Text.Encoding.UTF8, "application/json"), cancellationToken);
@@ -306,5 +319,58 @@ public class TrackMembersMvcController : Controller
                 error = $"Bridge offline: {ex.Message}"
             };
         }
+    }
+
+    [HttpGet("ManualTesting")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ManualTesting(CancellationToken cancellationToken)
+    {
+        // Single bridge health call (was 3 — at line 321, 338, and inside
+        // GetBridgeStatusAsync — each ~700ms, totaling ~2.1s page load).
+        DeviceHealthStatus? deviceHealth = null;
+        try
+        {
+            deviceHealth = await _bridgeClient.CheckHealthAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Bridge health check failed on ManualTesting page");
+        }
+        var isDeviceOnline = deviceHealth?.IsConnected ?? false;
+
+        var employees = await _memberRepo.Query()
+            .Where(m => !m.IsDeleted)
+            .Select(m => new
+            {
+                id = m.Id,
+                code = m.Code,
+                name = m.FullName,
+                phone = m.PhoneNumber
+            })
+            .Take(20)
+            .ToListAsync(cancellationToken);
+
+        var viewModel = new
+        {
+            PageTitle = _localizer["Manual Testing"],
+            IsDeviceOnline = isDeviceOnline,
+            DeviceInfo = new
+            {
+                Ip = _configuration["ZKTeco:DeviceIp"] ?? "192.168.1.201",
+                Port = _configuration.GetValue<int>("ZKTeco:DevicePort", 4370)
+            },
+            Employees = employees,
+            DeviceStatus = new
+            {
+                connected = isDeviceOnline,
+                enrolledUsers = deviceHealth?.EnrolledUserCount ?? 0,
+                freeMemory = deviceHealth?.FreeMemory ?? 0L,
+                firmwareVersion = deviceHealth?.FirmwareVersion ?? "",
+                uptimeMs = deviceHealth?.UptimeMs ?? 0L,
+                error = deviceHealth == null ? "Bridge offline" : (string?)null
+            }
+        };
+
+        return View("ManualTesting", viewModel);
     }
 }

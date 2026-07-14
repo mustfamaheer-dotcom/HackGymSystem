@@ -38,43 +38,14 @@ for /f "tokens=*" %%V in ('dotnet --version 2^>nul') do set "DOTNET_VER=%%V"
 echo   .NET SDK : %DOTNET_VER%
 
 :: -----------------------------------------------------------
-::  STEP 2 - Detect SQL Server
+::  STEP 2 - Database (SQLite, file-based, no server needed)
 :: -----------------------------------------------------------
 echo.
-echo  [2/5] Detecting database...
+echo  [2/5] Configuring database...
 
-:: Try LocalDB first
-set "CONN_STR=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
-set "DB_TYPE=LocalDB"
-set "SQL_FOUND="
-
-:: Test LocalDB
-where sqlcmd >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    sqlcmd -S "(localdb)\MSSQLLocalDB" -E -Q "SELECT 1" >nul 2>&1
-    if %ERRORLEVEL% EQU 0 set "SQL_FOUND=1"
-)
-
-if not defined SQL_FOUND (
-    :: Fallback to localhost (full SQL Server)
-    set "CONN_STR=Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
-    set "DB_TYPE=SQL Server"
-    sqlcmd -S "localhost" -E -C -Q "SELECT 1" >nul 2>&1
-    if %ERRORLEVEL% EQU 0 set "SQL_FOUND=1"
-)
-
-if defined SQL_FOUND (
-    echo   Database: %DB_TYPE% detected
-) else (
-    echo.
-    echo  WARNING: No SQL Server instance found.
-    echo  The app will attempt to create the database on first run,
-    echo  but you need SQL Server (LocalDB or full) installed.
-    echo  Install LocalDB: https://aka.ms/sqllocaldb
-    echo.
-    echo  Press any key to continue anyway...
-    pause >nul
-)
+set "CONN_STR=Data Source=GymDb.db; Cache=Shared;"
+set "DB_TYPE=SQLite (GymDb.db)"
+echo   Database: %DB_TYPE%
 
 :: -----------------------------------------------------------
 ::  STEP 3 - Install dotnet-ef (for migrations)
@@ -109,9 +80,17 @@ if %ERRORLEVEL% NEQ 0 (
 dotnet build "%API_PROJECT%" --nologo -c Release
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo  ERROR: Build failed. Check errors above.
+    echo  ERROR: API build failed. Check errors above.
     pause
     exit /b 1
+)
+
+:: Also build the ZKTeco Bridge
+echo.
+echo  [4b] Building ZKTeco Bridge...
+dotnet build "%ROOT%src\HackGym.ZKTeco.Bridge" --nologo -c Release
+if %ERRORLEVEL% NEQ 0 (
+    echo   WARNING: Bridge build failed, ZKTeco features will be unavailable
 )
 echo   Build: Complete
 
@@ -119,10 +98,32 @@ echo   Build: Complete
 ::  STEP 5 - Launch
 :: -----------------------------------------------------------
 echo.
-echo  [5/5] Starting server...
+echo  [5/5] Starting servers...
 
 :: Set connection string via environment variable (overrides appsettings.json)
 set "ConnectionStrings__DefaultConnection=%CONN_STR%"
+set "JWT__Secret=DevJwtSecretKeyThatIsAtLeast32CharsLong!!"
+set "Seed__AdminPassword=Admin@123"
+
+:: Write a fresh run-bridge.bat (portable, uses relative path)
+set "RUN_BRIDGE=%ROOT%run-bridge.bat"
+(
+    echo @echo off
+    echo title ZKTeco Bridge Server
+    echo color 0B
+    echo cd /d "%~dp0src\HackGym.ZKTeco.Bridge"
+    echo echo.
+    echo echo  ============================================================
+    echo echo   Hack Gym - ZKTeco Bridge Server
+    echo echo   Port: http://localhost:50051
+    echo echo   Press Ctrl+C to stop.
+    echo echo  ============================================================
+    echo echo.
+    echo dotnet run --no-build -c Release
+    echo echo.
+    echo echo  Server stopped.
+    echo pause ^>nul
+) > "%RUN_BRIDGE%"
 
 :: Write a fresh run-api.bat (portable, uses relative path)
 set "RUN_API=%ROOT%run-api.bat"
@@ -147,12 +148,14 @@ set "RUN_API=%ROOT%run-api.bat"
 
 echo.
 echo  ============================================================
-echo   Server starting at http://localhost:5000
+echo   Starting ZKTeco Bridge (port 50051) and API (port 5000)
 echo   Login: admin / Admin@123
-echo   Close the server window or press Ctrl+C to stop.
+echo   Close the windows or press Ctrl+C to stop.
 echo  ============================================================
 echo.
-echo.
+
+start "ZKTeco Bridge Server" cmd /c ""%RUN_BRIDGE%""
+ping -n 3 127.0.0.1 >nul
 
 start "Gym API Server" cmd /c ""%RUN_API%""
 

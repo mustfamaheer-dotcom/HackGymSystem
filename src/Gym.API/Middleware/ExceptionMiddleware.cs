@@ -4,6 +4,7 @@ using FluentValidation;
 using Gym.API;
 using Gym.Application.Common.DTOs;
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Gym.API.Middleware;
 
@@ -61,7 +62,19 @@ public class ExceptionMiddleware
             }
             else
             {
-                throw;
+                // Surface the error to the user via TempData (consumed by _Notifications.cshtml)
+                // so silent redirect-on-exception can never hide the root cause again.
+                var tempDataFactory = context.RequestServices.GetService<ITempDataDictionaryFactory>();
+                if (tempDataFactory is not null)
+                {
+                    var tempData = tempDataFactory.GetTempData(context);
+                    tempData["Error"] = "An unexpected error occurred. Please try again. If the problem persists, contact the system administrator.";
+                    tempData.Save();
+                }
+
+                context.Response.StatusCode = 302;
+                var referer = context.Request.Headers.Referer.ToString();
+                context.Response.Headers.Location = string.IsNullOrEmpty(referer) ? "/" : referer;
             }
         }
     }

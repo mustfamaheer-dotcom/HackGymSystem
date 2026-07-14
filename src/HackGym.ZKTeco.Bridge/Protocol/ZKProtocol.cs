@@ -19,7 +19,7 @@ internal static class ZKProtocol
     public const ushort CMD_USERTEMP_RRQ = 9;
     public const ushort CMD_OPTIONS_RRQ = 11;
     public const ushort CMD_ATTLOG_RRQ = 13;
-    public const ushort CMD_CLEAR_ATTLOG = 15;
+    public const ushort CMD_CLEAR_ATTLOG = 14;
     public const ushort CMD_GET_FREE_SIZES = 50;
     public const ushort CMD_GET_VERSION = 1100;
     public const ushort CMD_AUTH = 1102;
@@ -27,6 +27,10 @@ internal static class ZKProtocol
     public const ushort CMD_PREPARE_DATA = 1500;
     public const ushort CMD_DATA = 1501;
     public const ushort CMD_FREE_DATA = 1502;
+    public const ushort CMD_DATA_WRRQ = 1503; // request data (buffered transfer)
+    public const ushort CMD_DATA_RDY = 1504;  // ready/chunk request (pull prepared data)
+    public const ushort CMD_PREPARE_BUFFER = 1505;
+    public const ushort CMD_READ_BUFFER = 1506;
 
     // --- Reply codes ---
     public const ushort CMD_ACK_OK = 2000;
@@ -38,9 +42,14 @@ internal static class ZKProtocol
     public const int FCT_USER = 5;
     public const int FCT_ATTLOG = 1;
 
-    // --- Buffered transfer commands (for newer devices like MB2000) ---
-    public const ushort CMD_PREPARE_BUFFER = 1503;
-    public const ushort CMD_READ_BUFFER = 1504;
+    // --- Record sizes (bytes) ---
+    public const int USER_TCP_RECORD = 72;
+    public const int ATT_LOG_TCP_RECORD = 40;
+    public const int MAX_CHUNK = 65472;
+
+    // Request payload for CMD_DATA_WRRQ: [type=1][cmd=13(ATTLOG_RRQ)] + zeros
+    public static readonly byte[] ATT_LOG_REQ_DATA = new byte[] { 0x01, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    public static readonly byte[] USER_REQ_DATA = new byte[] { 0x01, 0x09, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     // --- Event flags ---
     public const int EF_ATTLOG = 1;

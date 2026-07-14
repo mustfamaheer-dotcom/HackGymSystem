@@ -19,25 +19,11 @@ set "WWWROOT=%API_PROJECT%\wwwroot"
 
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%" >nul 2>&1
 
-:: Check if sqlcmd is available
-set "NO_SQLCMD="
-where sqlcmd >nul 2>&1
-if %ERRORLEVEL% NEQ 0 set "NO_SQLCMD=1"
-
 :: -------------------------------------------------
-:: Auto-detect SQL Server (LocalDB or full instance)
+:: Database (SQLite, file-based — no server needed)
 :: -------------------------------------------------
-set "CONN_STR=Server=localhost;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
-set "DB_INSTANCE=localhost"
-
-where sqlcmd >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    sqlcmd -S "(localdb)\MSSQLLocalDB" -E -Q "SELECT 1" >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        set "CONN_STR=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
-        set "DB_INSTANCE=(localdb)\MSSQLLocalDB"
-    )
-)
+set "CONN_STR=Data Source=%PROJECT_ROOT%GymDb.db; Cache=Shared;"
+set "DB_INSTANCE=SQLite (GymDb.db)"
 
 :: Set environment variable so all tools and the app use the same connection
 set "ConnectionStrings__DefaultConnection=%CONN_STR%"
@@ -53,22 +39,16 @@ echo  ===================================================
 echo.
 echo   Database: %DB_INSTANCE%
 echo.
-if defined NO_SQLCMD (
-    echo  [NOTE] sqlcmd not found. Backup / Restore / SQL-Init
-    echo         options are disabled. Install SSMS to enable them.
-    echo.
-)
+:: SQLite needs no external tools for backup/restore (handled via file copy)
 
 :db_menu
 echo  ===================================================
 echo       DATABASE SETUP
 echo  ===================================================
 echo.
-echo   [1]  Auto-migrate (EF Core) - Create/update schema
-if not defined NO_SQLCMD (
-    echo   [2]  Restore from backup   - Recover from a .bak file
-    echo   [3]  Backup current DB     - Save database to a .bak file
-)
+    echo   [1]  Auto-migrate (EF Core) - Create/update schema
+    echo   [2]  Restore from backup   - Recover from a .db file
+    echo   [3]  Backup current DB     - Save database to a .db file
 echo   [4]  Skip                  - Assume DB already exists
 echo.
 set "DB_CHOICE="
@@ -77,10 +57,8 @@ set /p DB_CHOICE="  Enter choice: "
 if "%DB_CHOICE%"=="1" goto db_migrate
 if "%DB_CHOICE%"=="4" goto db_done
 
-if not defined NO_SQLCMD (
     if "%DB_CHOICE%"=="2" goto db_restore
     if "%DB_CHOICE%"=="3" goto db_backup
-)
 
 echo.
 echo   Invalid choice. Please try again.
@@ -91,16 +69,22 @@ goto db_menu
 :db_backup
 echo.
 echo  [DB] Creating database backup...
+set "SRC=%PROJECT_ROOT%GymDb.db"
+if not exist "!SRC!" (
+    echo   ERROR: GymDb.db not found. Run option [1] Auto-migrate first.
+    echo.
+    goto db_menu
+)
 for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value 2^>nul') do set "DT=%%I"
 if "!DT!"=="" set "DT=00000000_000000"
 set "DT=!DT:~0,8!_!DT:~8,6!"
-set "BACKUP_FILE=%BACKUP_DIR%\%DB_NAME%_!DT!.bak"
+set "BACKUP_FILE=%BACKUP_DIR%\GymDb_!DT!.db"
 
-sqlcmd -S %DB_INSTANCE% -E -C -Q "BACKUP DATABASE [%DB_NAME%] TO DISK='!BACKUP_FILE:\=\\!' WITH FORMAT, INIT, NAME='GymManagementDb Full Backup'"
+copy /Y "!SRC!" "!BACKUP_FILE!" >nul
 if %ERRORLEVEL% EQU 0 (
     echo   SUCCESS: Backup saved to: !BACKUP_FILE!
 ) else (
-    echo   ERROR: Backup failed. Make sure SQL Server is running and the DB exists.
+    echo   ERROR: Backup failed.
 )
 echo.
 goto db_menu
@@ -111,13 +95,13 @@ echo.
 echo  [DB] Available backups in "%BACKUP_DIR%":
 echo.
 set /a COUNT=0
-for %%F in ("%BACKUP_DIR%\*.bak") do (
+for %%F in ("%BACKUP_DIR%\*.db") do (
     set /a COUNT+=1
     echo     [!COUNT!] %%~nxF
     set "BFILE_!COUNT!=%%~fF"
 )
 if !COUNT! EQU 0 (
-    echo   No .bak files found. Place a backup in the backups\ folder.
+    echo   No .db backup files found. Place a backup in the backups\ folder.
     echo.
     goto db_menu
 )
@@ -128,7 +112,6 @@ set "RESTORE_CHOICE="
 set /p RESTORE_CHOICE="  Enter number to restore (or R to return): "
 if /i "!RESTORE_CHOICE!"=="R" goto db_menu
 
-:: Validate the number
 set "RESTORE_FILE=!BFILE_%RESTORE_CHOICE%!"
 if "!RESTORE_FILE!"=="" (
     echo   Invalid selection.
@@ -137,7 +120,7 @@ if "!RESTORE_FILE!"=="" (
 )
 
 echo.
-echo   WARNING: This will OVERWRITE the current [%DB_NAME%] database!
+echo   WARNING: This will OVERWRITE the current GymDb.db database!
 set "CONFIRM="
 set /p CONFIRM="  Type YES to confirm: "
 if /i not "!CONFIRM!"=="YES" (
@@ -146,50 +129,10 @@ if /i not "!CONFIRM!"=="YES" (
     goto db_menu
 )
 
-:: Determine data path based on instance type
-set "DATA_PATH="
-
-:: Check if it's LocalDB (avoid pipe + findstr subshell bug)
-set "IS_LOCALDB=0"
-if not "%DB_INSTANCE:localdb=%"=="%DB_INSTANCE%" set "IS_LOCALDB=1"
-if not "%DB_INSTANCE:LocalDB=%"=="%DB_INSTANCE%" set "IS_LOCALDB=1"
-
-if %IS_LOCALDB% EQU 1 (
-    set "DATA_PATH=%LOCALAPPDATA%\Microsoft\Microsoft SQL Server Local DB\Instances\MSSQLLocalDB\"
-) else (
-    :: Query full SQL Server instance for default data path (retry without -C flag)
-    for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
-        if not "%%P"=="" set "DATA_PATH=%%P"
-    )
-    if "!DATA_PATH!"=="" (
-        for /f "usebackq tokens=*" %%P in (`sqlcmd -S %DB_INSTANCE% -E -h-1 -W -Q "SET NOCOUNT ON; SELECT SERVERPROPERTY('InstanceDefaultDataPath')" 2^>nul`) do (
-            if not "%%P"=="" set "DATA_PATH=%%P"
-        )
-    )
-    if "!DATA_PATH!"=="" set "DATA_PATH=C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\"
-)
-
-if not "!DATA_PATH:~-1!"=="\" set "DATA_PATH=!DATA_PATH!\"
-
-echo.
-echo   Restoring: !RESTORE_FILE!
-echo   Data path: !DATA_PATH!
-echo.
-
-echo   Step 1/3: Setting database to SINGLE_USER...
-sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET SINGLE_USER WITH ROLLBACK IMMEDIATE" >nul 2>&1
-
-echo   Step 2/3: Restoring from backup...
-sqlcmd -S %DB_INSTANCE% -E -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH MOVE 'GymManagementDb' TO '!DATA_PATH:\=\\!GymManagementDb.mdf', MOVE 'GymManagementDb_log' TO '!DATA_PATH:\=\\!GymManagementDb_log.ldf', REPLACE, RECOVERY"
+copy /Y "!RESTORE_FILE!" "%PROJECT_ROOT%GymDb.db" >nul
 if %ERRORLEVEL% EQU 0 (
-    echo   Step 3/3: Setting database to MULTI_USER...
-    sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     echo.
-    echo   SUCCESS: Database restored successfully.
-    echo.
-    echo   IMPORTANT: The restored database may have an older schema.
-    echo   If the app fails, delete the database and run option [1] Auto-migrate.
-    echo.
+    echo   SUCCESS: Database restored from !RESTORE_FILE!
     echo.
     echo   Choose next step:
     echo     [C] Continue to full application startup (build + launch)
@@ -205,40 +148,11 @@ if %ERRORLEVEL% EQU 0 (
     )
     goto db_done
 ) else (
-    echo   Restore command failed. Trying alternative: restore without MOVE...
-    sqlcmd -S %DB_INSTANCE% -E -Q "RESTORE DATABASE [%DB_NAME%] FROM DISK='!RESTORE_FILE:\=\\!' WITH REPLACE, RECOVERY"
-    if %ERRORLEVEL% EQU 0 (
-        echo   Step 3/3: Setting database to MULTI_USER...
-        sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
-        echo.
-        echo   SUCCESS: Database restored successfully (without MOVE).
-        echo.
-        echo.
-        echo   Choose next step:
-        echo     [C] Continue to full application startup (build + launch)
-        echo     [X] Exit this launcher (database restored, safe to close)
-        echo.
-        set /p "POST_RESTORE=  Your choice: "
-        if /i "!POST_RESTORE!"=="X" (
-            echo.
-            echo   Database restored. Launcher exiting.
-            echo   Run start-system.bat later to start the application.
-            pause >nul
-            exit /b 0
-        )
-        goto db_done
-    )
     echo.
-    echo   ERROR: Restore failed. Check backup file and SQL Server logs.
-    echo.
-    echo   Possible causes:
-    echo   - The .bak file may be from a different SQL Server version
-    echo   - The logical file names inside the backup may differ
-    echo   - SQL Server may not have permission to write to the data path
+    echo   ERROR: Restore failed. Check the backup file and permissions.
     echo.
     echo   Press any key to return to menu...
     pause >nul
-    sqlcmd -S %DB_INSTANCE% -E -Q "ALTER DATABASE [%DB_NAME%] SET MULTI_USER" >nul 2>&1
     goto db_menu
 )
 
@@ -428,7 +342,7 @@ set "RUN_API=%PROJECT_ROOT%run-api.bat"
     echo color 0A
     echo cd /d "%%~dp0src\Gym.API"
     echo if not defined ConnectionStrings__DefaultConnection ^(
-    echo     set "ConnectionStrings__DefaultConnection=Server=(localdb)\MSSQLLocalDB;Database=GymManagementDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+    echo     set "ConnectionStrings__DefaultConnection=Data Source=%PROJECT_ROOT%GymDb.db; Cache=Shared;"
     echo ^)
     echo echo.
     echo echo  ============================================================

@@ -2,10 +2,14 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Diagnostics;
 using Gym.API.Hubs;
 using Gym.API.Middleware;
 using Gym.API;
 using Gym.API.Services;
+using Gym.API.WebSockets;
 using Gym.Application;
 using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure;
@@ -32,6 +36,17 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/attendance-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
     .WriteTo.File("logs/device-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
     .CreateLogger();
+
+// Resolve JWT secret from env var first (more secure), then fall back to appsettings.json.
+// In production, set the environment variable JWT__Secret to a strong random value (>= 32 chars).
+var jwtSecret = Environment.GetEnvironmentVariable("JWT__Secret")
+                ?? builder.Configuration["Jwt:Secret"]
+                ?? throw new InvalidOperationException("JWT secret is not configured. Set the JWT__Secret environment variable or Jwt:Secret in appsettings.json.");
+
+if (jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException($"JWT secret must be at least 32 characters. Current length: {jwtSecret.Length}.");
+}
 
 builder.Host.UseSerilog();
 
@@ -61,13 +76,7 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-var jwtSecret = builder.Configuration["Jwt:Secret"];
-if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32)
-{
-    throw new InvalidOperationException(
-        "JWT secret is not configured or is too short (minimum 32 characters). "
-        + "Set Jwt:Secret via environment variable or appsettings.Development.json.");
-}
+// (jwtSecret is already resolved from env var + fallback above)
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -75,8 +84,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new()
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSecret)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidateAudience = true,
@@ -123,6 +131,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<BridgeWebSocketHandler>();
+builder.Services.AddScoped<AttendancePushService>();
 builder.Services.AddScoped<ReceiptPdfService>();
 builder.Services.AddHostedService<Gym.Infrastructure.Data.Seed.SeedDataInitializer>();
 builder.Services.AddHealthChecks().AddDbContextCheck<Gym.Infrastructure.Data.GymDbContext>();
@@ -151,11 +161,13 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.Configure<ZKTecoSettings>(builder.Configuration.GetSection("ZKTeco"));
+builder.Services.Configure<ZKTecoBridgeOptions>(builder.Configuration.GetSection("ZKTecoBridge"));
 
-var hangfireConnStr = builder.Configuration.GetConnectionString("HangfireConnection") ?? builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(hangfireConnStr));
-builder.Services.AddHangfireServer();
+// Hangfire temporarily disabled: no SQLite/Memory storage package available offline.
+// Re-enable once Hangfire.MemoryStorage or Hangfire.SQLite can be restored.
+// builder.Services.AddHangfire(config =>
+//     config.UseMemoryStorage());
+// builder.Services.AddHangfireServer();
 
 builder.Services.AddScoped<Gym.Application.Jobs.SubscriptionRenewalReminderJob>();
 builder.Services.AddScoped<Gym.Application.Jobs.SubscriptionExpiryJob>();
@@ -173,7 +185,9 @@ builder.Services.AddScoped<IOfferService, OfferService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 
-QuestPDF.Settings.License = LicenseType.Community;
+builder.Services.AddHostedService<SystemHealthMonitor>();
+
+        QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 
@@ -184,29 +198,12 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<GymDbContext>();
     try
     {
-        var pending = await db.Database.GetPendingMigrationsAsync();
-        if (pending.Any())
-        {
-            await db.Database.MigrateAsync();
-            Log.Information("Applied {Count} pending migration(s)", pending.Count());
-        }
-        else
-        {
-            Log.Information("No pending migrations");
-        }
+        await db.Database.EnsureCreatedAsync();
+        Log.Information("SQLite database and schema ensured");
     }
     catch (Exception ex)
     {
-        Log.Warning(ex, "Database migration failed, attempting to create database");
-        try
-        {
-            if (!await db.Database.CanConnectAsync())
-                await db.Database.EnsureCreatedAsync();
-        }
-        catch (Exception createEx)
-        {
-            Log.Warning(createEx, "Database creation also failed, continuing with existing database");
-        }
+        Log.Warning(ex, "Database initialization failed");
     }
 }
 
@@ -216,6 +213,21 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Ensure SQLite database schema exists (code-first, no migrations)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GymDbContext>();
+    try
+    {
+        await db.Database.EnsureCreatedAsync();
+        Log.Information("SQLite database schema ensured (second pass)");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Database initialization (second pass) failed");
+    }
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseRateLimiter();
@@ -223,6 +235,11 @@ app.UseRateLimiter();
 app.UseCors("AllowFrontend");
 
 app.UseRequestLocalization();
+
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(30)
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -243,18 +260,23 @@ app.UseStaticFiles();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHub<AttendanceHub>("/hubs/attendance");
-
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
+app.Map("/ws/bridge", async (HttpContext context, BridgeWebSocketHandler handler) =>
 {
-    Authorization = new[] { new HangfireAuthorizationFilter() }
+    await handler.HandleAsync(context, context.RequestAborted);
 });
 
-RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionRenewalReminderJob>("subscription-renewal-reminders",
-    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(9));
-RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionExpiryJob>("subscription-expiry",
-    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(0));
-RecurringJob.AddOrUpdate<Gym.Application.Jobs.LeadFollowUpJob>("lead-follow-up",
-    job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(14));
+// Hangfire dashboard and recurring jobs temporarily disabled (no storage available offline).
+// app.UseHangfireDashboard("/hangfire", new DashboardOptions
+// {
+//     Authorization = new[] { new HangfireAuthorizationFilter() }
+// });
+//
+// RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionRenewalReminderJob>("subscription-renewal-reminders",
+//     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(9));
+// RecurringJob.AddOrUpdate<Gym.Application.Jobs.SubscriptionExpiryJob>("subscription-expiry",
+//     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(0));
+// RecurringJob.AddOrUpdate<Gym.Application.Jobs.LeadFollowUpJob>("lead-follow-up",
+//     job => job.ExecuteAsync(CancellationToken.None), Cron.Daily(14));
 
 app.MapControllerRoute(
     name: "default",

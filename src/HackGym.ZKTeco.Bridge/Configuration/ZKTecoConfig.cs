@@ -11,4 +11,6 @@ public class ZKTecoConfig
     public bool FingerprintDuplicateCheck { get; set; } = true;
     public bool AutoSyncOnStartup { get; set; } = true;
     public int Password { get; set; } = 0;
+    public string MainApiKey { get; set; } = "";
+    public string GymApiWebSocketUrl { get; set; } = "ws://localhost:5000/ws/bridge";
 }

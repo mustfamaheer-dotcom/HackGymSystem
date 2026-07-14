@@ -1,0 +1,8 @@
+﻿Place the file "zkemkeeper.dll" from your ZKTeco SDK in this folder.
+
+After copying it, register the COM component by running (as Administrator):
+    regsvr32 "%~dp0zkemkeeper\zkemkeeper.dll"
+
+This is only needed if you use the optional Gym.DeviceService to talk to the
+ZKTeco MB2000 fingerprint device. The GymSystem itself does not need it;
+you can leave this folder empty if you do not use fingerprint attendance.
