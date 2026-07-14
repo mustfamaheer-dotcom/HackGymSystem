@@ -243,6 +243,11 @@ public class AttendancePollingWorker : BackgroundService
         if (ack == null || !ack.Success)
         {
             var err = ack?.Error ?? "WebSocket send failed";
+            if (err.Contains("already checked in", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("Attendance event already processed by API for EnrollmentId={EnrollmentId} — clearing device log to break retry loop", evt.EnrollmentId);
+                return;
+            }
             _logger.LogWarning("Attendance push FAILED for EnrollmentId={EnrollmentId}: {Error}", evt.EnrollmentId, err);
             throw new InvalidOperationException($"API rejected attendance push: {err}");
         }

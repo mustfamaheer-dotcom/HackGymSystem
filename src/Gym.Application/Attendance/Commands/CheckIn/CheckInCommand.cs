@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Gym.Application;
 using Gym.Application.Common.Events;
 using Gym.Domain.Entities;
@@ -20,6 +21,7 @@ public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IStringLocalizer<ApplicationResources> _localizer;
+    private readonly ILogger<CheckInCommandHandler> _logger;
 
     public CheckInCommandHandler(
         IRepository<Attendance> attendanceRepository,
@@ -27,7 +29,8 @@ public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid
         IRepository<AttendanceSummary> summaryRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
-        IStringLocalizer<ApplicationResources> localizer)
+        IStringLocalizer<ApplicationResources> localizer,
+        ILogger<CheckInCommandHandler> logger)
     {
         _attendanceRepository = attendanceRepository;
         _memberRepository = memberRepository;
@@ -35,6 +38,7 @@ public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _localizer = localizer;
+        _logger = logger;
     }
 
     public async Task<Result<Guid>> Handle(CheckInCommand request, CancellationToken cancellationToken)
@@ -45,10 +49,13 @@ public class CheckInCommandHandler : IRequestHandler<CheckInCommand, Result<Guid
 
         var checkInTime = request.DeviceTimestamp ?? DateTime.UtcNow;
 
-        var existingToday = await _attendanceRepository.AnyAsync(
+        var existingToday = await _attendanceRepository.FirstOrDefaultAsync(
             a => a.MemberId == request.MemberId && a.CheckIn.Date == checkInTime.Date, cancellationToken);
-        if (existingToday)
-            return Result<Guid>.Failure(_localizer["Member already checked in today"]);
+        if (existingToday != null)
+        {
+            _logger.LogInformation("Duplicate check-in ignored for MemberId={MemberId}, existing AttendanceId={AttId}", request.MemberId, existingToday.Id);
+            return Result<Guid>.Success(existingToday.Id);
+        }
 
         var attendance = new Attendance(request.MemberId, checkInTime, request.IsManual);
 
