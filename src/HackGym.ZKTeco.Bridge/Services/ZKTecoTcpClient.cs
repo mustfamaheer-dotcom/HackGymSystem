@@ -25,7 +25,6 @@ public class ZKTecoTcpClient : IDisposable
     private int _lastPort;
     private int _lastTimeoutMs;
     private int _lastPassword;
-    private int _consecutiveEmptyReads;
 
     public bool IsConnected { get; private set; }
 
@@ -440,7 +439,6 @@ public class ZKTecoTcpClient : IDisposable
                     // Success with data — parse it (skip 8-byte header)
                     if (resp.Code == ZKProtocol.CMD_ACK_OK && resp.Data.Length > 8)
                     {
-                        _consecutiveEmptyReads = 0;
                         var records = resp.Data[8..];
                         _logger.LogInformation("ReadAttendanceDirect: CMD_ATTLOG_RRQ returned {Count} bytes", records.Length);
                         FreeData();
@@ -456,35 +454,19 @@ public class ZKTecoTcpClient : IDisposable
                     resp = SendCommand(ZKProtocol.CMD_DB_RRQ, fctData);
                     _logger.LogWarning("ReadAttendanceDirect: CMD_DB_RRQ+FCT_ATTLOG resp.Code={Code} dataLen={Len}", resp.Code, resp.Data.Length);
 
-            // No new logs: device read pointer is at the end of available data.
+                    // No new logs: device read pointer is at the end of available data.
+                    // REMOVED auto-clear: Never clear attendance logs from here — that decision
+                    // belongs to the AttendancePollingWorker which tracks whether events were
+                    // successfully pushed to the API. Clearing here destroys data permanently.
                         if (resp.Code == ZKProtocol.CMD_ACK_OK && resp.Data.Length == 0)
                         {
-                            _consecutiveEmptyReads++;
-                            _logger.LogWarning(
-                                "ReadAttendanceDirect: no new attendance logs (ACK_OK, dataLen=0). Consecutive empties={N}",
-                                _consecutiveEmptyReads);
+                            _logger.LogDebug(
+                                "ReadAttendanceDirect: no new attendance logs (ACK_OK, dataLen=0)");
                             FreeData();
-                            if (_consecutiveEmptyReads >= 2)
-                            {
-                                _logger.LogWarning("ReadAttendanceDirect: 2 consecutive empty reads — clearing logs and reconnecting");
-                                _consecutiveEmptyReads = 0;
-                                try
-                                {
-                                    var clearResp = SendCommand(ZKProtocol.CMD_CLEAR_ATTLOG, Array.Empty<byte>());
-                                    _logger.LogInformation("ReadAttendanceDirect: CMD_CLEAR_ATTLOG returned Code={Code}", clearResp.Code);
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogWarning(ex, "ReadAttendanceDirect: CMD_CLEAR_ATTLOG failed");
-                                }
-                                ForceReconnect();
-                            }
                             return Array.Empty<byte>();
                         }
 
-            // We actually got data — reset the empty-read counter.
-            _consecutiveEmptyReads = 0;
-
+            // We actually got data.
             if (resp.Code == ZKProtocol.CMD_PREPARE_DATA && resp.Data.Length >= 4)
             {
                 int totalSize = BinaryPrimitives.ReadInt32LittleEndian(resp.Data.AsSpan(0, 4));
@@ -542,8 +524,6 @@ public class ZKTecoTcpClient : IDisposable
         {
             _logger.LogError(ex, "ReadAttendanceDirect error");
             try { FreeData(); } catch { }
-            // On a hard error, mark desync so the next cycle can recover via reconnect.
-            _consecutiveEmptyReads++;
             return Array.Empty<byte>();
         }
         finally

@@ -20,6 +20,9 @@ public class BridgeWebSocketClient : IAsyncDisposable
     private bool _isConnected;
     private const int SendBufferLimit = 1000;
 
+    // Track pending ack responses from the API keyed by messageId
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<AckResponse>> _pendingAcks = new();
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -28,6 +31,12 @@ public class BridgeWebSocketClient : IAsyncDisposable
     public bool IsConnected => _isConnected;
 
     public event Func<string, JsonElement?, Task>? OnCommand;
+
+    public class AckResponse
+    {
+        public bool Success { get; set; }
+        public string? Error { get; set; }
+    }
 
     public BridgeWebSocketClient(
         ILogger<BridgeWebSocketClient> logger,
@@ -73,21 +82,39 @@ public class BridgeWebSocketClient : IAsyncDisposable
         }
     }
 
-    public async Task SendMessageAsync(string type, object? payload, CancellationToken ct = default)
+    /// <summary>
+    /// Send a message via WebSocket. When <paramref name="waitForAck"/> is true, the returned
+    /// task completes only after the API sends back an "ack" response (or the timeout elapses).
+    /// This ensures attendance events are confirmed saved before the bridge clears device logs.
+    /// </summary>
+    public async Task<AckResponse?> SendMessageAsync(string type, object? payload, CancellationToken ct = default, bool waitForAck = false, int ackTimeoutMs = 5000)
     {
+        var messageId = Guid.NewGuid().ToString("N");
         var msg = new Dictionary<string, object?>
         {
             ["type"] = type,
-            ["messageId"] = Guid.NewGuid().ToString("N"),
+            ["messageId"] = messageId,
             ["payload"] = payload
         };
         var json = JsonSerializer.Serialize(msg, _jsonOptions);
+
+        TaskCompletionSource<AckResponse>? ackTcs = null;
+        if (waitForAck)
+        {
+            ackTcs = new TaskCompletionSource<AckResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingAcks[messageId] = ackTcs;
+        }
 
         if (!_isConnected || _ws?.State != WebSocketState.Open)
         {
             if (_sendQueue.Count < SendBufferLimit)
                 _sendQueue.Enqueue((json, null));
-            return;
+            if (ackTcs != null)
+            {
+                _pendingAcks.TryRemove(messageId, out _);
+                return new AckResponse { Success = false, Error = "WebSocket disconnected" };
+            }
+            return null;
         }
 
         try
@@ -109,7 +136,37 @@ public class BridgeWebSocketClient : IAsyncDisposable
             if (_sendQueue.Count < SendBufferLimit)
                 _sendQueue.Enqueue((json, null));
             _isConnected = false;
+            if (ackTcs != null)
+            {
+                _pendingAcks.TryRemove(messageId, out _);
+                return new AckResponse { Success = false, Error = ex.Message };
+            }
+            return null;
         }
+
+        if (ackTcs != null)
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(ackTimeoutMs);
+            try
+            {
+                var completed = await Task.WhenAny(ackTcs.Task, Task.Delay(ackTimeoutMs, cts.Token));
+                _pendingAcks.TryRemove(messageId, out _);
+                if (completed == ackTcs.Task)
+                {
+                    return await ackTcs.Task;
+                }
+                _logger.LogWarning("Ack timeout for message {MessageId} (type={Type})", messageId, type);
+                return new AckResponse { Success = false, Error = "Timeout waiting for API acknowledgment" };
+            }
+            catch
+            {
+                _pendingAcks.TryRemove(messageId, out _);
+                return new AckResponse { Success = false, Error = "Cancelled" };
+            }
+        }
+
+        return null;
     }
 
     public async Task DisconnectAsync()
@@ -162,7 +219,25 @@ public class BridgeWebSocketClient : IAsyncDisposable
                         using var doc = JsonDocument.Parse(json);
                         var type = doc.RootElement.GetProperty("type").GetString();
 
-                        if (type == "ack") continue; // ignore acks from API
+                        if (type == "ack")
+                        {
+                            // Complete the pending ack task so senders know the API processed the message
+                            if (doc.RootElement.TryGetProperty("messageId", out var mid))
+                            {
+                                var msgId = mid.GetString();
+                                if (msgId != null && _pendingAcks.TryRemove(msgId, out var tcs))
+                                {
+                                    var status = doc.RootElement.TryGetProperty("status", out var st) ? st.GetString() : "ok";
+                                    var error = doc.RootElement.TryGetProperty("error", out var err) ? err.GetString() : null;
+                                    tcs.TrySetResult(new AckResponse
+                                    {
+                                        Success = status == "ok",
+                                        Error = error
+                                    });
+                                }
+                            }
+                            continue;
+                        }
 
                         if (OnCommand != null && type != null)
                         {

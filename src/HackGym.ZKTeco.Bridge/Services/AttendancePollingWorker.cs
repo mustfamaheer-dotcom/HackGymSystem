@@ -239,8 +239,14 @@ public class AttendancePollingWorker : BackgroundService
             verifyMethod = (int)evt.Method
         };
 
-        await _wsClient.SendMessageAsync("attendance_push", payload, ct);
-        _logger.LogInformation("attendance_push sent for EnrollmentId={EnrollmentId}", evt.EnrollmentId);
+        var ack = await _wsClient.SendMessageAsync("attendance_push", payload, ct, waitForAck: true, ackTimeoutMs: 8000);
+        if (ack == null || !ack.Success)
+        {
+            var err = ack?.Error ?? "WebSocket send failed";
+            _logger.LogWarning("Attendance push FAILED for EnrollmentId={EnrollmentId}: {Error}", evt.EnrollmentId, err);
+            throw new InvalidOperationException($"API rejected attendance push: {err}");
+        }
+        _logger.LogInformation("attendance_push confirmed by API for EnrollmentId={EnrollmentId}", evt.EnrollmentId);
     }
 
     private async Task ConnectWithRetryAsync(CancellationToken ct)

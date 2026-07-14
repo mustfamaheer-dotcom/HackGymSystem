@@ -22,14 +22,29 @@ public static class ServiceRegistration
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-GymDbContext.UseSqliteRowVersionWorkaround = true;
+        GymDbContext.UseSqliteRowVersionWorkaround = true;
 var connString = configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connString))
+if (!string.IsNullOrWhiteSpace(connString))
 {
-    // Fallback to a database file in the repository root if the config is missing
-    var baseDir = AppContext.BaseDirectory;
-    var repoRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", ".."));
-    var dbPath = Path.Combine(repoRoot, "GymDb.db");
+    // Extract the Data Source path and resolve relative paths to absolute
+    var parts = connString.Split(';')
+        .Select(p => p.Split('=', 2))
+        .Where(p => p.Length == 2 && p[0].Trim().Equals("Data Source", StringComparison.OrdinalIgnoreCase))
+        .Select(p => p[1].Trim())
+        .ToList();
+    if (parts.Count > 0 && !string.IsNullOrWhiteSpace(parts[0]) && !Path.IsPathRooted(parts[0]))
+    {
+        // Relative path: resolve to the application base directory (next to the binary)
+        var appDir = AppContext.BaseDirectory;
+        var absoluteDbPath = Path.GetFullPath(Path.Combine(appDir, parts[0]));
+        connString = $"Data Source={absoluteDbPath};Cache=Shared;";
+    }
+}
+else
+{
+    // No connection string: create the DB in the application base directory
+    var appDir = AppContext.BaseDirectory;
+    var dbPath = Path.Combine(appDir, "GymDb.db");
     connString = $"Data Source={dbPath};Cache=Shared;";
 }
 services.AddDbContext<GymDbContext>(options =>
