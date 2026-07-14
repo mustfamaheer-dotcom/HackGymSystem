@@ -115,7 +115,7 @@ set "RUN_BRIDGE=%ROOT%run-bridge.bat"
     echo echo.
     echo echo  ============================================================
     echo echo   Hack Gym - ZKTeco Bridge Server
-    echo echo   Port: http://localhost:50051
+    echo echo   Port: http://localhost:50054
     echo echo   Press Ctrl+C to stop.
     echo echo  ============================================================
     echo echo.
@@ -148,7 +148,7 @@ set "RUN_API=%ROOT%run-api.bat"
 
 echo.
 echo  ============================================================
-echo   Starting ZKTeco Bridge (port 50051) and API (port 5000)
+echo   Starting ZKTeco Bridge (port 50054) and API (port 5000)
 echo   Login: admin / Admin@123
 echo   Close the windows or press Ctrl+C to stop.
 echo  ============================================================

@@ -39,3 +39,11 @@ appsettings.Production.json
 
 # Bridge logs
 bridge_*.txt
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
