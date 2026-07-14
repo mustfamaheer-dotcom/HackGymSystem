@@ -281,7 +281,7 @@ public class AttendancePollingWorker : BackgroundService
         _deviceManager.RecordFailure();
         var delay = _deviceManager.ConnectionInfo.CurrentBackoffDelay;
 
-        _logger.LogInformation("Reconnecting to device (delay {Delay:s\\}", delay);
+        _logger.LogInformation("Reconnecting to device (delay {Delay})", delay);
 
         if (_deviceManager.Connect())
         {

@@ -543,12 +543,23 @@ public class ZKTecoTcpClient : IDisposable
             var resp = SendCommand(ZKProtocol.CMD_USERTEMP_RRQ, fctData);
             _logger.LogWarning("ReadUsersDirect: CMD_USERTEMP_RRQ resp.Code={Code} dataLen={Len} (CMD_DATA={Cd})", resp.Code, resp.Data.Length, ZKProtocol.CMD_DATA);
 
+            if (resp.Code == ZKProtocol.CMD_ACK_OK && resp.Data.Length > 8)
+            {
+                // CMD_ACK_OK inline response includes an 8-byte header: [maxChunkSize(4)][totalSize(4)]
+                // Strip it and return raw user records (same format as CMD_DATA)
+                var records = resp.Data[8..];
+                _logger.LogDebug("ReadUsersDirect: CMD_USERTEMP_RRQ (ACK_OK) returned {Total} bytes ({Rec} records)",
+                    records.Length, records.Length / 72);
+                FreeData();
+                return records;
+            }
+
             if (resp.Code == ZKProtocol.CMD_DATA && resp.Data.Length > 8)
             {
                 // CMD_DATA inline response includes a small header: [maxChunkSize(4)][totalSize(4)]
                 // Strip it and return raw user records
                 var records = resp.Data[8..];
-                _logger.LogDebug("ReadUsersDirect: CMD_USERTEMP_RRQ returned {Total} bytes ({Rec} records)",
+                _logger.LogDebug("ReadUsersDirect: CMD_USERTEMP_RRQ (CMD_DATA) returned {Total} bytes ({Rec} records)",
                     records.Length, records.Length / 72);
                 FreeData();
                 return records;
