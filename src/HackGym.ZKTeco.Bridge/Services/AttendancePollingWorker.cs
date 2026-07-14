@@ -99,7 +99,7 @@ public class AttendancePollingWorker : BackgroundService
 
                 if (processedCount > 0 && failedCount == 0)
                 {
-                    await ClearDeviceAttendanceAsync();
+                    _logger.LogInformation("Attendance processed OK — logs NOT cleared from device (user requested data safety)");
                 }
                 else if (failedCount > 0)
                 {
