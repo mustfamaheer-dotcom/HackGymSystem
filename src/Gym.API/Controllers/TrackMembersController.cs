@@ -261,7 +261,6 @@ public class TrackMembersController : BaseController
     public async Task<IActionResult> GetDeviceHealth(CancellationToken ct)
     {
         var circuitState = _connectionManager.CircuitState;
-        var isConnected = _connectionManager.IsConnected;
 
         DeviceHealthStatus? bridgeHealth = null;
         try
@@ -272,6 +271,11 @@ public class TrackMembersController : BaseController
         {
             _logger.LogWarning(ex, "Failed to get bridge health");
         }
+
+        // Use live bridge health data — the DeviceConnectionManager caches
+        // the result of its last ConnectAsync() call, which can be stale
+        // (stays false if the bridge started after the API).
+        var isConnected = bridgeHealth?.IsConnected ?? _connectionManager.IsConnected;
 
         return Ok(ApiResponse<object>.Ok(new
         {

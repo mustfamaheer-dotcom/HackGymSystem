@@ -97,7 +97,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                context.Token = context.Request.Cookies["accessToken"];
+                var cookie = context.Request.Cookies["accessToken"];
+                var hasCookie = cookie != null;
+                var prefix = cookie != null && cookie.Length > 20 ? cookie[..20] + "..." : "(empty/null)";
+                Log.Debug("JWT OnMessageReceived: path={Path}, method={Method}, hasCookie={HasCookie}, cookiePrefix={Prefix}",
+                    context.Request.Path, context.Request.Method, hasCookie, prefix);
+                context.Token = cookie;
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Log.Warning(context.Exception, "JWT auth failed: path={Path}, method={Method}", context.Request.Path, context.Request.Method);
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                Log.Information("JWT challenge: path={Path}, method={Method}, error={Error}, desc={Desc}",
+                    context.Request.Path, context.Request.Method, context.Error, context.ErrorDescription);
                 return Task.CompletedTask;
             }
         };

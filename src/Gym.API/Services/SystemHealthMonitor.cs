@@ -157,18 +157,33 @@ public class SystemHealthMonitor : BackgroundService
         try
         {
             using var scope = _scopeFactory.CreateScope();
+            var bridge = scope.ServiceProvider
+                .GetRequiredService<IZKTecoBridgeClient>();
             var connectionManager = scope.ServiceProvider
                 .GetRequiredService<DeviceConnectionManager>();
 
-            if (connectionManager == null)
-                return new DeviceHealthReport { IsConnected = false, Message = "Device connection manager not initialized" };
+            DeviceHealthStatus? bridgeHealth = null;
+            try
+            {
+                bridgeHealth = await bridge.CheckHealthAsync(CancellationToken.None);
+            }
+            catch
+            {
+                // Bridge unreachable — fall back to cached connection manager state
+            }
 
-            var isConnected = connectionManager.IsConnected;
+            // Use live bridge data; fall back to the cached DeviceConnectionManager
+            // value (which is set to true only after a successful ConnectAsync() call).
+            var isConnected = bridgeHealth?.IsConnected ?? connectionManager.IsConnected;
 
             return new DeviceHealthReport
             {
                 IsConnected = isConnected,
-                Message = isConnected ? "Device connected" : "Device offline"
+                Message = isConnected
+                    ? "Device connected (via Bridge)"
+                    : bridgeHealth == null
+                        ? "Bridge unreachable"
+                        : "Device offline"
             };
         }
         catch (Exception ex)
