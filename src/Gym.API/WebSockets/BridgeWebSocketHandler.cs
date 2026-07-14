@@ -310,12 +310,21 @@ public class BridgeWebSocketHandler
         var json = JsonSerializer.Serialize(ack, _jsonOptions);
         var bytes = Encoding.UTF8.GetBytes(json);
 
+        if (ws.State != WebSocketState.Open)
+        {
+            _logger.LogWarning("SendAck skipped: WebSocket not open (State={State}, msgId={MsgId}, status={Status})", ws.State, messageId, status);
+            return;
+        }
+
         try
         {
-            if (ws.State == WebSocketState.Open)
-                await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, ct);
+            await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, ct);
+            _logger.LogDebug("SendAck sent: msgId={MsgId}, status={Status}", messageId, status);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SendAck FAILED: msgId={MsgId}, status={Status}", messageId, status);
+        }
     }
 
     public static async Task SendToBridge(string json, CancellationToken ct)
